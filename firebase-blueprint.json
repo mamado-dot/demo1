@@ -1,0 +1,84 @@
+{
+  "entities": {
+    "users": {
+      "title": "Users",
+      "description": "User profile data",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "avatar": { "type": "string" },
+        "city": { "type": "string" },
+        "rating": { "type": "number" },
+        "completedSwaps": { "type": "number" },
+        "reliabilityLevel": { "type": "string" },
+        "bio": { "type": "string" },
+        "isAdmin": { "type": "boolean" },
+        "isBanned": { "type": "boolean" },
+        "phone": { "type": "string" },
+        "joinedDate": { "type": "string" }
+      },
+      "required": ["name", "city"]
+    },
+    "listings": {
+      "title": "Listings",
+      "description": "Barter items and services",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "type": { "type": "string" },
+        "category": { "type": "string" },
+        "city": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "ownerName": { "type": "string" },
+        "ownerRating": { "type": "number" },
+        "ownerReliability": { "type": "string" },
+        "ownerAvatar": { "type": "string" },
+        "wantedInReturn": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["title", "ownerId", "city"]
+    },
+    "chats": {
+      "title": "Chats",
+      "description": "Barter discussions and offers between users",
+      "type": "object",
+      "properties": {
+        "listingId": { "type": "string" },
+        "participants": { "type": "array", "items": { "type": "string" } },
+        "listingTitle": { "type": "string" },
+        "listingImageUrl": { "type": "string" },
+        "offerStatus": { "type": "string" }
+      }
+    },
+    "questions": {
+      "title": "Questions",
+      "description": "Q&A on listings",
+      "type": "object",
+      "properties": {
+        "listingId": { "type": "string" },
+        "questionText": { "type": "string" },
+        "replyText": { "type": "string" }
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Platform settings and configurations",
+      "type": "object",
+      "properties": {
+        "siteSettings": { "type": "object" },
+        "brandConfig": { "type": "object" },
+        "barterOptions": { "type": "object" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": "users", "description": "User profiles" },
+    "/listings/{listingId}": { "schema": "listings", "description": "Listings collection" },
+    "/chats/{chatId}": { "schema": "chats", "description": "Chats collection" },
+    "/questions/{questionId}": { "schema": "questions", "description": "Questions collection" },
+    "/settings/{settingId}": { "schema": "settings", "description": "Platform settings" }
+  }
+}
