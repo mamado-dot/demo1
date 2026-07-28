@@ -1,6 +1,6 @@
 {
-  "name": "مقايضة",
-  "description": "منصة رقمية للمقايضة المباشرة للمنتجات والخدمات بدون مقابل مالي",
+  "name": "منصة المقايضة الذكية",
+  "description": "منصة رقمية متكاملة للمقايضة المباشرة للسلع والخدمات بدون معاملات مالية",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

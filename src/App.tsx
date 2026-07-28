@@ -79,6 +79,8 @@ const THEME_COLORS = {
     '--brand-500': '#10b981',
     '--brand-600': '#059669',
     '--brand-700': '#047857',
+    '--brand-800': '#065f46',
+    '--brand-900': '#064e3b',
   },
   blue: {
     '--brand-50': '#eff6ff',
@@ -87,6 +89,8 @@ const THEME_COLORS = {
     '--brand-500': '#3b82f6',
     '--brand-600': '#2563eb',
     '--brand-700': '#1d4ed8',
+    '--brand-800': '#1e40af',
+    '--brand-900': '#1e3a8a',
   },
   purple: {
     '--brand-50': '#faf5ff',
@@ -95,6 +99,8 @@ const THEME_COLORS = {
     '--brand-500': '#a855f7',
     '--brand-600': '#9333ea',
     '--brand-700': '#7e22ce',
+    '--brand-800': '#6b21a8',
+    '--brand-900': '#581c87',
   },
   rose: {
     '--brand-50': '#fff1f2',
@@ -103,6 +109,8 @@ const THEME_COLORS = {
     '--brand-500': '#f43f5e',
     '--brand-600': '#e11d48',
     '--brand-700': '#be123c',
+    '--brand-800': '#9f1239',
+    '--brand-900': '#881337',
   },
   amber: {
     '--brand-50': '#fffbeb',
@@ -111,6 +119,8 @@ const THEME_COLORS = {
     '--brand-500': '#f59e0b',
     '--brand-600': '#d97706',
     '--brand-700': '#b45309',
+    '--brand-800': '#92400e',
+    '--brand-900': '#78350f',
   },
   brown: {
     '--brand-50': '#fdfbf7',
@@ -119,6 +129,8 @@ const THEME_COLORS = {
     '--brand-500': '#a16207',
     '--brand-600': '#925f38',
     '--brand-700': '#724624',
+    '--brand-800': '#54331a',
+    '--brand-900': '#38200f',
   }
 };
 
@@ -136,10 +148,10 @@ const getCachedBrandConfig = (): BrandConfig => {
   }
   return {
     primaryColor: 'brown',
-    brandName: 'بادل',
-    brandLogo: 'ب',
+    brandName: 'قايض',
+    brandLogo: 'ق',
     brandTagline: 'منصة مقايضة كاملة',
-    copyrightText: '© 2026 بادل للمقايضة - جميع الحقوق محفوظة لمجتمع المقايضة بأمان',
+    copyrightText: '© 2026 قايض للمقايضة - جميع الحقوق محفوظة لمجتمع المقايضة بأمان',
     simulatedUsers: 342,
     simulatedListings: 18,
     simulatedSwaps: 86,
@@ -389,6 +401,11 @@ export default function App() {
       unsubSettings();
     };
   }, []);
+
+  // Update document title dynamically
+  useEffect(() => {
+    document.title = `${brandConfig.brandName || 'قايض'} | منصة المقايضة الذكية`;
+  }, [brandConfig.brandName]);
 
   // Reset to default brand configuration helper
   const handleResetToDefaults = () => {
@@ -1387,6 +1404,7 @@ export default function App() {
                   onCloseListing={handleCloseListing}
                   onAddReview={handleAddReview}
                   userListings={currentUserListings}
+                  contractSettings={siteSettings.contractSettings}
                 />
               </div>
             )}
@@ -1452,6 +1470,7 @@ export default function App() {
                   listings={listings}
                   currentUser={currentUser}
                   barterOptions={barterOptions}
+                  contractSettings={siteSettings.contractSettings}
                   onUpdateOfferStatus={handleUpdateOfferStatus}
                   onViewChat={(chatId) => {
                     setActiveChatId(chatId);

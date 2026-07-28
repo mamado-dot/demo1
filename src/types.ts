@@ -142,6 +142,31 @@ export interface AdBanner {
   badgeText?: string;
 }
 
+export interface ContractClause {
+  id: string;
+  title: string;
+  text: string;
+  isEnabled: boolean;
+}
+
+export interface ContractSettings {
+  contractTitle: string;
+  contractSubtitle: string;
+  documentBadgeText: string;
+  party1Header: string;
+  party1Label: string;
+  party2Label: string;
+  detailsHeader: string;
+  termsHeader: string;
+  legalDeclaration: string;
+  sealText: string;
+  sealSubtext: string;
+  sealImageUrl?: string;
+  showQrCode: boolean;
+  showInspectionTerms: boolean;
+  customClauses: ContractClause[];
+}
+
 export interface SiteSettings {
   homeListingsLimit: number;
   gridColumns?: number; // 2 | 3 | 4 | 5 (default 4 per row)
@@ -153,6 +178,7 @@ export interface SiteSettings {
   autoApproveListings: boolean;
   barterTermsNotice: string;
   maintenanceMode: boolean;
+  contractSettings?: ContractSettings;
 }
 
 export interface BrandConfig {

@@ -1,6 +1,6 @@
 import React from 'react';
-import { ShieldCheck, FileText, Printer, CheckCircle2, X, Download, Share2, Award, ArrowLeftRight } from 'lucide-react';
-import { Chat, User, Listing } from '../types';
+import { ShieldCheck, FileText, Printer, CheckCircle2, X, Award } from 'lucide-react';
+import { Chat, User, Listing, ContractSettings } from '../types';
 
 interface DigitalContractModalProps {
   isOpen: boolean;
@@ -8,21 +8,56 @@ interface DigitalContractModalProps {
   chat: Chat;
   currentUser: User | null;
   listings?: Listing[];
+  contractSettings?: ContractSettings;
 }
+
+const DEFAULT_CONTRACT: ContractSettings = {
+  contractTitle: 'عقد مقايضة وتنازل تبادلي',
+  contractSubtitle: 'منصة قايض السعودية للمقايضة والتبادل المباشر',
+  documentBadgeText: 'وثيقة رسمية',
+  party1Header: 'أولاً: طرفا الاتفاقية الموثقة',
+  party1Label: 'الطرف الأول (صاحب السلعة)',
+  party2Label: 'الطرف الثاني (مقدم العرض)',
+  detailsHeader: 'ثانياً: تفاصيل محل المقايضة والتبادل',
+  termsHeader: 'ثالثاً: الشروط والأحكام والإقرار القانوني',
+  legalDeclaration: 'يقر الطرفان بصحة البيانات والمعلومات الواردة أعلاه وبسلامة الملكية الشرعية للسلع/الخدمات التبادلية، وقد تم تأكيد هذه المقايضة إلكترونياً من كلا الحسابين الموثقين عبر منصة قايض.',
+  sealText: 'ختم التوثيق الرقمي المعتمد',
+  sealSubtext: 'بصمة العقد الرقمية: VERIFIED-HASH-2026',
+  sealImageUrl: '/contract_seal.svg',
+  showQrCode: true,
+  showInspectionTerms: true,
+  customClauses: [
+    {
+      id: 'clause_1',
+      title: 'الملكية والسلامة الشرعية',
+      text: 'يتعهد الطرفان بملكية المواد والخدمات المتبادلة وعدم وجود أي حقوق للغير عليها.',
+      isEnabled: true
+    },
+    {
+      id: 'clause_2',
+      title: 'شروط المعاينة والفحص',
+      text: 'يلتزم الطرفان بفحص المواد عند الاستلام قبل التنازل النهائي.',
+      isEnabled: true
+    }
+  ]
+};
 
 export default function DigitalContractModal({
   isOpen,
   onClose,
   chat,
   currentUser,
-  listings = []
+  listings = [],
+  contractSettings
 }: DigitalContractModalProps) {
   if (!isOpen) return null;
+
+  const cfg = contractSettings || DEFAULT_CONTRACT;
 
   const targetListing = listings.find(l => l.id === chat.listingId);
   const offeredListing = listings.find(l => l.id === chat.offeredListingId);
 
-  const contractNo = chat.contractNumber || `BDR-2026-${chat.id.replace(/\D/g, '').slice(-6) || '883921'}`;
+  const contractNo = chat.contractNumber || `QAYD-2026-${chat.id.replace(/\D/g, '').slice(-6) || '883921'}`;
   const contractTimestamp = chat.contractDate || new Date().toLocaleDateString('ar-SA', {
     year: 'numeric',
     month: 'long',
@@ -84,15 +119,15 @@ export default function DigitalContractModal({
             <div>
               <div className="flex items-center space-x-2 space-x-reverse mb-1">
                 <span className="bg-[#786142] text-white text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-wider">
-                  وثيقة رسمية
+                  {cfg.documentBadgeText || 'وثيقة رسمية'}
                 </span>
                 <span className="text-emerald-700 text-xs font-bold flex items-center gap-1">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
                   <span>موثق بالكامل من الطرفين</span>
                 </span>
               </div>
-              <h1 className="text-xl sm:text-2xl font-black text-gray-900">عقد مقايضة وتنازل تبادلي</h1>
-              <p className="text-xs text-gray-500 font-medium mt-0.5">منصة بادل السعودية للمقايضة والتبادل المباشر</p>
+              <h1 className="text-xl sm:text-2xl font-black text-gray-900">{cfg.contractTitle || 'عقد مقايضة وتنازل تبادلي'}</h1>
+              <p className="text-xs text-gray-500 font-medium mt-0.5">{cfg.contractSubtitle || 'منصة قايض السعودية للمقايضة والتبادل المباشر'}</p>
             </div>
 
             <div className="text-right sm:text-left bg-white p-3 rounded-xl border border-amber-200 shadow-2xs">
@@ -105,14 +140,14 @@ export default function DigitalContractModal({
           {/* SECTION 1: الطرفان المتعاقدان */}
           <div className="space-y-3">
             <h4 className="text-xs font-black text-gray-900 border-r-4 border-[#786142] pr-2 uppercase tracking-wide">
-              أولاً: طرفا الاتفاقية الموثقة
+              {cfg.party1Header || 'أولاً: طرفا الاتفاقية الموثقة'}
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               
               {/* Party 1 */}
               <div className="bg-white p-3.5 rounded-xl border border-gray-200 space-y-1.5">
-                <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded">الطرف الأول (صاحب السلعة)</span>
+                <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded">{cfg.party1Label || 'الطرف الأول (صاحب السلعة)'}</span>
                 <p className="font-extrabold text-gray-900 text-sm">{chat.otherUser.name}</p>
                 <p className="text-gray-500 text-[11px]">المدينة: {chat.otherUser.city || 'الرياض'}</p>
                 <div className="flex items-center gap-1 text-[10px] text-emerald-700 font-bold pt-1 border-t border-gray-100">
@@ -123,7 +158,7 @@ export default function DigitalContractModal({
 
               {/* Party 2 */}
               <div className="bg-white p-3.5 rounded-xl border border-gray-200 space-y-1.5">
-                <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded">الطرف الثاني (مقدم العرض)</span>
+                <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded">{cfg.party2Label || 'الطرف الثاني (مقدم العرض)'}</span>
                 <p className="font-extrabold text-gray-900 text-sm">{currentUser?.name || 'مستخدم المقايضة'}</p>
                 <p className="text-gray-500 text-[11px]">المدينة: {currentUser?.city || 'الرياض'}</p>
                 <div className="flex items-center gap-1 text-[10px] text-emerald-700 font-bold pt-1 border-t border-gray-100">
@@ -138,7 +173,7 @@ export default function DigitalContractModal({
           {/* SECTION 2: تفاصيل محل المقايضة والتبادل */}
           <div className="space-y-3">
             <h4 className="text-xs font-black text-gray-900 border-r-4 border-[#786142] pr-2 uppercase tracking-wide">
-              ثانياً: تفاصيل محل المقايضة والتبادل
+              {cfg.detailsHeader || 'ثانياً: تفاصيل محل المقايضة والتبادل'}
             </h4>
 
             <div className="bg-white p-4 rounded-xl border border-gray-200 divide-y divide-gray-100 text-xs space-y-3">
@@ -170,7 +205,7 @@ export default function DigitalContractModal({
               </div>
 
               {/* Logistics */}
-              {(chat.deliveryLocation || chat.deliveryMethod || chat.requiresInspection) && (
+              {(cfg.showInspectionTerms !== false) && (chat.deliveryLocation || chat.deliveryMethod || chat.requiresInspection) && (
                 <div className="pt-2 text-[11px] text-gray-600 space-y-1">
                   <span className="text-gray-400 block">شروط التسليم والمعاينة:</span>
                   {chat.deliveryLocation && <p>• مكان التسليم المعتمد: {chat.deliveryLocation}</p>}
@@ -183,36 +218,61 @@ export default function DigitalContractModal({
 
           {/* SECTION 3: الشروط والأحكام والإقرار */}
           <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-200/80 text-[11px] text-amber-950 space-y-2">
-            <h5 className="font-extrabold text-xs text-amber-900">الإقرار والتعهد القانوني:</h5>
+            <h5 className="font-extrabold text-xs text-amber-900">{cfg.termsHeader || 'ثالثاً: الشروط والأحكام والإقرار القانوني'}</h5>
             <p className="leading-relaxed">
-              يقر الطرفان بصحة البيانات والمعلومات الواردة أعلاه وبسلامة الملكية الشرعية للسلع/الخدمات التبادلية، وقد تم تأكيد هذه المقايضة إلكترونياً من كلا الحسابين الموثقين عبر منصة بادل.
+              {cfg.legalDeclaration || 'يقر الطرفان بصحة البيانات والمعلومات الواردة أعلاه وبسلامة الملكية الشرعية للسلع/الخدمات التبادلية، وقد تم تأكيد هذه المقايضة إلكترونياً من كلا الحسابين الموثقين عبر منصة قايض.'}
             </p>
+
+            {/* Custom Clauses */}
+            {cfg.customClauses && cfg.customClauses.filter(c => c.isEnabled).length > 0 && (
+              <div className="pt-2 border-t border-amber-200/60 space-y-1.5">
+                <p className="font-bold text-amber-900 text-[11px]">بنود العقد المخصصة:</p>
+                {cfg.customClauses.filter(c => c.isEnabled).map((clause, idx) => (
+                  <div key={clause.id || idx} className="bg-white/80 p-2 rounded-lg border border-amber-200/50">
+                    <span className="font-bold text-amber-900 text-[11px] block">{idx + 1}. {clause.title}</span>
+                    <span className="text-[10px] text-gray-700">{clause.text}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* SECTION 4: التوقيعات الرقمية وختم الموثقية */}
           <div className="pt-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
             
             {/* Digital Stamp */}
-            <div className="flex items-center space-x-3 space-x-reverse bg-white p-3 rounded-xl border border-emerald-200 shadow-2xs">
-              <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black">
-                <Award className="w-5 h-5 text-emerald-700" />
-              </div>
+            <div className="flex items-center space-x-3 space-x-reverse bg-white p-3 rounded-xl border border-emerald-200 shadow-2xs relative">
+              {cfg.sealImageUrl ? (
+                <div className="w-20 h-12 rounded-xl bg-white border border-emerald-300/80 p-0.5 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+                  <img
+                    src={cfg.sealImageUrl}
+                    alt="ختم المنصة"
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black">
+                  <Award className="w-5 h-5 text-emerald-700" />
+                </div>
+              )}
               <div>
-                <p className="text-xs font-black text-gray-900">ختم التوثيق الرقمي المعتمد</p>
-                <p className="text-[10px] text-emerald-700 font-bold">بصمة العقد الرقمية: VERIFIED-HASH-2026</p>
+                <p className="text-xs font-black text-gray-900">{cfg.sealText || 'ختم التوثيق الرقمي المعتمد'}</p>
+                <p className="text-[10px] text-emerald-700 font-bold">{cfg.sealSubtext || 'بصمة العقد الرقمية: VERIFIED-HASH-2026'}</p>
               </div>
             </div>
 
-            {/* QR Mock Code */}
-            <div className="flex items-center space-x-2 space-x-reverse text-gray-400 text-[10px]">
-              <div className="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center text-white font-mono text-[9px] p-1 text-center leading-tight">
-                BARTER QR
+            {/* QR Code */}
+            {cfg.showQrCode !== false && (
+              <div className="flex items-center space-x-2 space-x-reverse text-gray-400 text-[10px]">
+                <div className="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center text-white font-mono text-[9px] p-1 text-center leading-tight">
+                  QAYD QR
+                </div>
+                <div>
+                  <p className="font-bold text-gray-700">رمز التحقق الفوري</p>
+                  <p className="text-[9px]">امسح الرمز للتحقق من العقد</p>
+                </div>
               </div>
-              <div>
-                <p className="font-bold text-gray-700">رمز التحقق الفوري</p>
-                <p className="text-[9px]">امسح الرمز للتحقق من العقد</p>
-              </div>
-            </div>
+            )}
 
           </div>
 

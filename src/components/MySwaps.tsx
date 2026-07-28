@@ -16,7 +16,7 @@ import {
   DollarSign,
   FileText
 } from 'lucide-react';
-import { Chat, Listing, User as UserType, BarterOptions } from '../types';
+import { Chat, Listing, User as UserType, BarterOptions, ContractSettings } from '../types';
 import DigitalContractModal from './DigitalContractModal';
 
 interface MySwapsProps {
@@ -24,6 +24,7 @@ interface MySwapsProps {
   listings?: Listing[];
   currentUser: UserType | null;
   barterOptions?: BarterOptions;
+  contractSettings?: ContractSettings;
   onUpdateOfferStatus?: (chatId: string, status: 'معلق' | 'مقبول' | 'مرفوض' | 'مكتمل') => void;
   onViewChat?: (chatId: string) => void;
   onViewListing?: (listing: Listing) => void;
@@ -39,6 +40,7 @@ export default function MySwaps({
   listings = [],
   currentUser,
   barterOptions,
+  contractSettings,
   onUpdateOfferStatus,
   onViewChat,
   onMarkCompleted,
@@ -690,6 +692,7 @@ export default function MySwaps({
           chat={contractChat}
           currentUser={currentUser}
           listings={listings}
+          contractSettings={contractSettings}
         />
       )}
 

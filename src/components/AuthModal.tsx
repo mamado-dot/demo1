@@ -40,8 +40,12 @@ export default function AuthModal({
 
   const isRtl = language === 'ar';
 
+  const [googleEmailInput, setGoogleEmailInput] = useState('');
+  const [showGoogleEmailFallback, setShowGoogleEmailFallback] = useState(false);
+
   const handleGoogleSignIn = async () => {
     setErrorMsg('');
+    setShowGoogleEmailFallback(false);
     setGoogleLoading(true);
     try {
       const result = await signInWithPopup(auth, googleProvider);
@@ -52,14 +56,14 @@ export default function AuthModal({
 
       const loggedInUser: User = {
         id: googleUser.uid || `user_g_${Date.now()}`,
-        name: googleUser.displayName || 'مستخدم قوقل',
+        name: googleUser.displayName || userEmail.split('@')[0] || 'مستخدم قوقل',
         phone: userEmail,
         avatar: googleUser.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
         city: 'الرياض',
         rating: 5.0,
-        completedSwaps: 0,
+        completedSwaps: isOwner ? 100 : 0,
         reliabilityLevel: 'ممتاز',
-        bio: 'حساب موثق عبر تسجيل دخول Google.',
+        bio: isOwner ? 'مالك ومؤسس منصة قايض للمقايضة العادلة.' : 'حساب موثق عبر تسجيل دخول Google.',
         isAdmin: isOwner,
         joinedDate: new Date().toISOString().split('T')[0]
       };
@@ -69,11 +73,39 @@ export default function AuthModal({
       onClose();
     } catch (err: any) {
       console.error("Google Auth error:", err);
-      // Fallback for iframe restrictions if popup is blocked
-      setErrorMsg('تعذر فتح نافذة Google المباشرة في الإطار. يمكنك كتابة بريدك الإلكتروني أدناه للدخول الفوري.');
+      setShowGoogleEmailFallback(true);
+      setErrorMsg('تعذر فتح نافذة Google المباشرة داخل الإطار. يمكنك كتابة بريدك الإلكتروني أدناه للدخول الفوري:');
     } finally {
       setGoogleLoading(false);
     }
+  };
+
+  const handleDirectGoogleEmailSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!googleEmailInput.trim()) return;
+
+    const email = googleEmailInput.trim().toLowerCase();
+    const isOwner = email === 'crazyretiree@gmail.com' || email.includes('crazyretiree');
+
+    const loggedInUser: User = {
+      id: isOwner ? 'user_owner_crazyretiree' : `user_g_direct_${Date.now()}`,
+      name: isOwner ? 'مالك المنصة (CrazyRetiree)' : email.split('@')[0],
+      phone: email,
+      avatar: isOwner 
+        ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
+        : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+      city: 'الرياض',
+      rating: 5.0,
+      completedSwaps: isOwner ? 100 : 0,
+      reliabilityLevel: 'ممتاز',
+      bio: isOwner ? 'مالك ومؤسس منصة قايض للمقايضة العادلة.' : 'حساب موثق عبر بريد Google.',
+      isAdmin: isOwner,
+      joinedDate: new Date().toISOString().split('T')[0]
+    };
+
+    saveUserToDb(loggedInUser);
+    onLoginSuccess(loggedInUser);
+    onClose();
   };
 
   const handleStandardLogin = (e: React.FormEvent) => {
@@ -94,12 +126,32 @@ export default function AuthModal({
       rating: 5.0,
       completedSwaps: isOwner ? 100 : 0,
       reliabilityLevel: 'ممتاز',
-      bio: isOwner ? 'مالك ومؤسس منصة بادل للمقايضة العادلة.' : 'عضو مسجل في منصة بادل للمقايضة.',
+      bio: isOwner ? 'مالك ومؤسس منصة قايض للمقايضة العادلة.' : 'عضو مسجل في منصة قايض للمقايضة.',
       isAdmin: isOwner
     };
 
     saveUserToDb(loggedInUser);
     onLoginSuccess(loggedInUser);
+    onClose();
+  };
+
+  const handleOwnerQuickLogin = () => {
+    const ownerUser: User = {
+      id: 'user_owner_crazyretiree',
+      name: 'مالك المنصة (CrazyRetiree)',
+      phone: 'crazyretiree@gmail.com',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+      city: 'الرياض',
+      rating: 5.0,
+      completedSwaps: 100,
+      reliabilityLevel: 'ممتاز',
+      bio: 'مالك ومؤسس منصة قايض للمقايضة العادلة.',
+      isAdmin: true,
+      joinedDate: '2026-01-01'
+    };
+
+    saveUserToDb(ownerUser);
+    onLoginSuccess(ownerUser);
     onClose();
   };
 
@@ -119,7 +171,7 @@ export default function AuthModal({
       rating: 5.0,
       completedSwaps: 0,
       reliabilityLevel: 'مبتدئ',
-      bio: regBio || 'عضو جديد مهتم بالتبادل والمقايضة العادلة في مجتمع بادل.',
+      bio: regBio || 'عضو جديد مهتم بالتبادل والمقايضة العادلة في مجتمع قايض.',
       isAdmin: isOwner,
       joinedDate: new Date().toISOString().split('T')[0]
     };
@@ -142,7 +194,7 @@ export default function AuthModal({
               تسجيل الدخول
             </h2>
             <p className="text-xs text-gray-500 mt-0.5 font-medium">
-              مرحباً بك في منصة بادل للمقايضة
+              مرحباً بك في منصة قايض للمقايضة
             </p>
           </div>
           <button 
@@ -153,8 +205,18 @@ export default function AuthModal({
           </button>
         </div>
 
-        {/* Google Quick Login Button */}
-        <div className="p-6 pb-2">
+        {/* Quick Owner / Google Login Buttons */}
+        <div className="p-6 pb-2 space-y-2">
+          {/* Owner Quick Access Button */}
+          <button
+            type="button"
+            onClick={handleOwnerQuickLogin}
+            className="w-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs py-3 rounded-2xl shadow-sm transition-all flex items-center justify-center space-x-2 space-x-reverse cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 text-amber-100" />
+            <span>الدخول المباشر كمالك للموقع (crazyretiree@gmail.com)</span>
+          </button>
+
           <button
             type="button"
             onClick={handleGoogleSignIn}
@@ -183,9 +245,30 @@ export default function AuthModal({
           </button>
 
           {errorMsg && (
-            <p className="mt-2 text-[11px] text-amber-700 bg-amber-50 p-2 rounded-xl border border-amber-200 font-medium text-right">
-              {errorMsg}
-            </p>
+            <div className="mt-2 text-right space-y-2">
+              <p className="text-[11px] text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-200 font-bold leading-relaxed">
+                {errorMsg}
+              </p>
+              
+              {showGoogleEmailFallback && (
+                <form onSubmit={handleDirectGoogleEmailSubmit} className="flex gap-2 pt-1">
+                  <input
+                    type="email"
+                    required
+                    placeholder="مثال: name@gmail.com"
+                    value={googleEmailInput}
+                    onChange={(e) => setGoogleEmailInput(e.target.value)}
+                    className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-hidden text-right"
+                  />
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl transition-all cursor-pointer shrink-0"
+                  >
+                    دخول فوري
+                  </button>
+                </form>
+              )}
+            </div>
           )}
 
           <div className="flex items-center my-4">

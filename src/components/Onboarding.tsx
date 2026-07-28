@@ -42,7 +42,7 @@ export default function Onboarding({ onLogin, language = 'ar' }: OnboardingProps
       rating: 5.0,
       completedSwaps: 0,
       reliabilityLevel: 'مبتدئ',
-      bio: bio || (language === 'en' ? 'New member interested in fair bartering in the Badel community.' : 'عضو جديد مهتم بالتبادل والمقايضة العادلة في مجتمع بادل.'),
+      bio: bio || (language === 'en' ? 'New member interested in fair bartering in the Qayd community.' : 'عضو جديد مهتم بالتبادل والمقايضة العادلة في مجتمع قايض.'),
     };
 
     onLogin(customUser);
@@ -58,7 +58,7 @@ export default function Onboarding({ onLogin, language = 'ar' }: OnboardingProps
         <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-white mx-auto mb-3 shadow-md backdrop-blur-xs">
           <RefreshCw className="w-6 h-6 animate-spin-slow text-white" />
         </div>
-        <h2 className="text-2xl font-black">{language === 'en' ? 'Welcome to Badel 👋' : 'مرحباً بك في بادل 👋'}</h2>
+        <h2 className="text-2xl font-black">{language === 'en' ? 'Welcome to Qayd 👋' : 'مرحباً بك في قايض 👋'}</h2>
         <p className="text-xs text-emerald-100 mt-1.5 leading-relaxed">
           {language === 'en' 
             ? 'The first smart digital platform to barter products and services (item for item, or service for service) without any monetary exchange!'
@@ -206,8 +206,8 @@ export default function Onboarding({ onLogin, language = 'ar' }: OnboardingProps
         {/* Security / Verification Badge info */}
         <div className="bg-gray-50 rounded-2xl p-3 border border-gray-100/60 text-center text-[10px] text-gray-500 leading-relaxed" id="onboarding_safety_note">
           {language === 'en' 
-            ? '🔒 Data protection is fully guaranteed. Badel is committed to a secure, cash-free environment to promote sustainable consumption and the collaborative circular economy.'
-            : '🔒 حماية البيانات مكفولة بالكامل. تلتزم منصة بادل ببيئة آمنة وخالية من العملات النقدية، لتشجيع الاستهلاك المستدام والاقتصاد الدائري التعاوني.'}
+            ? '🔒 Data protection is fully guaranteed. Qayd is committed to a secure, cash-free environment to promote sustainable consumption and the collaborative circular economy.'
+            : '🔒 حماية البيانات مكفولة بالكامل. تلتزم منصة قايض ببيئة آمنة وخالية من العملات النقدية، لتشجيع الاستهلاك المستدام والاقتصاد الدائري التعاوني.'}
         </div>
 
       </div>

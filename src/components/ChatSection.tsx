@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   MessageSquare, Send, ChevronRight, FileText, CheckCircle2, ShieldCheck, ArrowLeftRight, Clock
 } from 'lucide-react';
-import { Chat, User, Listing, Review } from '../types';
+import { Chat, User, Listing, Review, ContractSettings } from '../types';
 import { SIMULATED_RESPONSES } from '../data/mockData';
 import DigitalContractModal from './DigitalContractModal';
 
@@ -18,6 +18,7 @@ interface ChatSectionProps {
   onCloseListing: (listingId: string) => void;
   onAddReview: (userId: string, review: Omit<Review, 'id' | 'date'>) => void;
   userListings: Listing[];
+  contractSettings?: ContractSettings;
 }
 
 export default function ChatSection({
@@ -32,6 +33,7 @@ export default function ChatSection({
   onCloseListing,
   onAddReview,
   userListings,
+  contractSettings,
 }: ChatSectionProps) {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -397,6 +399,7 @@ export default function ChatSection({
           chat={activeChat}
           currentUser={currentUser}
           listings={userListings}
+          contractSettings={contractSettings}
         />
       )}
 

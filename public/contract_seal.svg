@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 280" width="100%" height="100%">
+  <defs>
+    <!-- Gold Metallic Gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d4af37" />
+      <stop offset="50%" stop-color="#b8860b" />
+      <stop offset="100%" stop-color="#8a6308" />
+    </linearGradient>
+
+    <!-- Navy Blue Gradient -->
+    <linearGradient id="navyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+
+    <!-- Filter for subtle drop shadow -->
+    <filter id="subtleShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.12" />
+    </filter>
+  </defs>
+
+  <style>
+    .arabic-title {
+      font-family: 'Amiri', 'Traditional Arabic', 'Sakkal Majalla', 'Dubai', 'Segoe UI', Tahoma, sans-serif;
+      font-weight: 900;
+      font-size: 58px;
+      fill: #1b2838;
+      text-anchor: middle;
+      direction: rtl;
+    }
+    .latin-subtitle {
+      font-family: 'Cinzel', 'Times New Roman', 'Playfair Display', Georgia, serif;
+      font-weight: 700;
+      font-size: 24px;
+      letter-spacing: 5px;
+      fill: #1b2838;
+      text-anchor: middle;
+    }
+  </style>
+
+  <!-- Main Outer Frame with split gradient effect -->
+  <g filter="url(#subtleShadow)">
+    <!-- Left & Bottom Gold Section -->
+    <rect x="30" y="30" width="440" height="220" rx="28" ry="28" 
+          fill="none" stroke="url(#goldGrad)" stroke-width="12" stroke-linecap="round" />
+
+    <!-- Top & Right Navy Section overlay for two-tone frame -->
+    <path d="M 220 30 L 442 30 A 28 28 0 0 1 470 58 L 470 190" 
+          fill="none" stroke="url(#navyGrad)" stroke-width="12" stroke-linecap="round" />
+  </g>
+
+  <!-- Masked background clearing behind the central Arabic text -->
+  <rect x="130" y="140" width="240" height="70" fill="#ffffff" rx="12" />
+
+  <!-- Arabic Calligraphy Text "مُقَايَضَة" with diacritics -->
+  <text x="250" y="188" class="arabic-title">مُقَايَضَة</text>
+
+  <!-- Latin Text "MUKAYADAH" -->
+  <text x="250" y="232" class="latin-subtitle">MUKAYADAH</text>
+</svg>

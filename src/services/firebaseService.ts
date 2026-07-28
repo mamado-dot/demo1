@@ -86,7 +86,7 @@ export function subscribeToUsers(callback: (users: User[]) => void) {
       rating: 5.0,
       completedSwaps: 100,
       reliabilityLevel: 'ممتاز',
-      bio: 'مالك ومؤسس منصة بادل للمقايضة العادلة.',
+      bio: 'مالك ومؤسس منصة قايض للمقايضة العادلة.',
       isAdmin: true,
       joinedDate: '2026-01-01'
     };

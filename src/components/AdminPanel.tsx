@@ -4,7 +4,7 @@ import {
   Sliders, Palette, BarChart3, Plus, Trash2, Edit3, Shield, 
   ShieldAlert, ShieldCheck, Eye, EyeOff, ExternalLink, RefreshCw, X, AlertCircle, Phone, MapPin, Star, Upload
 } from 'lucide-react';
-import { User, Listing, Chat, CustomPage, AdBanner, SiteSettings, BrandConfig, City, BarterOptions, CustomBarterField } from '../types';
+import { User, Listing, Chat, CustomPage, AdBanner, SiteSettings, BrandConfig, City, BarterOptions, CustomBarterField, ContractSettings, ContractClause } from '../types';
 import { CITIES } from '../data/mockData';
 import { savePlatformSettingsToDb, saveUserToDb, updateListingInDb, deleteListingFromDb } from '../services/firebaseService';
 
@@ -81,7 +81,11 @@ export default function AdminPanel({
   setFeature3Desc,
   onSaveNotification
 }: AdminPanelProps) {
-  const [activeSubTab, setActiveSubTab] = useState<'home_branding' | 'listings' | 'barter_options' | 'members' | 'banners' | 'pages' | 'settings' | 'analytics'>('home_branding');
+  const [activeSubTab, setActiveSubTab] = useState<'home_branding' | 'listings' | 'barter_options' | 'members' | 'banners' | 'pages' | 'settings' | 'contract_settings' | 'analytics'>('home_branding');
+
+  // Contract Settings local clause state
+  const [newClauseTitle, setNewClauseTitle] = useState('');
+  const [newClauseText, setNewClauseText] = useState('');
 
   // --- LISTINGS MANAGEMENT STATE ---
   const [listingSearch, setListingSearch] = useState('');
@@ -126,6 +130,50 @@ export default function AdminPanel({
       ...brandConfig,
       [key]: value
     });
+  };
+
+  const contractSettings: ContractSettings = siteSettings.contractSettings || {
+    contractTitle: 'عقد مقايضة وتنازل تبادلي',
+    contractSubtitle: 'منصة قايض السعودية للمقايضة والتبادل المباشر',
+    documentBadgeText: 'وثيقة رسمية',
+    party1Header: 'أولاً: طرفا الاتفاقية الموثقة',
+    party1Label: 'الطرف الأول (صاحب السلعة)',
+    party2Label: 'الطرف الثاني (مقدم العرض)',
+    detailsHeader: 'ثانياً: تفاصيل محل المقايضة والتبادل',
+    termsHeader: 'ثالثاً: الشروط والأحكام والإقرار القانوني',
+    legalDeclaration: 'يقر الطرفان بصحة البيانات والمعلومات الواردة أعلاه وبسلامة الملكية الشرعية للسلع/الخدمات التبادلية، وقد تم تأكيد هذه المقايضة إلكترونياً من كلا الحسابين الموثقين عبر منصة قايض.',
+    sealText: 'ختم التوثيق الرقمي المعتمد',
+    sealSubtext: 'بصمة العقد الرقمية: VERIFIED-HASH-2026',
+    sealImageUrl: siteSettings.contractSettings?.sealImageUrl || '/contract_seal.svg',
+    showQrCode: true,
+    showInspectionTerms: true,
+    customClauses: [
+      {
+        id: 'clause_1',
+        title: 'الملكية والسلامة الشرعية',
+        text: 'يتعهد الطرفان بملكية المواد والخدمات المتبادلة وعدم وجود أي حقوق للغير عليها.',
+        isEnabled: true
+      },
+      {
+        id: 'clause_2',
+        title: 'شروط المعاينة والفحص',
+        text: 'يلتزم الطرفان بفحص المواد عند الاستلام قبل التنازل النهائي.',
+        isEnabled: true
+      }
+    ]
+  };
+
+  const updateContractSettings = (field: keyof ContractSettings, value: any) => {
+    const updatedContract = {
+      ...contractSettings,
+      [field]: value
+    };
+    const updatedSiteSettings = {
+      ...siteSettings,
+      contractSettings: updatedContract
+    };
+    setSiteSettings(updatedSiteSettings);
+    autoPersistPlatformSettings({ siteSettings: updatedSiteSettings });
   };
 
   const handleSaveAll = async () => {
@@ -237,13 +285,15 @@ export default function AdminPanel({
 
   // Helper to persist current state to Firestore automatically
   const autoPersistPlatformSettings = async (overrides: {
+    siteSettings?: SiteSettings;
+    barterOptions?: BarterOptions;
     customPages?: CustomPage[];
     adBanners?: AdBanner[];
   } = {}) => {
     try {
       await savePlatformSettingsToDb({
-        siteSettings,
-        barterOptions,
+        siteSettings: overrides.siteSettings || siteSettings,
+        barterOptions: overrides.barterOptions || barterOptions,
         brandConfig,
         customPages: overrides.customPages || customPages,
         adBanners: overrides.adBanners || adBanners,
@@ -566,6 +616,17 @@ export default function AdminPanel({
             }`}
           >
             <span>إعدادات العرض والقواعد</span>
+          </button>
+
+          <button
+            onClick={() => setActiveSubTab('contract_settings')}
+            className={`w-full p-3.5 rounded-2xl font-extrabold text-xs text-right transition-all cursor-pointer border block ${
+              activeSubTab === 'contract_settings'
+                ? 'bg-blue-50 text-blue-900 border-blue-300 shadow-2xs font-black ring-1 ring-blue-500/20'
+                : 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50'
+            }`}
+          >
+            <span>إعدادات العقد الإلكتروني 📜</span>
           </button>
 
           <button
@@ -1880,6 +1941,371 @@ export default function AdminPanel({
                             onClick={() => {
                               const updated = barterOptions.customFields.filter(f => f.id !== field.id);
                               setBarterOptions({ ...barterOptions, customFields: updated });
+                            }}
+                            className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+              </div>
+
+            </div>
+          )}
+
+          {/* TAB: ELECTRONIC CONTRACT SETTINGS */}
+          {activeSubTab === 'contract_settings' && (
+            <div className="space-y-6" id="tab_contract_settings_content">
+              <div className="border-b border-gray-100 pb-4">
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <div className="p-2 bg-blue-50 text-blue-700 rounded-xl">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-gray-900 text-base">إعدادات وتخصيص العقد الإلكتروني</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      تحكم كامل بكافة نصوص وتفاصيل العقد الرقمي المعتمد في المنصة، مع إمكانية تعديل الشروط والإقرار والبنود القانونية.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 1: Contract Header & Badge Settings */}
+              <div className="bg-gray-50/70 rounded-3xl p-5 border border-gray-100 space-y-4">
+                <h4 className="text-xs font-black text-gray-900 border-b border-gray-200/80 pb-2">
+                  1. العناوين والشارات الرئيسية للعقد
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">عنوان العقد الرئيسي</label>
+                    <input
+                      type="text"
+                      value={contractSettings.contractTitle}
+                      onChange={(e) => updateContractSettings('contractTitle', e.target.value)}
+                      placeholder="عقد مقايضة وتنازل تبادلي"
+                      className="w-full border border-gray-200 rounded-2xl px-4 py-2.5 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-hidden"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">الوصف الفرعي أسفل العنوان</label>
+                    <input
+                      type="text"
+                      value={contractSettings.contractSubtitle}
+                      onChange={(e) => updateContractSettings('contractSubtitle', e.target.value)}
+                      placeholder="منصة قايض السعودية للمقايضة والتبادل المباشر"
+                      className="w-full border border-gray-200 rounded-2xl px-4 py-2.5 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-hidden"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">نص شارة التوثيق أعلى العقد</label>
+                    <input
+                      type="text"
+                      value={contractSettings.documentBadgeText}
+                      onChange={(e) => updateContractSettings('documentBadgeText', e.target.value)}
+                      placeholder="وثيقة رسمية"
+                      className="w-full border border-gray-200 rounded-2xl px-4 py-2.5 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-hidden"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 2: Section Titles & Parties Labels */}
+              <div className="bg-gray-50/70 rounded-3xl p-5 border border-gray-100 space-y-4">
+                <h4 className="text-xs font-black text-gray-900 border-b border-gray-200/80 pb-2">
+                  2. مسميات الأطراف وأقسام العقد
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">عنوان قسم الأطراف الموثقة</label>
+                    <input
+                      type="text"
+                      value={contractSettings.party1Header}
+                      onChange={(e) => updateContractSettings('party1Header', e.target.value)}
+                      placeholder="أولاً: طرفا الاتفاقية الموثقة"
+                      className="w-full border border-gray-200 rounded-2xl px-4 py-2.5 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-hidden"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">مسمى الطرف الأول (صاحب السلعة)</label>
+                    <input
+                      type="text"
+                      value={contractSettings.party1Label}
+                      onChange={(e) => updateContractSettings('party1Label', e.target.value)}
+                      placeholder="الطرف الأول (صاحب السلعة)"
+                      className="w-full border border-gray-200 rounded-2xl px-4 py-2.5 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-hidden"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">مسمى الطرف الثاني (مقدم العرض)</label>
+                    <input
+                      type="text"
+                      value={contractSettings.party2Label}
+                      onChange={(e) => updateContractSettings('party2Label', e.target.value)}
+                      placeholder="الطرف الثاني (مقدم العرض)"
+                      className="w-full border border-gray-200 rounded-2xl px-4 py-2.5 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-hidden"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">عنوان قسم تفاصيل التبادل</label>
+                    <input
+                      type="text"
+                      value={contractSettings.detailsHeader}
+                      onChange={(e) => updateContractSettings('detailsHeader', e.target.value)}
+                      placeholder="ثانياً: تفاصيل محل المقايضة والتبادل"
+                      className="w-full border border-gray-200 rounded-2xl px-4 py-2.5 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-hidden"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 3: Legal Declaration & Stamp Settings */}
+              <div className="bg-gray-50/70 rounded-3xl p-5 border border-gray-100 space-y-4">
+                <h4 className="text-xs font-black text-gray-900 border-b border-gray-200/80 pb-2">
+                  3. الإقرار القانوني والختم الرقمي
+                </h4>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">نص الإقرار والتعهد القانوني المعتمد في العقد</label>
+                  <textarea
+                    rows={3}
+                    value={contractSettings.legalDeclaration}
+                    onChange={(e) => updateContractSettings('legalDeclaration', e.target.value)}
+                    placeholder="يقر الطرفان بصحة البيانات والمعلومات..."
+                    className="w-full border border-gray-200 rounded-2xl p-3 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-hidden leading-relaxed"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">نص الختم الرقمي الرسمي</label>
+                    <input
+                      type="text"
+                      value={contractSettings.sealText}
+                      onChange={(e) => updateContractSettings('sealText', e.target.value)}
+                      placeholder="ختم التوثيق الرقمي المعتمد"
+                      className="w-full border border-gray-200 rounded-2xl px-4 py-2.5 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-hidden"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">بصمة التوثيق/الكود الفرعي</label>
+                    <input
+                      type="text"
+                      value={contractSettings.sealSubtext}
+                      onChange={(e) => updateContractSettings('sealSubtext', e.target.value)}
+                      placeholder="بصمة العقد الرقمية: VERIFIED-HASH-2026"
+                      className="w-full border border-gray-200 rounded-2xl px-4 py-2.5 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-hidden font-mono"
+                    />
+                  </div>
+                </div>
+
+                {/* Seal / Logo Image Settings */}
+                <div className="p-4 bg-white rounded-2xl border border-gray-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-extrabold text-gray-900 block">شعار / ختم العقد الرسمي 🏅</span>
+                      <span className="text-[11px] text-gray-500">قم برفع صورة الشعار/الختم أو وضع رابط الصورة ليتم تضمينها مباشرة في العقد الإلكتروني</span>
+                    </div>
+                    {contractSettings.sealImageUrl && (
+                      <button
+                        type="button"
+                        onClick={() => updateContractSettings('sealImageUrl', '')}
+                        className="text-xs font-bold text-rose-600 hover:underline cursor-pointer"
+                      >
+                        إزالة الشعار
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-4 pt-1">
+                    {contractSettings.sealImageUrl ? (
+                      <div className="w-20 h-20 rounded-2xl border-2 border-emerald-500/30 bg-gray-50 p-1 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden relative group">
+                        <img
+                          src={contractSettings.sealImageUrl}
+                          alt="ختم العقد"
+                          className="max-w-full max-h-full object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center shrink-0 text-gray-400">
+                        <Upload className="w-6 h-6 mb-1 text-gray-400" />
+                        <span className="text-[9px] font-bold">لا يوجد ختم</span>
+                      </div>
+                    )}
+
+                    <div className="flex-1 w-full space-y-2">
+                      <div className="flex items-center gap-2">
+                        <label className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold rounded-xl transition-all cursor-pointer shadow-xs flex items-center space-x-1.5 space-x-reverse shrink-0">
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>رفع صورة الختم/الشعار</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (event) => {
+                                  const result = event.target?.result as string;
+                                  if (result) {
+                                    updateContractSettings('sealImageUrl', result);
+                                  }
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                        </label>
+                        <span className="text-[11px] text-gray-400">أو أدخل الرابط المباشر:</span>
+                      </div>
+
+                      <input
+                        type="url"
+                        value={contractSettings.sealImageUrl || ''}
+                        onChange={(e) => updateContractSettings('sealImageUrl', e.target.value)}
+                        placeholder="https://example.com/seal_logo.png"
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-hidden"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <label className="flex items-center space-x-2.5 space-x-reverse p-3 bg-white rounded-2xl border border-gray-200 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={contractSettings.showQrCode !== false}
+                      onChange={(e) => updateContractSettings('showQrCode', e.target.checked)}
+                      className="w-4 h-4 accent-blue-600 rounded"
+                    />
+                    <span className="text-xs font-bold text-gray-800">إظهار رمز باركود التحقق الذكي (QR Code)</span>
+                  </label>
+
+                  <label className="flex items-center space-x-2.5 space-x-reverse p-3 bg-white rounded-2xl border border-gray-200 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={contractSettings.showInspectionTerms !== false}
+                      onChange={(e) => updateContractSettings('showInspectionTerms', e.target.checked)}
+                      className="w-4 h-4 accent-blue-600 rounded"
+                    />
+                    <span className="text-xs font-bold text-gray-800">إظهار بند معاينة وفحص السلعة قبل التسليم</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* SECTION 4: Custom Contract Clauses Manager */}
+              <div className="bg-gray-50/70 rounded-3xl p-5 border border-gray-100 space-y-4">
+                <div className="flex items-center justify-between border-b border-gray-200/80 pb-2">
+                  <h4 className="text-xs font-black text-gray-900">
+                    4. إدارة بنود الشروط والأحكام الخاصة بالعقد
+                  </h4>
+                  <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-2.5 py-0.5 rounded-full">
+                    {contractSettings.customClauses?.length || 0} بنود
+                  </span>
+                </div>
+
+                {/* Add new clause form */}
+                <div className="bg-white p-4 rounded-2xl border border-blue-100 space-y-3">
+                  <span className="text-xs font-bold text-blue-900 block">إضافة بند جديد للعقد الإلكتروني:</span>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="عنوان البند (مثال: شروط الضمان)"
+                        value={newClauseTitle}
+                        onChange={(e) => setNewClauseTitle(e.target.value)}
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs bg-gray-50 focus:bg-white outline-hidden"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <input
+                        type="text"
+                        placeholder="نص البند التفصيلي الوارد بالعقد..."
+                        value={newClauseText}
+                        onChange={(e) => setNewClauseText(e.target.value)}
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs bg-gray-50 focus:bg-white outline-hidden"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!newClauseTitle.trim() || !newClauseText.trim()) return;
+                        const newClause: ContractClause = {
+                          id: `clause_${Date.now()}`,
+                          title: newClauseTitle.trim(),
+                          text: newClauseText.trim(),
+                          isEnabled: true
+                        };
+                        const updatedClauses = [...(contractSettings.customClauses || []), newClause];
+                        updateContractSettings('customClauses', updatedClauses);
+                        setNewClauseTitle('');
+                        setNewClauseText('');
+                      }}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center space-x-1.5 space-x-reverse"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>إضافة البند للعقد</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Clauses list */}
+                <div className="space-y-2">
+                  {(!contractSettings.customClauses || contractSettings.customClauses.length === 0) ? (
+                    <div className="p-4 bg-white text-center text-xs text-gray-400 rounded-2xl border border-dashed border-gray-200">
+                      لا توجد بنود إضافية حالياً. جميع العقود ستستخدم الشروط الأساسية والافتراضية.
+                    </div>
+                  ) : (
+                    contractSettings.customClauses.map((clause) => (
+                      <div key={clause.id} className="p-4 bg-white rounded-2xl border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center space-x-2 space-x-reverse">
+                            <span className="font-extrabold text-xs text-gray-900">{clause.title}</span>
+                            {clause.isEnabled ? (
+                              <span className="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-md">مفعل بالعقد</span>
+                            ) : (
+                              <span className="text-[10px] bg-gray-100 text-gray-500 font-bold px-2 py-0.5 rounded-md">موقوف مؤقتاً</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-600 leading-relaxed">{clause.text}</p>
+                        </div>
+
+                        <div className="flex items-center space-x-2 space-x-reverse self-end sm:self-auto shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updatedClauses = contractSettings.customClauses?.map(c => 
+                                c.id === clause.id ? { ...c, isEnabled: !c.isEnabled } : c
+                              );
+                              updateContractSettings('customClauses', updatedClauses);
+                            }}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                              clause.isEnabled ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'
+                            }`}
+                          >
+                            {clause.isEnabled ? 'تعديل إلى تعطيل' : 'تفعيل البند'}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updatedClauses = contractSettings.customClauses?.filter(c => c.id !== clause.id);
+                              updateContractSettings('customClauses', updatedClauses);
                             }}
                             className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer"
                           >

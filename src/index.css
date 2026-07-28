@@ -9,5 +9,7 @@
   --color-brand-500: var(--brand-500, #a16207);
   --color-brand-600: var(--brand-600, #925f38);
   --color-brand-700: var(--brand-700, #724624);
+  --color-brand-800: var(--brand-800, #54331a);
+  --color-brand-900: var(--brand-900, #38200f);
 }
 

@@ -17,7 +17,7 @@ export const CATEGORIES = [
 export const MOCK_USERS: Record<string, User> = {
   'user_admin': {
     id: 'user_admin',
-    name: 'عبدالله المشرف (إدارة بادل)',
+    name: 'عبدالله المشرف (إدارة قايض)',
     avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=150&q=80',
     city: 'الرياض',
     rating: 5.0,
@@ -539,7 +539,7 @@ export const INITIAL_LISTINGS: Listing[] = [
     description: 'شرح ومتابعة لاجتياز اختبار PMP الاحترافي مع بنك أسئلة وشروحات مسجلة ومباشرة 15 ساعة، مقابل خدمة برمجة بوت تليجرام أو أتمتة مهام برمجية.',
     imageUrl: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=600&q=80',
     ownerId: 'user_admin',
-    ownerName: 'عبدالله المشرف (إدارة بادل)',
+    ownerName: 'عبدالله المشرف (إدارة قايض)',
     ownerRating: 5.0,
     ownerReliability: 'ممتاز',
     ownerAvatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=150&q=80',
