@@ -55,7 +55,7 @@ export default function Footer({
       id: 'default_trust',
       slug: 'trust',
       title: language === 'en' ? 'Safety & Reliability Guide' : 'دليل الأمان والموثوقية',
-      content: 'نصائح المعاينة قبل التبادل والتأكد من جودة المنتجات والخدمات المعروضة.',
+      content: 'نصائح المعاينة قبل المقايضة والتأكد من جودة المنتجات والخدمات المعروضة.',
       isActive: true,
       updatedAt: new Date().toISOString()
     }
@@ -97,12 +97,12 @@ export default function Footer({
             <p className="text-xs text-gray-500 leading-relaxed font-medium">
               {language === 'en'
                 ? 'A modern barter platform empowering direct product and service exchanges without cash boundaries.'
-                : 'منصة مقايضة ذكية تتيح لك تبادل المنتجات والخدمات مباشرة وبشفافية تامة بدون قيود مالية.'}
+                : 'منصة مقايضة ذكية تتيح لك مقايضة المنتجات والخدمات مباشرة وبشفافية تامة بدون قيود مالية.'}
             </p>
 
             <div className="flex items-center space-x-2 space-x-reverse pt-1 text-xs text-emerald-800 font-bold">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>مبادلات آمنة وموثوقة</span>
+              <span>مقايضات آمنة وموثوقة</span>
             </div>
           </div>
 

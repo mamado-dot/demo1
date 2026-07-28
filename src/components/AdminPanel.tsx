@@ -48,31 +48,31 @@ interface AdminPanelProps {
 }
 
 const DEFAULT_CONTRACT: ContractSettings = {
-  contractTitle: 'عقد مقايضة ومبادلة إلكتروني موثق',
-  contractSubtitle: 'وثيقة مبادلة رسمية ملزمة لطرفي المقايضة عبر المنصة',
+  contractTitle: 'عقد مقايضة وتنازل رسمية',
+  contractSubtitle: 'وثيقة رسمية ملزمة لطرفي المقايضة عبر منصة قايض',
   documentBadgeText: 'عقد إلكتروني معتمد',
-  party1Header: 'بيانات الطرف الأول (العارض)',
-  party1Label: 'الطرف الأول',
-  party2Label: 'الطرف الثاني',
-  detailsHeader: 'تفاصيل المواد والخدمات المتبادلة',
+  party1Header: 'بيانات الطرف الأول',
+  party1Label: 'الطرف الأول (صاحب السلعة الأولى)',
+  party2Label: 'الطرف الثاني (صاحب السلعة الثانية)',
+  detailsHeader: 'تفاصيل محل المقايضة',
   termsHeader: 'الشروط والبنود القانونية',
   legalDeclaration: 'يقر الطرفان بأهليتهما الشرعية ويتعهدان بالمقايضة حسب المواصفات بدون أدنى مسؤولية مالية على المنصة.',
-  sealText: 'منصة بادل للمقايضة',
+  sealText: 'منصة قايض للمقايضة',
   sealSubtext: 'توثيق إلكتروني معتمد',
-  sealImageUrl: '/contract_seal.svg',
-  showQrCode: true,
+  sealImageUrl: '',
+  showQrCode: false,
   showInspectionTerms: true,
   customClauses: [
     {
       id: 'c1',
       title: 'المعاينة والفحص',
-      text: 'يلتزم الطرفان بمعاينة المواد قبل التسليم وخلوها من العيوب.',
+      text: 'يلتزم الطرفان بمعاينة المواد والسلع قبل التسليم وخلوها من العيوب.',
       isEnabled: true
     },
     {
       id: 'c2',
       title: 'إخلاء المسؤولية',
-      text: 'المنصة وسيط تقني ولا تتحمل جودة الأغراض المتبادلة.',
+      text: 'المنصة وسيط تقني ولا تتحمل جودة الأغراض المقايَض عليها.',
       isEnabled: true
     }
   ]

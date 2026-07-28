@@ -43,7 +43,7 @@ export const translations = {
     outgoingOffer: 'عرض مقايضة صادر',
     
     // Profile
-    myProductsDesc: 'إدارة منتجاتك المعروضة للتبادل.',
+    myProductsDesc: 'إدارة منتجاتك المعروضة للمقايضة.',
     addButton: 'إضافة',
     noProductsAdded: 'لم تقم بإضافة أي منتجات بعد',
     noProductsAddedDesc: 'ابدأ بعرض منتجاتك أو خدماتك الآن لتتمكن من تلقي عروض المقايضة والمبادلة من بقية الأعضاء.',
@@ -77,7 +77,7 @@ export const translations = {
     
     // Onboarding
     onboardingWelcome: 'مرحباً بك في مجتمع المقايضة الآمن 🔄',
-    onboardingDesc: 'المنصة الأولى لتبادل السلع والخدمات مباشرة بدون وسيط مالي وبكفاءة عالية.',
+    onboardingDesc: 'المنصة الأولى لمقايضة السلع والخدمات مباشرة بدون وسيط مالي وبكفاءة عالية.',
     chooseProfile: 'اختر ملفك الشخصي الافتراضي لتجربة المنصة فوراً:',
     verifyWithNafath: 'جميع الحسابات موثقة بالنفاذ الوطني الموحد لضمان سلامتك 🛡️',
     enterAsGuest: 'الدخول كزائر لتصفح المعروض',
