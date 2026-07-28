@@ -13,7 +13,11 @@ import {
   Lock,
   ChevronLeft,
   Calendar,
-  AlertCircle
+  AlertCircle,
+  HelpCircle,
+  Clock,
+  CornerDownLeft,
+  BadgeCheck
 } from 'lucide-react';
 import { Listing, User as UserType, ListingQuestion } from '../types';
 
@@ -171,71 +175,145 @@ export default function ListingDetails({
           </div>
 
           {/* 4. Q&A Section (الأسئلة والردود) */}
-          <div className="bg-white rounded-3xl border border-gray-200 p-5 sm:p-6 space-y-4 shadow-xs" id="details_qa_panel">
+          <div className="bg-white rounded-3xl border border-gray-200/90 p-5 sm:p-7 space-y-5 shadow-xs" id="details_qa_panel">
             
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-150 pb-3" id="qa_panel_header">
-              <h3 className="text-sm font-extrabold text-gray-900 flex items-center gap-1.5">
-                <span>الأسئلة والردود</span>
-                <span className="text-xs text-gray-500 font-medium">({listingQuestions.length})</span>
-              </h3>
+            <div className="flex items-center justify-between border-b border-gray-100 pb-4" id="qa_panel_header">
+              <div className="flex items-center space-x-2.5 space-x-reverse">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-[#786142]">
+                  <HelpCircle className="w-5 h-5 text-[#786142]" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-gray-900 flex items-center gap-2">
+                    <span>الأسئلة والاستفسارات</span>
+                    <span className="bg-amber-100/80 text-amber-900 text-[11px] font-black px-2 py-0.5 rounded-full">
+                      {listingQuestions.length}
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-gray-400 font-medium">استفسارات الأعضاء وإجابات صاحب العرض المباشرة</p>
+                </div>
+              </div>
             </div>
 
             {/* Questions List */}
-            <div className="space-y-3" id="questions_list">
+            <div className="space-y-4" id="questions_list">
               {listingQuestions.length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-4">لا توجد أسئلة حتى الآن.</p>
+                <div className="bg-gray-50/70 rounded-2xl p-6 text-center border border-dashed border-gray-200 space-y-2">
+                  <MessageCircle className="w-8 h-8 text-gray-300 mx-auto" />
+                  <p className="text-xs text-gray-500 font-bold">لا توجد أسئلة أو استفسارات حول هذا العرض حتى الآن</p>
+                  <p className="text-[11px] text-gray-400">كن أول من يستفسر من صاحب العرض مباشرة</p>
+                </div>
               ) : (
                 listingQuestions.map((q) => (
-                  <div key={q.id} className="bg-gray-50 rounded-2xl p-3.5 border border-gray-200/80 space-y-2 text-right" id={`question_item_${q.id}`}>
+                  <div key={q.id} className="bg-gray-50/60 rounded-2xl p-4 border border-gray-200/80 space-y-3 text-right transition-all hover:bg-gray-50" id={`question_item_${q.id}`}>
                     
-                    {/* Question Header & Text */}
-                    <div>
-                      <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                        <span className="font-extrabold text-gray-900">{q.askerName}</span>
-                        {q.createdAt && <span className="text-[10px] text-gray-400">{q.createdAt}</span>}
+                    {/* Question Item Header & Avatar */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center space-x-3 space-x-reverse">
+                        <div 
+                          onClick={() => onViewProfile?.(q.askerId, q.askerName, q.askerAvatar)}
+                          className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white border border-gray-200 overflow-hidden shrink-0 cursor-pointer shadow-2xs"
+                        >
+                          {q.askerAvatar ? (
+                            <img src={q.askerAvatar} alt={q.askerName} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-600 font-bold text-xs">
+                              {q.askerName?.charAt(0) || 'م'}
+                            </div>
+                          )}
+                        </div>
+
+                        <div>
+                          <div className="flex items-center space-x-2 space-x-reverse">
+                            <span 
+                              onClick={() => onViewProfile?.(q.askerId, q.askerName, q.askerAvatar)}
+                              className="font-extrabold text-gray-900 text-xs hover:text-[#786142] hover:underline cursor-pointer"
+                            >
+                              {q.askerName}
+                            </span>
+                            <span className="bg-gray-200/70 text-gray-600 text-[9px] font-bold px-1.5 py-0.5 rounded">
+                              استفسار
+                            </span>
+                          </div>
+                          {q.createdAt && (
+                            <span className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5 font-medium">
+                              <Clock className="w-3 h-3 text-gray-400" />
+                              <span>{q.createdAt}</span>
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-xs text-gray-800 font-medium leading-relaxed">{q.questionText}</p>
                     </div>
 
-                    {/* Owner Reply */}
+                    {/* Question Content */}
+                    <div className="bg-white rounded-xl p-3 sm:p-3.5 border border-gray-100 text-xs font-medium text-gray-800 leading-relaxed shadow-2xs">
+                      {q.questionText}
+                    </div>
+
+                    {/* Owner Reply Section */}
                     {q.replyText ? (
-                      <div className="bg-white rounded-xl p-3 border border-amber-200/70 mr-3 sm:mr-5 mt-2 space-y-1">
-                        <span className="text-[11px] font-bold text-[#786142] block">رد صاحب العرض ({listing.ownerName}):</span>
-                        <p className="text-xs text-gray-800 font-medium">{q.replyText}</p>
+                      <div className="border-r-2 border-[#786142]/80 pr-3 my-2 me-1 sm:me-3 space-y-1.5">
+                        <div className="bg-[#FAF6F0] rounded-xl p-3.5 border border-[#EBDCCB] space-y-1.5 shadow-2xs">
+                          <div className="flex items-center justify-between border-b border-[#E3D1BC]/60 pb-1.5">
+                            <div className="flex items-center space-x-2 space-x-reverse">
+                              <div className="w-6 h-6 rounded-full bg-[#786142] text-white flex items-center justify-center font-bold text-[10px]">
+                                {listing.ownerName?.charAt(0) || 'ع'}
+                              </div>
+                              <span className="text-xs font-black text-[#5C4830]">
+                                {listing.ownerName}
+                              </span>
+                              <span className="bg-amber-100 text-[#786142] text-[9px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                                <BadgeCheck className="w-3 h-3 text-amber-700" />
+                                <span>صاحب العرض</span>
+                              </span>
+                            </div>
+                            {q.replyCreatedAt && (
+                              <span className="text-[9px] text-amber-800/60 font-medium">{q.replyCreatedAt}</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-900 font-medium leading-relaxed pt-0.5">{q.replyText}</p>
+                        </div>
                       </div>
                     ) : (
                       isOwner && (
-                        <div className="mr-3 sm:mr-5 mt-2" id={`owner_reply_form_${q.id}`}>
+                        <div className="border-r-2 border-dashed border-amber-300/80 pr-3 my-2 me-1 sm:me-3" id={`owner_reply_form_${q.id}`}>
                           {activeReplyId === q.id ? (
-                            <div className="flex items-center gap-2 pt-1">
-                              <input
-                                type="text"
-                                value={replyTexts[q.id] || ''}
-                                onChange={(e) => setReplyTexts(prev => ({ ...prev, [q.id]: e.target.value }))}
-                                placeholder="اكتب ردك..."
-                                className="flex-1 bg-white border border-gray-300 rounded-xl px-3 py-1.5 text-xs text-gray-800 focus:outline-none focus:border-[#786142]"
-                              />
-                              <button
-                                onClick={() => handleSendReply(q.id)}
-                                className="bg-[#786142] hover:bg-[#614e35] text-white p-2 rounded-xl transition-colors shrink-0 cursor-pointer"
-                                title="إرسال الرد"
-                              >
-                                <Send className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                onClick={() => setActiveReplyId(null)}
-                                className="text-gray-400 hover:text-gray-600 text-xs px-1 cursor-pointer"
-                              >
-                                إلغاء
-                              </button>
+                            <div className="bg-white p-3 rounded-xl border border-amber-200 space-y-2">
+                              <div className="flex items-center space-x-2 space-x-reverse text-[11px] font-bold text-amber-900">
+                                <CornerDownLeft className="w-3.5 h-3.5 text-amber-700" />
+                                <span>الرد كـ (صاحب العرض)</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  value={replyTexts[q.id] || ''}
+                                  onChange={(e) => setReplyTexts(prev => ({ ...prev, [q.id]: e.target.value }))}
+                                  placeholder="اكتب إجابتك الواضحة هنا..."
+                                  className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2 text-xs text-gray-800 focus:bg-white focus:outline-none focus:border-amber-600 transition-all"
+                                  autoFocus
+                                />
+                                <button
+                                  onClick={() => handleSendReply(q.id)}
+                                  className="bg-[#786142] hover:bg-[#614e35] text-white px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1 shadow-2xs"
+                                >
+                                  <Send className="w-3.5 h-3.5" />
+                                  <span>إرسال</span>
+                                </button>
+                                <button
+                                  onClick={() => setActiveReplyId(null)}
+                                  className="text-gray-400 hover:text-gray-600 text-xs px-2 py-2 cursor-pointer font-medium"
+                                >
+                                  إلغاء
+                                </button>
+                              </div>
                             </div>
                           ) : (
                             <button
                               onClick={() => setActiveReplyId(q.id)}
-                              className="text-xs text-[#786142] hover:underline font-bold cursor-pointer"
+                              className="inline-flex items-center gap-1.5 text-xs text-[#786142] hover:text-[#52412b] font-black bg-amber-50 hover:bg-amber-100/80 border border-amber-200 px-3 py-1.5 rounded-xl transition-all cursor-pointer"
                             >
-                              الرد على السؤال
+                              <CornerDownLeft className="w-3.5 h-3.5" />
+                              <span>الرد على هذا الاستفسار</span>
                             </button>
                           )}
                         </div>
@@ -247,24 +325,33 @@ export default function ListingDetails({
               )}
             </div>
 
-            {/* Small Messaging Input Box with Send Icon (shown if not owner) */}
+            {/* Ask Question Input Form (shown if not owner) */}
             {!isOwner && (
-              <form onSubmit={handleAskQuestion} className="flex items-center gap-2 pt-2 border-t border-gray-150" id="ask_form">
-                <input
-                  type="text"
-                  value={questionText}
-                  onChange={(e) => setQuestionText(e.target.value)}
-                  placeholder="اسأل صاحب العرض..."
-                  className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs text-gray-800 focus:bg-white focus:border-[#786142] outline-none transition-all"
-                />
-                <button
-                  type="submit"
-                  disabled={!questionText.trim()}
-                  className="bg-[#786142] hover:bg-[#614e35] disabled:opacity-40 text-white p-2.5 rounded-2xl transition-all shrink-0 cursor-pointer shadow-xs flex items-center justify-center"
-                  title="إرسال"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
+              <form onSubmit={handleAskQuestion} className="pt-3 border-t border-gray-100" id="ask_form">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 overflow-hidden shrink-0 hidden sm:flex items-center justify-center">
+                    {currentUser?.avatar ? (
+                      <img src={currentUser.avatar} alt={currentUser.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-4 h-4 text-gray-500" />
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    value={questionText}
+                    onChange={(e) => setQuestionText(e.target.value)}
+                    placeholder="لديك سؤال أو استفسار حول هذه السلعة؟ اسأل صاحب العرض مباشرة..."
+                    className="flex-1 bg-gray-50/80 border border-gray-200 rounded-2xl px-4 py-2.5 text-xs text-gray-800 focus:bg-white focus:border-[#786142] focus:ring-1 focus:ring-[#786142] outline-none transition-all"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!questionText.trim()}
+                    className="bg-[#786142] hover:bg-[#5f4c33] disabled:opacity-40 text-white px-4 py-2.5 rounded-2xl font-bold text-xs transition-all shrink-0 cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
+                  >
+                    <span>إرسال</span>
+                    <Send className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </form>
             )}
 
