@@ -65,6 +65,10 @@ export default function Footer({
     ? customPages.filter(p => p.isActive)
     : defaultPolicies;
 
+  if (brandConfig.showFooter === false) {
+    return null;
+  }
+
   return (
     <footer className="w-full bg-white border-t border-gray-100 mt-16 text-gray-700" id="standalone_footer">
       
@@ -195,15 +199,17 @@ export default function Footer({
         </div>
 
         {/* Bottom Bar & Copyright */}
-        <div className="pt-8 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-500 font-medium">
-          <p id="copyright_text_display">
-            {brandConfig.copyrightText || 'جميع الحقوق محفوظة © 2026 منصة المقايضة'}
-          </p>
+        {brandConfig.showCopyright !== false && (
+          <div className="pt-8 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-500 font-medium">
+            <p id="copyright_text_display" className="font-bold text-gray-700">
+              {brandConfig.copyrightText || 'جميع الحقوق محفوظة © 2026 منصة المقايضة الذكية'}
+            </p>
 
-          <div className="flex items-center space-x-4 space-x-reverse text-xs font-bold text-gray-500">
-            <span>منصة مقايضة مخصصة ومبنية بأحدث تقنيات الويب</span>
+            <div className="flex items-center space-x-4 space-x-reverse text-xs font-bold text-gray-500">
+              <span>منصة مقايضة مخصصة ومبنية بأحدث تقنيات الويب</span>
+            </div>
           </div>
-        </div>
+        )}
 
       </div>
     </footer>

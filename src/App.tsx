@@ -172,7 +172,25 @@ const initialCachedBrand = getCachedBrandConfig();
 applyThemeColorsLocally(initialCachedBrand.primaryColor);
 
 export default function App() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    try {
+      const cached = localStorage.getItem('app_current_user');
+      if (cached) {
+        const parsed: User = JSON.parse(cached);
+        const isOwner = parsed.phone?.toLowerCase().includes('crazyretiree') || parsed.name?.toLowerCase().includes('crazyretiree') || parsed.id === 'user_owner_crazyretiree';
+        if (isOwner) {
+          parsed.isAdmin = true;
+          parsed.bio = 'مالك ومؤسس منصة قايض للمقايضة العادلة.';
+          parsed.completedSwaps = 100;
+          parsed.reliabilityLevel = 'ممتاز';
+        }
+        return parsed;
+      }
+    } catch (e) {
+      // ignore
+    }
+    return null;
+  });
   const [viewingUser, setViewingUser] = useState<User | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [users, setUsers] = useState<User[]>(Object.values(MOCK_USERS));
@@ -198,6 +216,7 @@ export default function App() {
       setViewingUser(currentUser);
     }
     setActiveTab(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleViewProfile = (userId: string, userName?: string, userAvatar?: string) => {
@@ -252,26 +271,15 @@ export default function App() {
     }
   ]);
 
-  const [adBanners, setAdBanners] = useState<AdBanner[]>([
-    {
-      id: 'banner_header_1',
-      title: 'شريك النقل والتوصيل السريع للمقايضين في كافة مناطق المملكة',
-      imageUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80',
-      targetUrl: 'https://example.com',
-      position: 'header',
-      isActive: true,
-      badgeText: 'إعلان راعي'
-    },
-    {
-      id: 'banner_footer_1',
-      title: 'حمل تطبيق بادل للمقايضة وسجل عروضك بضغطة زر',
-      imageUrl: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1200&q=80',
-      targetUrl: 'https://example.com',
-      position: 'footer',
-      isActive: true,
-      badgeText: 'تطبيق الجوال'
+  const [adBanners, setAdBanners] = useState<AdBanner[]>(() => {
+    try {
+      const cached = localStorage.getItem('app_ad_banners');
+      if (cached) return JSON.parse(cached);
+    } catch (e) {
+      // ignore
     }
-  ]);
+    return [];
+  });
 
   const [siteSettings, setSiteSettings] = useState<SiteSettings>({
     homeListingsLimit: 8,
@@ -376,8 +384,13 @@ export default function App() {
         if (data.customPages && Array.isArray(data.customPages) && data.customPages.length > 0) {
           setCustomPages(data.customPages);
         }
-        if (data.adBanners && Array.isArray(data.adBanners) && data.adBanners.length > 0) {
+        if (data.adBanners && Array.isArray(data.adBanners)) {
           setAdBanners(data.adBanners);
+          try {
+            localStorage.setItem('app_ad_banners', JSON.stringify(data.adBanners));
+          } catch (e) {
+            // ignore
+          }
         }
         if (data.landingConfig) {
           if (data.landingConfig.platformSlogan) setPlatformSlogan(data.landingConfig.platformSlogan);
@@ -477,14 +490,25 @@ export default function App() {
 
   // Setup initial state for logged in user
   const handleLogin = (user: User) => {
-    setCurrentUser(user);
+    const isOwner = user.phone?.toLowerCase().includes('crazyretiree') || user.name?.toLowerCase().includes('crazyretiree') || user.id === 'user_owner_crazyretiree';
+    const finalUser: User = isOwner 
+      ? { ...user, isAdmin: true, bio: 'مالك ومؤسس منصة قايض للمقايضة العادلة.', completedSwaps: 100, reliabilityLevel: 'ممتاز' }
+      : user;
+
+    setCurrentUser(finalUser);
+    try {
+      localStorage.setItem('app_current_user', JSON.stringify(finalUser));
+    } catch (e) {
+      // ignore
+    }
+
     setUserReviews(MOCK_REVIEWS); // Initial rating reviews
     
     // Add custom welcome notification
     const welcomeNotif: Notification = {
       id: `welcome_${Date.now()}`,
-      title: 'أهلاً بك في منصة بادل للمقايضة! 🔄',
-      description: `مرحباً بك يا ${user.name}. تم توثيق حسابك وربطه بـ "نفاذ" الوطني لضمان بيئة مقايضة آمنة. بادر بنشر سلعك أو تصفح العروض للبدء!`,
+      title: 'أهلاً بك في منصة قايض للمقايضة! 🔄',
+      description: `مرحباً بك يا ${finalUser.name}. تم توثيق حسابك وربطه بـ "نفاذ" الوطني لضمان بيئة مقايضة آمنة. بادر بنشر سلعك أو تصفح العروض للبدء!`,
       timestamp: 'الآن',
       read: false,
       type: 'match'
@@ -495,6 +519,11 @@ export default function App() {
 
   const handleLogout = () => {
     setCurrentUser(null);
+    try {
+      localStorage.removeItem('app_current_user');
+    } catch (e) {
+      // ignore
+    }
     setChats([]);
     setActiveChatId(null);
     setNotifications([]);
@@ -1604,6 +1633,18 @@ export default function App() {
               language={language}
             />
       </main>
+
+      {/* Footer Component */}
+      <Footer
+        brandConfig={brandConfig}
+        customPages={customPages}
+        language={language}
+        setActiveTab={handleTabChange}
+        onSelectCustomPage={(page) => {
+          setSelectedCustomPage(page);
+          handleTabChange('custom_page');
+        }}
+      />
 
       {/* Footer Ad Banners */}
       {adBanners.filter(b => b.isActive && b.position === 'footer').map(banner => (

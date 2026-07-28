@@ -194,6 +194,8 @@ export interface BrandConfig {
   headerNoticeText?: string;
   showHeaderSearch?: boolean;
   showHeaderTagline?: boolean;
+  showFooter?: boolean;
+  showCopyright?: boolean;
 }
 
 

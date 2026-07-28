@@ -35,13 +35,12 @@ export default function AuthModal({
   // UI state
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [googleEmailInput, setGoogleEmailInput] = useState('');
+  const [showGoogleEmailFallback, setShowGoogleEmailFallback] = useState(false);
 
   if (!isOpen) return null;
 
   const isRtl = language === 'ar';
-
-  const [googleEmailInput, setGoogleEmailInput] = useState('');
-  const [showGoogleEmailFallback, setShowGoogleEmailFallback] = useState(false);
 
   const handleGoogleSignIn = async () => {
     setErrorMsg('');
@@ -72,9 +71,9 @@ export default function AuthModal({
       onLoginSuccess(loggedInUser);
       onClose();
     } catch (err: any) {
-      console.error("Google Auth error:", err);
+      console.warn("Google Popup Auth notice:", err?.message || err);
       setShowGoogleEmailFallback(true);
-      setErrorMsg('تعذر فتح نافذة Google المباشرة داخل الإطار. يمكنك كتابة بريدك الإلكتروني أدناه للدخول الفوري:');
+      setErrorMsg('يمكنك اختيار حساب Google أو إدخال البريد الإلكتروني للدخول المباشر:');
     } finally {
       setGoogleLoading(false);
     }
@@ -135,26 +134,6 @@ export default function AuthModal({
     onClose();
   };
 
-  const handleOwnerQuickLogin = () => {
-    const ownerUser: User = {
-      id: 'user_owner_crazyretiree',
-      name: 'مالك المنصة (CrazyRetiree)',
-      phone: 'crazyretiree@gmail.com',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-      city: 'الرياض',
-      rating: 5.0,
-      completedSwaps: 100,
-      reliabilityLevel: 'ممتاز',
-      bio: 'مالك ومؤسس منصة قايض للمقايضة العادلة.',
-      isAdmin: true,
-      joinedDate: '2026-01-01'
-    };
-
-    saveUserToDb(ownerUser);
-    onLoginSuccess(ownerUser);
-    onClose();
-  };
-
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     if (!regName.trim()) return;
@@ -164,14 +143,16 @@ export default function AuthModal({
 
     const newUser: User = {
       id: isOwner ? 'user_owner_crazyretiree' : `user_reg_${Date.now()}`,
-      name: regName.trim(),
+      name: isOwner ? 'مالك المنصة (CrazyRetiree)' : regName.trim(),
       phone: regPhoneOrEmail.trim(),
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+      avatar: isOwner 
+        ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
+        : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
       city: regCity,
       rating: 5.0,
-      completedSwaps: 0,
-      reliabilityLevel: 'مبتدئ',
-      bio: regBio || 'عضو جديد مهتم بالتبادل والمقايضة العادلة في مجتمع قايض.',
+      completedSwaps: isOwner ? 100 : 0,
+      reliabilityLevel: isOwner ? 'ممتاز' : 'مبتدئ',
+      bio: isOwner ? 'مالك ومؤسس منصة قايض للمقايضة العادلة.' : (regBio || 'عضو جديد مهتم بالتبادل والمقايضة العادلة في مجتمع قايض.'),
       isAdmin: isOwner,
       joinedDate: new Date().toISOString().split('T')[0]
     };
@@ -205,18 +186,8 @@ export default function AuthModal({
           </button>
         </div>
 
-        {/* Quick Owner / Google Login Buttons */}
+        {/* Google Login Section */}
         <div className="p-6 pb-2 space-y-2">
-          {/* Owner Quick Access Button */}
-          <button
-            type="button"
-            onClick={handleOwnerQuickLogin}
-            className="w-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs py-3 rounded-2xl shadow-sm transition-all flex items-center justify-center space-x-2 space-x-reverse cursor-pointer"
-          >
-            <Sparkles className="w-4 h-4 text-amber-100" />
-            <span>الدخول المباشر كمالك للموقع (crazyretiree@gmail.com)</span>
-          </button>
-
           <button
             type="button"
             onClick={handleGoogleSignIn}

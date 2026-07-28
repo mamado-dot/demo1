@@ -535,6 +535,117 @@ export default function AdminPanel({
         </button>
       </div>
 
+      {/* Horizontal Tabs Bar for Quick Navigation (Mobile & Desktop) */}
+      <div className="bg-white rounded-2xl p-2 border border-gray-100 shadow-2xs mb-6 overflow-x-auto scrollbar-none flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('home_branding')}
+          className={`px-4 py-2.5 rounded-xl font-extrabold text-xs whitespace-nowrap transition-all cursor-pointer border ${
+            activeSubTab === 'home_branding'
+              ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
+              : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+          }`}
+        >
+          🎨 الهوية والواجهة
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('contract_settings')}
+          className={`px-4 py-2.5 rounded-xl font-extrabold text-xs whitespace-nowrap transition-all cursor-pointer border ${
+            activeSubTab === 'contract_settings'
+              ? 'bg-blue-600 text-white border-blue-600 shadow-xs ring-2 ring-blue-300'
+              : 'bg-blue-50 text-blue-900 border-blue-200 hover:bg-blue-100 font-black'
+          }`}
+        >
+          📜 إعدادات العقد الإلكتروني والختم
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('listings')}
+          className={`px-4 py-2.5 rounded-xl font-extrabold text-xs whitespace-nowrap transition-all cursor-pointer border ${
+            activeSubTab === 'listings'
+              ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+              : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+          }`}
+        >
+          📦 الإعلانات والعروض ({listings.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('barter_options')}
+          className={`px-4 py-2.5 rounded-xl font-extrabold text-xs whitespace-nowrap transition-all cursor-pointer border ${
+            activeSubTab === 'barter_options'
+              ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
+              : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+          }`}
+        >
+          ⚙️ خيارات المقايضة
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('members')}
+          className={`px-4 py-2.5 rounded-xl font-extrabold text-xs whitespace-nowrap transition-all cursor-pointer border ${
+            activeSubTab === 'members'
+              ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
+              : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+          }`}
+        >
+          👥 إدارة الأعضاء ({users.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('banners')}
+          className={`px-4 py-2.5 rounded-xl font-extrabold text-xs whitespace-nowrap transition-all cursor-pointer border ${
+            activeSubTab === 'banners'
+              ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
+              : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+          }`}
+        >
+          📢 البنرات الإعلانية ({adBanners.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('pages')}
+          className={`px-4 py-2.5 rounded-xl font-extrabold text-xs whitespace-nowrap transition-all cursor-pointer border ${
+            activeSubTab === 'pages'
+              ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
+              : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+          }`}
+        >
+          📄 الصفحات المخصصة ({customPages.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('settings')}
+          className={`px-4 py-2.5 rounded-xl font-extrabold text-xs whitespace-nowrap transition-all cursor-pointer border ${
+            activeSubTab === 'settings'
+              ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
+              : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+          }`}
+        >
+          🔧 إعدادات العرض
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('analytics')}
+          className={`px-4 py-2.5 rounded-xl font-extrabold text-xs whitespace-nowrap transition-all cursor-pointer border ${
+            activeSubTab === 'analytics'
+              ? 'bg-brand-600 text-white border-brand-600 shadow-xs'
+              : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+          }`}
+        >
+          📊 الإحصائيات
+        </button>
+      </div>
+
       {/* 2. Main Layout Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6" id="admin_main_grid">
         
@@ -1476,9 +1587,33 @@ export default function AdminPanel({
                         type="text"
                         value={brandConfig.copyrightText}
                         onChange={(e) => updateConfig('copyrightText', e.target.value)}
-                        className="w-full border border-gray-200 bg-white rounded-xl p-2.5 text-xs text-gray-800"
+                        placeholder="© 2026 جميع الحقوق محفوظة لمجتمع المقايضة الذكية"
+                        className="w-full border border-gray-200 bg-white rounded-xl p-2.5 text-xs text-gray-800 font-medium"
                       />
                     </div>
+                  </div>
+
+                  {/* Footer & Copyright Activation Toggles */}
+                  <div className="pt-3 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label className="flex items-center justify-between p-3 bg-white rounded-2xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors">
+                      <span className="text-xs font-extrabold text-gray-900">تفعيل إظهار أسطر الحقوق (Copyright)</span>
+                      <input
+                        type="checkbox"
+                        checked={brandConfig.showCopyright !== false}
+                        onChange={(e) => updateConfig('showCopyright', e.target.checked)}
+                        className="w-4 h-4 text-emerald-600 rounded-md focus:ring-emerald-500 cursor-pointer"
+                      />
+                    </label>
+
+                    <label className="flex items-center justify-between p-3 bg-white rounded-2xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors">
+                      <span className="text-xs font-extrabold text-gray-900">تفعيل إظهار الفوتر بالكامل (Footer)</span>
+                      <input
+                        type="checkbox"
+                        checked={brandConfig.showFooter !== false}
+                        onChange={(e) => updateConfig('showFooter', e.target.checked)}
+                        className="w-4 h-4 text-emerald-600 rounded-md focus:ring-emerald-500 cursor-pointer"
+                      />
+                    </label>
                   </div>
                 </div>
               </div>
