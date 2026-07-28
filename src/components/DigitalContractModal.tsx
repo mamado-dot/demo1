@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, FileText, Printer, CheckCircle2, X, Award } from 'lucide-react';
+import { ShieldCheck, FileText, Printer, CheckCircle2, X, Award, Download, BadgeCheck } from 'lucide-react';
 import { Chat, User, Listing, ContractSettings } from '../types';
 
 interface DigitalContractModalProps {
@@ -26,6 +26,8 @@ const DEFAULT_CONTRACT: ContractSettings = {
   sealImageUrl: '/contract_seal.svg',
   showQrCode: true,
   showInspectionTerms: true,
+  enableIdentityVerification: true,
+  requireNafathForContract: true,
   customClauses: [
     {
       id: 'clause_1',
@@ -69,7 +71,7 @@ export default function DigitalContractModal({
   const targetTitle = chat.listingTitle || targetListing?.title || 'السلعة المطلوب مقايضتها';
   const offeredTitle = chat.offeredListingTitle || offeredListing?.title || 'السلعة المقدّمة للمقايضة';
 
-  const handlePrint = () => {
+  const handlePrintOrPdf = () => {
     window.print();
   };
 
@@ -91,11 +93,19 @@ export default function DigitalContractModal({
 
           <div className="flex items-center space-x-2 space-x-reverse">
             <button
-              onClick={handlePrint}
+              onClick={handlePrintOrPdf}
+              className="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-black rounded-xl transition-all flex items-center space-x-1.5 space-x-reverse cursor-pointer shadow-xs"
+              title="تحميل العقد بصيغة PDF"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>تحميل PDF</span>
+            </button>
+            <button
+              onClick={handlePrintOrPdf}
               className="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold rounded-xl transition-all flex items-center space-x-1.5 space-x-reverse cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5 text-gray-700" />
-              <span>طباعة العقد</span>
+              <span>طباعة</span>
             </button>
             <button 
               onClick={onClose}
@@ -117,14 +127,20 @@ export default function DigitalContractModal({
           {/* Official Document Banner */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b-2 border-[#786142]/30 pb-5">
             <div>
-              <div className="flex items-center space-x-2 space-x-reverse mb-1">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
                 <span className="bg-[#786142] text-white text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-wider">
                   {cfg.documentBadgeText || 'وثيقة رسمية'}
                 </span>
                 <span className="text-emerald-700 text-xs font-bold flex items-center gap-1">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span>موثق بالكامل من الطرفين</span>
+                  <span>موثق بالكامل</span>
                 </span>
+                {cfg.enableIdentityVerification !== false && (
+                  <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1">
+                    <BadgeCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>توثيق النفاذ الوطني (NAFATH)</span>
+                  </span>
+                )}
               </div>
               <h1 className="text-xl sm:text-2xl font-black text-gray-900">{cfg.contractTitle || 'عقد مقايضة وتنازل تبادلي'}</h1>
               <p className="text-xs text-gray-500 font-medium mt-0.5">{cfg.contractSubtitle || 'منصة قايض السعودية للمقايضة والتبادل المباشر'}</p>
@@ -147,7 +163,15 @@ export default function DigitalContractModal({
               
               {/* Party 1 */}
               <div className="bg-white p-3.5 rounded-xl border border-gray-200 space-y-1.5">
-                <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded">{cfg.party1Label || 'الطرف الأول (صاحب السلعة)'}</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded">{cfg.party1Label || 'الطرف الأول (صاحب السلعة)'}</span>
+                  {cfg.enableIdentityVerification !== false && (
+                    <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                      <BadgeCheck className="w-3 h-3 text-emerald-600" />
+                      <span>هوية موثقة</span>
+                    </span>
+                  )}
+                </div>
                 <p className="font-extrabold text-gray-900 text-sm">{chat.otherUser.name}</p>
                 <p className="text-gray-500 text-[11px]">المدينة: {chat.otherUser.city || 'الرياض'}</p>
                 <div className="flex items-center gap-1 text-[10px] text-emerald-700 font-bold pt-1 border-t border-gray-100">
@@ -158,7 +182,15 @@ export default function DigitalContractModal({
 
               {/* Party 2 */}
               <div className="bg-white p-3.5 rounded-xl border border-gray-200 space-y-1.5">
-                <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded">{cfg.party2Label || 'الطرف الثاني (مقدم العرض)'}</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded">{cfg.party2Label || 'الطرف الثاني (مقدم العرض)'}</span>
+                  {cfg.enableIdentityVerification !== false && (
+                    <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                      <BadgeCheck className="w-3 h-3 text-emerald-600" />
+                      <span>هوية موثقة</span>
+                    </span>
+                  )}
+                </div>
                 <p className="font-extrabold text-gray-900 text-sm">{currentUser?.name || 'مستخدم المقايضة'}</p>
                 <p className="text-gray-500 text-[11px]">المدينة: {currentUser?.city || 'الرياض'}</p>
                 <div className="flex items-center gap-1 text-[10px] text-emerald-700 font-bold pt-1 border-t border-gray-100">
@@ -278,13 +310,23 @@ export default function DigitalContractModal({
 
         </div>
 
-        {/* Bottom Close Button */}
-        <div className="flex justify-end print:hidden">
+        {/* Bottom Actions */}
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100 print:hidden">
+          <div className="flex items-center space-x-2 space-x-reverse">
+            <button
+              onClick={handlePrintOrPdf}
+              className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center space-x-1.5 space-x-reverse"
+            >
+              <Download className="w-4 h-4" />
+              <span>تحميل العقد بصيغة PDF</span>
+            </button>
+          </div>
+
           <button
             onClick={onClose}
-            className="px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs"
+            className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs rounded-xl transition-all cursor-pointer"
           >
-            إغلاق العقد
+            إغلاق
           </button>
         </div>
 
@@ -292,3 +334,4 @@ export default function DigitalContractModal({
     </div>
   );
 }
+

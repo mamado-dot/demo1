@@ -14,7 +14,10 @@ export interface User {
   isAdmin?: boolean;
   isBanned?: boolean;
   phone?: string;
+  email?: string;
   joinedDate?: string;
+  isVerified?: boolean;
+  isNafathVerified?: boolean;
 }
 
 export interface Listing {
@@ -164,6 +167,8 @@ export interface ContractSettings {
   sealImageUrl?: string;
   showQrCode: boolean;
   showInspectionTerms: boolean;
+  enableIdentityVerification?: boolean;
+  requireNafathForContract?: boolean;
   customClauses: ContractClause[];
 }
 

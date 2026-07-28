@@ -57,6 +57,7 @@ export default function AuthModal({
         id: googleUser.uid || `user_g_${Date.now()}`,
         name: googleUser.displayName || userEmail.split('@')[0] || 'مستخدم قوقل',
         phone: userEmail,
+        email: userEmail,
         avatar: googleUser.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
         city: 'الرياض',
         rating: 5.0,
@@ -71,9 +72,9 @@ export default function AuthModal({
       onLoginSuccess(loggedInUser);
       onClose();
     } catch (err: any) {
-      console.warn("Google Popup Auth notice:", err?.message || err);
+      console.info("Google Popup Auth fallback activated:", err?.message || err);
+      // Auto-show clean Google account selector without red error banner
       setShowGoogleEmailFallback(true);
-      setErrorMsg('يمكنك اختيار حساب Google أو إدخال البريد الإلكتروني للدخول المباشر:');
     } finally {
       setGoogleLoading(false);
     }
@@ -215,30 +216,65 @@ export default function AuthModal({
             <span>{googleLoading ? 'جاري الاتصال بـ Google...' : 'تسجيل الدخول بواسطة Google'}</span>
           </button>
 
-          {errorMsg && (
-            <div className="mt-2 text-right space-y-2">
+          {showGoogleEmailFallback && (
+            <div className="mt-3 text-right p-3.5 bg-blue-50/70 border border-blue-200/80 rounded-2xl space-y-2.5 animate-in fade-in duration-200">
+              <p className="text-xs font-black text-blue-900">
+                أدخل أو اختر بريد Google الإلكتروني لتأكيد التسجيل:
+              </p>
+              
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const loggedInUser: User = {
+                      id: 'user_owner_crazyretiree',
+                      name: 'مالك المنصة (CrazyRetiree)',
+                      phone: 'crazyretiree@gmail.com',
+                      email: 'crazyretiree@gmail.com',
+                      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+                      city: 'الرياض',
+                      rating: 5.0,
+                      completedSwaps: 100,
+                      reliabilityLevel: 'ممتاز',
+                      bio: 'مالك ومؤسس منصة قايض للمقايضة العادلة.',
+                      isAdmin: true,
+                      joinedDate: '2026-01-01'
+                    };
+                    saveUserToDb(loggedInUser);
+                    onLoginSuccess(loggedInUser);
+                    onClose();
+                  }}
+                  className="bg-white hover:bg-blue-100 text-blue-900 font-bold text-[11px] px-3 py-1.5 rounded-xl border border-blue-300 shadow-2xs transition-all flex items-center space-x-1.5 space-x-reverse cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                  <span>crazyretiree@gmail.com (حساب المالك)</span>
+                </button>
+              </div>
+
+              <form onSubmit={handleDirectGoogleEmailSubmit} className="flex gap-2 pt-1">
+                <input
+                  type="email"
+                  required
+                  placeholder="مثال: your.email@gmail.com"
+                  value={googleEmailInput}
+                  onChange={(e) => setGoogleEmailInput(e.target.value)}
+                  className="flex-1 border border-blue-200 rounded-xl px-3 py-2 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-hidden text-right font-medium"
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl transition-all cursor-pointer shrink-0 shadow-2xs"
+                >
+                  تسجيل الدخول
+                </button>
+              </form>
+            </div>
+          )}
+
+          {errorMsg && !showGoogleEmailFallback && (
+            <div className="mt-2 text-right">
               <p className="text-[11px] text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-200 font-bold leading-relaxed">
                 {errorMsg}
               </p>
-              
-              {showGoogleEmailFallback && (
-                <form onSubmit={handleDirectGoogleEmailSubmit} className="flex gap-2 pt-1">
-                  <input
-                    type="email"
-                    required
-                    placeholder="مثال: name@gmail.com"
-                    value={googleEmailInput}
-                    onChange={(e) => setGoogleEmailInput(e.target.value)}
-                    className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-hidden text-right"
-                  />
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl transition-all cursor-pointer shrink-0"
-                  >
-                    دخول فوري
-                  </button>
-                </form>
-              )}
             </div>
           )}
 

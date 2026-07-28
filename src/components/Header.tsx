@@ -217,22 +217,12 @@ export default function Header({
 
                       <button
                         onClick={() => {
-                          setActiveTab('chat');
-                          setShowProfileMenu(false);
-                        }}
-                        className={`w-full flex items-center ${language === 'ar' ? 'text-right' : 'text-left'} px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors duration-150 cursor-pointer`}
-                      >
-                        <span>{t.chats}</span>
-                      </button>
-
-                      <button
-                        onClick={() => {
                           setActiveTab('my_swaps');
                           setShowProfileMenu(false);
                         }}
                         className={`w-full flex items-center ${language === 'ar' ? 'text-right' : 'text-left'} px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors duration-150 cursor-pointer`}
                       >
-                        <span>{language === 'en' ? 'Swap Offers' : 'عروض المقايضة'}</span>
+                        <span>{language === 'en' ? 'My Swaps' : 'مقايضاتي'}</span>
                       </button>
 
                       {currentUser?.isAdmin && (
@@ -272,7 +262,7 @@ export default function Header({
                 className="bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl px-3.5 py-2 transition-all cursor-pointer flex items-center space-x-1.5 space-x-reverse shadow-xs"
               >
                 <LogIn className="w-4 h-4" />
-                <span>{language === 'en' ? 'Sign In / Register' : 'تسجيل الدخول / حساب جديد'}</span>
+                <span>{language === 'en' ? 'Sign In' : 'تسجيل الدخول'}</span>
               </button>
             </div>
           )}
@@ -354,21 +344,21 @@ export default function Header({
             <span className="text-[10px] font-bold mt-0.5">{language === 'en' ? 'Notifications' : 'الإشعارات'}</span>
           </button>
 
-          {/* 5. الرسائل (Far Left in RTL) */}
+          {/* 5. مقايضاتي (Far Left in RTL) */}
           <button
             onClick={() => {
               if (!currentUser) {
                 onOpenAuthModal?.();
               } else {
-                setActiveTab('chat');
+                setActiveTab('my_swaps');
               }
             }}
             className={`flex-1 flex flex-col items-center justify-center py-1 transition-all duration-150 relative cursor-pointer ${
-              activeTab === 'chat' ? 'text-brand-600 font-black' : 'text-gray-400 hover:text-gray-600'
+              activeTab === 'my_swaps' ? 'text-brand-600 font-black' : 'text-gray-400 hover:text-gray-600'
             }`}
           >
-            <MessageSquare className="w-5 h-5" />
-            <span className="text-[10px] font-bold mt-0.5">{language === 'en' ? 'Messages' : 'الرسائل'}</span>
+            <ArrowLeftRight className="w-5 h-5" />
+            <span className="text-[10px] font-bold mt-0.5">{language === 'en' ? 'My Swaps' : 'مقايضاتي'}</span>
           </button>
 
         </div>

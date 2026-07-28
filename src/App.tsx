@@ -1141,48 +1141,51 @@ export default function App() {
             {activeTab === 'feed' && (
               <div className="space-y-8" id="feed_view_panel">
                 
-                {/* Hero Platform Section with 2 columns */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-transparent py-4 text-start" id="hero_platform_section">
+                {/* Hero Platform Section with side-by-side layout */}
+                <div className="grid grid-cols-12 gap-3 sm:gap-6 lg:gap-8 items-center bg-transparent py-2 sm:py-4 text-start" id="hero_platform_section">
                   
                   {/* Column 1: Slogan/Phrase & Description (Right side on desktop in RTL) */}
-                  <div className="space-y-6 flex flex-col justify-center order-1" id="hero_slogan_cell">
+                  <div className="col-span-7 sm:col-span-7 lg:col-span-7 space-y-3 sm:space-y-5 flex flex-col justify-center order-1" id="hero_slogan_cell">
                     <div className="flex justify-start">
-                      <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold bg-[#f5ebd9]/65 text-[#85532a] border border-[#ebdccb] space-x-1 ${language === 'ar' ? 'space-x-reverse' : ''}`}>
+                      <span className={`inline-flex items-center px-2.5 py-1 sm:px-4 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold bg-[#f5ebd9]/65 text-[#85532a] border border-[#ebdccb] space-x-1 ${language === 'ar' ? 'space-x-reverse' : ''}`}>
                         <span>{brandConfig.brandTagline || (language === 'en' ? 'Complete Barter Platform' : 'منصة مقايضة كاملة')}</span>
                         <span className="text-[#a16207]">✨</span>
                       </span>
                     </div>
 
-                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 leading-tight whitespace-pre-line">
+                    <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 leading-tight whitespace-pre-line">
                       {platformSlogan}
                     </h1>
 
-                    <p className="text-xs sm:text-sm text-gray-500 leading-relaxed max-w-xl">
+                    <p className="text-[11px] sm:text-xs md:text-sm text-gray-500 leading-relaxed max-w-xl">
                       {platformDescription || t.heroDesc}
                     </p>
 
-                    <div className="flex flex-wrap items-center gap-3 pt-2">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-1 sm:pt-2">
                       <button
                         onClick={() => handleTabChange('add')}
-                        className="px-6 py-3 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-brand-100 cursor-pointer"
+                        className="px-3.5 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-[11px] sm:text-sm transition-all shadow-md shadow-brand-100 cursor-pointer"
                       >
                         {t.addYourProduct}
                       </button>
                       <button
                         onClick={() => setActiveTab('offers_page')}
-                        className="px-6 py-3 rounded-2xl border border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold text-xs sm:text-sm transition-all cursor-pointer"
+                        className="px-3.5 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl border border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold text-[11px] sm:text-sm transition-all cursor-pointer"
                       >
                         {t.browseProducts}
                       </button>
                     </div>
                   </div>
 
-                  {/* Column 2: Illustration Image (Shown ONLY on laptop/desktop without frame border) */}
-                  <div className="hidden md:flex items-center justify-center relative h-64 md:h-80 lg:h-96 order-2 bg-transparent p-2" id="hero_image_cell">
+                  {/* Column 2: Hero Illustration Image (Side-by-side with text) */}
+                  <div className="col-span-5 sm:col-span-5 lg:col-span-5 flex items-center justify-center relative h-36 sm:h-56 md:h-72 lg:h-96 order-2 bg-transparent p-1" id="hero_image_cell">
                     <img 
-                      src={platformImageUrl} 
+                      src={platformImageUrl || 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80'} 
                       alt="Barter illustration" 
-                      className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-102"
+                      className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-102 rounded-2xl shadow-xs"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80';
+                      }}
                       referrerPolicy="no-referrer"
                     />
                   </div>

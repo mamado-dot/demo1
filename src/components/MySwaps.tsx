@@ -135,9 +135,9 @@ export default function MySwaps({
       
       {/* Main Section Title & Description */}
       <div className="space-y-1" id="swaps_main_heading">
-        <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">عروض المقايضة</h1>
+        <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">مقايضاتي</h1>
         <p className="text-xs sm:text-sm text-gray-500 font-medium">
-          إدارة ومتابعة جميع عروض المقايضة الواردة والصادرة بكل سهولة.
+          إدارة ومتابعة جميع طلبات المقايضة والمحادثات المرتبطة بها بكل سهولة.
         </p>
       </div>
 
