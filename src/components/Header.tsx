@@ -28,6 +28,7 @@ interface HeaderProps {
   setActiveTab: (tab: string) => void;
   notifications: Notification[];
   markNotificationAsRead: (id: string) => void;
+  markAllNotificationsAsRead?: () => void;
   onLogout: () => void;
   brandConfig: BrandConfig;
   language: Language;
@@ -43,6 +44,7 @@ export default function Header({
   setActiveTab,
   notifications,
   markNotificationAsRead,
+  markAllNotificationsAsRead,
   onLogout,
   brandConfig,
   language,
@@ -55,6 +57,18 @@ export default function Header({
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const unreadCount = notifications.filter(n => !n.read).length;
   const t = translations[language];
+
+  const handleToggleNotifications = () => {
+    const nextShow = !showNotifications;
+    setShowNotifications(nextShow);
+    if (nextShow && unreadCount > 0) {
+      if (markAllNotificationsAsRead) {
+        markAllNotificationsAsRead();
+      } else {
+        notifications.filter(n => !n.read).forEach(n => markNotificationAsRead(n.id));
+      }
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white border-b border-gray-100 shadow-xs" id="app_header">
@@ -118,12 +132,12 @@ export default function Header({
                 <div className="relative">
                   <button
                     id="notif_bell_btn"
-                    onClick={() => setShowNotifications(!showNotifications)}
+                    onClick={handleToggleNotifications}
                     className="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-50 rounded-full relative transition-colors duration-150 cursor-pointer"
                   >
                     <Bell className="w-5.5 h-5.5" />
                     {unreadCount > 0 && (
-                      <span id="unread_notif_count" className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white animate-bounce">
+                      <span id="unread_notif_count" className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
                         {unreadCount}
                       </span>
                     )}
@@ -340,7 +354,7 @@ export default function Header({
               if (!currentUser) {
                 onOpenAuthModal?.();
               } else {
-                setShowNotifications(!showNotifications);
+                handleToggleNotifications();
               }
             }}
             className={`flex-1 flex flex-col items-center justify-center py-1 transition-all duration-150 relative cursor-pointer ${

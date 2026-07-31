@@ -138,23 +138,26 @@ export default function BarterOfferModal({
   const activeCustomFields = options.customFields?.filter(f => f.isEnabled) || [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-xs overflow-y-auto" id="barter_offer_modal" style={{ direction: 'rtl' }}>
-      <div className="bg-white rounded-3xl max-w-2xl w-full p-6 text-right border border-gray-100 shadow-2xl relative my-8">
+    <div className="max-w-4xl mx-auto px-2 sm:px-4 py-6 text-right" id="barter_offer_page" style={{ direction: 'rtl' }}>
+      <div className="bg-white rounded-3xl p-6 sm:p-8 text-right border border-gray-200 shadow-xs relative my-4 space-y-6">
         
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-5 left-5 p-2 bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-full transition-colors cursor-pointer"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        {/* Navigation / Header */}
+        <div className="flex items-center justify-between pb-4 border-b border-gray-150" id="barter_modal_header">
+          <div>
+            <h2 className="text-base sm:text-xl font-extrabold text-gray-900">تقديم عرض مقايضة مباشر</h2>
+            <p className="text-xs text-gray-500 font-medium mt-0.5">
+              حدد السلعة التي ترغب بمقايضتها والتفاصيل المطلوبة لإرسال العرض مباشرة.
+            </p>
+          </div>
 
-        {/* Modal Title */}
-        <div className="mb-6 pb-4 border-b border-gray-100" id="barter_modal_header">
-          <h2 className="text-lg font-black text-gray-900">تقديم عرض مقايضة مباشر</h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            حدد المنتج الذي ترغب بمقايضته والتفاصيل المطلوبة لإرسال طلب المقايضة إلى صاحب العرض.
-          </p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex items-center space-x-1.5 space-x-reverse bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer"
+          >
+            <span>العودة</span>
+            <X className="w-4 h-4 text-gray-600" />
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

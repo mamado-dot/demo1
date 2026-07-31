@@ -9,7 +9,7 @@ interface OnboardingProps {
 }
 
 export default function Onboarding({ onLogin, language = 'ar' }: OnboardingProps) {
-  const [mode, setMode] = useState<'select' | 'create'>('select');
+  const [mode, setMode] = useState<'select' | 'create'>('create');
   const [name, setName] = useState('');
   const [city, setCity] = useState<City>('الرياض');
   const [bio, setBio] = useState('');

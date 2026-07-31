@@ -121,7 +121,7 @@ export default function ListingCard({
       <div className="hidden sm:flex sm:flex-col justify-between h-full">
         {/* Top Image Container */}
         <div 
-          className="w-full h-56 bg-gray-100 overflow-hidden relative border-b border-gray-100/60 shrink-0" 
+          className="w-full h-44 bg-gray-100 overflow-hidden relative border-b border-gray-100/60 shrink-0" 
           id={`listing_img_container_desktop_${listing.id}`}
         >
           <img
@@ -157,7 +157,7 @@ export default function ListingCard({
         </div>
 
         {/* Advertiser Name & City Directly Under the Photo */}
-        <div className="bg-gray-50/90 px-4 py-2 border-b border-gray-100/80 flex items-center justify-between text-xs text-gray-700">
+        <div className="bg-gray-50/90 px-3.5 py-1.5 border-b border-gray-100/80 flex items-center justify-between text-xs text-gray-700">
           <div 
             className="flex items-center space-x-1 space-x-reverse truncate min-w-0 cursor-pointer group/owner hover:text-brand-700"
             onClick={(e) => {
@@ -171,34 +171,34 @@ export default function ListingCard({
 
           <div className="flex items-center space-x-1 space-x-reverse text-gray-500 text-xs font-semibold shrink-0">
             <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-            <span>{listing.city}، السعودية</span>
+            <span>{listing.city}</span>
           </div>
         </div>
 
         {/* Card Body */}
-        <div className="p-5 flex flex-col justify-between flex-1 text-right min-w-0">
+        <div className="p-3.5 flex flex-col justify-between flex-1 text-right min-w-0">
           <div>
-            <h3 className="font-extrabold text-gray-900 text-base leading-snug line-clamp-1 group-hover:text-brand-700 transition-colors">
+            <h3 className="font-extrabold text-gray-900 text-sm leading-tight line-clamp-1 group-hover:text-brand-700 transition-colors">
               {listing.title}
             </h3>
 
-            <div className="flex items-center justify-center my-2" id={`swap_symbol_${listing.id}`}>
+            <div className="flex items-center justify-center my-1.5" id={`swap_symbol_${listing.id}`}>
               <div className="h-px bg-gray-100 flex-1" />
-              <div className="mx-2 w-7 h-7 rounded-full bg-amber-50 border border-amber-200/80 flex items-center justify-center text-[#85532a] shrink-0 shadow-xs">
-                <ArrowLeftRight className="w-3.5 h-3.5" />
+              <div className="mx-1.5 w-6 h-6 rounded-full bg-amber-50 border border-amber-200/80 flex items-center justify-center text-[#85532a] shrink-0 shadow-xs">
+                <ArrowLeftRight className="w-3 h-3" />
               </div>
               <div className="h-px bg-gray-100 flex-1" />
             </div>
 
             <div>
-              <span className="line-clamp-1 text-sm text-emerald-800 font-extrabold">{listing.wantedInReturn}</span>
+              <span className="line-clamp-1 text-xs text-emerald-800 font-extrabold">{listing.wantedInReturn}</span>
             </div>
           </div>
 
           {listing.cashDifference ? (
-            <div className="pt-2 mt-2 border-t border-dashed border-gray-100 flex items-center justify-between text-xs">
+            <div className="pt-1.5 mt-1.5 border-t border-dashed border-gray-100 flex items-center justify-between text-xs">
               <span className="text-gray-400 text-[10px]">فارق كاش إضافي:</span>
-              <span className="text-[11px] font-black text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md">
+              <span className="text-[10px] font-black text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md">
                 + {listing.cashDifference} ﷼
               </span>
             </div>

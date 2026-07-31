@@ -33,7 +33,8 @@ import {
   subscribeToSiteSettings, 
   saveSiteSettingsToDb,
   subscribeToPlatformSettings,
-  savePlatformSettingsToDb
+  savePlatformSettingsToDb,
+  clearAllDemoDataFromDb
 } from './services/firebaseService';
 
 const INITIAL_QUESTIONS: ListingQuestion[] = [];
@@ -312,14 +313,15 @@ export default function App() {
     }
   }, [brandConfig]);
 
+  // Clear demo data on app load
+  useEffect(() => {
+    clearAllDemoDataFromDb().catch(() => {});
+  }, []);
+
   // Firebase Realtime Subscriptions
   useEffect(() => {
     const unsubListings = subscribeToListings((data) => {
-      if (data && data.length > 0) {
-        setListings(data);
-      } else {
-        setListings(INITIAL_LISTINGS);
-      }
+      setListings(data || []);
     });
 
     const unsubUsers = subscribeToUsers((data) => {
@@ -1076,7 +1078,11 @@ export default function App() {
   };
 
   const markNotificationAsRead = (id: string) => {
-    setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const markAllNotificationsAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
   // SIMULATOR HANDLERS
@@ -1147,6 +1153,7 @@ export default function App() {
         setActiveTab={handleTabChange}
         notifications={notifications}
         markNotificationAsRead={markNotificationAsRead}
+        markAllNotificationsAsRead={markAllNotificationsAsRead}
         onLogout={handleLogout}
         brandConfig={brandConfig}
         language={language}
@@ -1234,26 +1241,44 @@ export default function App() {
                     <h3 className="font-extrabold text-gray-905 text-base sm:text-lg">{language === 'en' ? 'Latest Added Offers' : 'أحدث العروض المضافة'}</h3>
                   </div>
 
-                  <div className={`grid ${getGridColsClass(siteSettings.gridColumns)} gap-6`} id="home_listings_grid">
-                    {listings
-                      .filter(l => l.status === 'نشط')
-                      .slice(0, homeListingsLimit)
-                      .map((listing) => (
-                        <ListingCard
-                          key={listing.id}
-                          listing={listing}
-                          currentUser={currentUser}
-                          onInitiateSwap={handleInitiateSwap}
-                          onViewDetails={(listing) => {
-                            setSelectedListing(listing);
-                            setActiveTab('details_page');
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                          }}
-                          onViewProfile={handleViewProfile}
-                        />
-                      ))
-                    }
-                  </div>
+                  {listings.filter(l => l.status === 'نشط').length === 0 ? (
+                    <div className="bg-white rounded-3xl border border-gray-150 py-12 px-6 text-center text-gray-500 flex flex-col items-center justify-center space-y-3" id="home_listings_empty_state">
+                      <div className="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600 mb-1">
+                        <Sparkles className="w-6 h-6 text-brand-600" />
+                      </div>
+                      <p className="font-extrabold text-gray-900 text-base">لا توجد عروض مضافة حالياً</p>
+                      <p className="text-xs text-gray-500 max-w-md leading-relaxed font-medium">
+                        المنصة خالية وجاهزة لاستقبال عروضك. كن أول من يضيف عرضاً للمقايضة وشارك سلعك أو خدماتك الآن!
+                      </p>
+                      <button
+                        onClick={() => handleTabChange('add')}
+                        className="mt-2 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs px-6 py-3 rounded-2xl shadow-xs transition-all cursor-pointer"
+                      >
+                        + إضافة أول عرض للمقايضة
+                      </button>
+                    </div>
+                  ) : (
+                    <div className={`grid ${getGridColsClass(siteSettings.gridColumns)} gap-6`} id="home_listings_grid">
+                      {listings
+                        .filter(l => l.status === 'نشط')
+                        .slice(0, homeListingsLimit)
+                        .map((listing) => (
+                          <ListingCard
+                            key={listing.id}
+                            listing={listing}
+                            currentUser={currentUser}
+                            onInitiateSwap={handleInitiateSwap}
+                            onViewDetails={(listing) => {
+                              setSelectedListing(listing);
+                              setActiveTab('details_page');
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            onViewProfile={handleViewProfile}
+                          />
+                        ))
+                      }
+                    </div>
+                  )}
 
                   {listings.filter(l => l.status === 'نشط').length > homeListingsLimit && (
                     <div className="flex justify-center pt-4" id="home_more_btn_container">

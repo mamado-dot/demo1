@@ -231,7 +231,7 @@ export default function MyProducts({
               >
                 <div>
                   {/* Image & Top Badges */}
-                  <div className="relative h-44 overflow-hidden bg-gray-100">
+                  <div className="relative h-36 overflow-hidden bg-gray-100">
                     <img 
                       src={listing.imageUrl} 
                       alt={listing.title} 
@@ -240,24 +240,21 @@ export default function MyProducts({
                     />
 
                     {/* Status Badges */}
-                    <div className="absolute top-3 right-3 flex flex-wrap gap-1.5">
-                      <span className="bg-emerald-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-2xs">
+                    <div className="absolute top-2.5 right-2.5 flex flex-wrap gap-1">
+                      <span className="bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 rounded-lg shadow-2xs">
                         {listing.type}
-                      </span>
-                      <span className="bg-gray-900/80 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-lg">
-                        {listing.category}
                       </span>
                     </div>
 
-                    <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-end">
+                    <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 items-end">
                       {isHidden && (
-                        <span className="bg-amber-500 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-md flex items-center gap-1">
+                        <span className="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-lg shadow-md flex items-center gap-1">
                           <EyeOff className="w-3 h-3" />
                           <span>مخفي</span>
                         </span>
                       )}
                       {isCompleted && (
-                        <span className="bg-blue-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-md flex items-center gap-1">
+                        <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-lg shadow-md flex items-center gap-1">
                           <CheckCircle2 className="w-3 h-3" />
                           <span>تمت المقايضة</span>
                         </span>
@@ -265,16 +262,16 @@ export default function MyProducts({
                     </div>
 
                     {/* City Badge */}
-                    <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md text-gray-900 text-[10px] font-extrabold px-2.5 py-1 rounded-md shadow-2xs flex items-center gap-1">
+                    <div className="absolute bottom-2.5 right-2.5 bg-white/90 backdrop-blur-md text-gray-900 text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow-2xs flex items-center gap-1">
                       <MapPin className="w-3 h-3 text-emerald-600" />
                       <span>{listing.city}</span>
                     </div>
                   </div>
 
                   {/* Content Details */}
-                  <div className="p-4 space-y-2.5">
+                  <div className="p-3 space-y-1.5">
                     <div className="flex justify-between items-start gap-2">
-                      <h3 className="font-extrabold text-gray-900 text-sm leading-snug line-clamp-1">
+                      <h3 className="font-extrabold text-gray-900 text-sm leading-tight line-clamp-1">
                         {listing.title}
                       </h3>
                       <button
@@ -285,12 +282,12 @@ export default function MyProducts({
                       </button>
                     </div>
 
-                    <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                    <p className="text-[11px] text-gray-500 line-clamp-1 leading-snug">
                       {listing.description}
                     </p>
 
-                    <div className="bg-gray-50 rounded-xl p-2.5 border border-gray-100 space-y-1">
-                      <div className="text-[11px] font-bold text-gray-400">المطلوب بالمقابل:</div>
+                    <div className="bg-gray-50 rounded-xl p-2 border border-gray-100 space-y-0.5">
+                      <div className="text-[10px] font-bold text-gray-400">المطلوب بالمقابل:</div>
                       <div className="text-xs font-extrabold text-emerald-900 line-clamp-1">
                         {listing.wantedInReturn}
                       </div>
@@ -304,7 +301,7 @@ export default function MyProducts({
                 </div>
 
                 {/* Bottom Action Controls */}
-                <div className="p-3 bg-gray-50/70 border-t border-gray-100 flex items-center justify-between gap-1.5">
+                <div className="p-2.5 bg-gray-50/70 border-t border-gray-100 flex items-center justify-between gap-1.5">
                   
                   {/* Edit Button */}
                   <button

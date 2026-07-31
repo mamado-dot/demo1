@@ -130,6 +130,21 @@ export default function MySwaps({
     setRatingTargetUser(null);
   };
 
+  if (contractChat) {
+    return (
+      <div className="py-2">
+        <DigitalContractModal
+          isOpen={true}
+          onClose={() => setContractChat(null)}
+          chat={contractChat}
+          currentUser={currentUser}
+          listings={listings}
+          contractSettings={contractSettings}
+        />
+      </div>
+    );
+  }
+
   return (
     <div id="my_swaps_container" className="w-full px-1 sm:px-2 py-6 space-y-6 text-right" style={{ direction: 'rtl' }}>
       
@@ -311,30 +326,30 @@ export default function MySwaps({
         )}
       </div>
 
-      {/* FULL OFFER DETAILS MODAL (نافذة تفاصيل المقايضة الكاملة) */}
+      {/* FULL OFFER DETAILS PAGE (صفحة تفاصيل المقايضة الكاملة) */}
       {selectedChatDetails && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-gray-900/60 backdrop-blur-xs overflow-y-auto" id="swap_details_modal">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-6 text-right border border-gray-100 shadow-2xl relative my-8 space-y-6 max-h-[90vh] overflow-y-auto">
-            
-            {/* Modal Top Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-              <div className="flex items-center space-x-2 space-x-reverse">
-                <div className="w-8 h-8 rounded-xl bg-gray-900 text-white flex items-center justify-center font-black text-xs">
-                  <ArrowLeftRight className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="font-black text-gray-900 text-base">تفاصيل عرض المقايضة</h3>
-                  <p className="text-[11px] text-gray-500 font-medium">معلومات العرض الكاملة وقرارات المقايضة</p>
-                </div>
+        <div className="bg-white rounded-3xl max-w-4xl mx-auto p-6 sm:p-8 text-right border border-gray-200 shadow-xs relative my-6 space-y-6" id="swap_details_page">
+          
+          {/* Page Top Navigation Bar */}
+          <div className="flex items-center justify-between pb-4 border-b border-gray-150">
+            <div className="flex items-center space-x-3 space-x-reverse">
+              <div className="w-10 h-10 rounded-2xl bg-gray-900 text-white flex items-center justify-center font-black">
+                <ArrowLeftRight className="w-5 h-5 text-amber-300" />
               </div>
-
-              <button 
-                onClick={() => setSelectedChatDetails(null)}
-                className="p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div>
+                <h2 className="font-extrabold text-gray-900 text-base sm:text-lg">تفاصيل عرض المقايضة</h2>
+                <p className="text-xs text-gray-500 font-medium">معلومات العرض الكاملة وقرارات المقايضة</p>
+              </div>
             </div>
+
+            <button 
+              onClick={() => setSelectedChatDetails(null)}
+              className="flex items-center space-x-1.5 space-x-reverse bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer"
+            >
+              <span>العودة لصفقاتي</span>
+              <X className="w-4 h-4 text-gray-600" />
+            </button>
+          </div>
 
             {/* Other User Info Card */}
             {(() => {
@@ -600,7 +615,6 @@ export default function MySwaps({
               );
             })()}
 
-          </div>
         </div>
       )}
 

@@ -92,6 +92,21 @@ export default function ChatSection({
   const otherConfirmed = isOwner ? activeChat?.offererConfirmed : activeChat?.ownerConfirmed;
   const bothConfirmed = activeChat?.ownerConfirmed && activeChat?.offererConfirmed;
 
+  if (isContractModalOpen && activeChat) {
+    return (
+      <div className="py-2">
+        <DigitalContractModal
+          isOpen={true}
+          onClose={() => setIsContractModalOpen(false)}
+          chat={activeChat}
+          currentUser={currentUser}
+          listings={userListings}
+          contractSettings={contractSettings}
+        />
+      </div>
+    );
+  }
+
   return (
     <div id="chat_section_container" className="bg-white border border-gray-100 rounded-3xl min-h-[620px] overflow-hidden flex flex-col md:flex-row shadow-sm" style={{ direction: 'rtl' }}>
       

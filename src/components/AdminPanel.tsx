@@ -8,7 +8,7 @@ import {
   User, Listing, Chat, CustomPage, AdBanner, SiteSettings, BrandConfig, 
   BarterOptions, ContractSettings, ContractClause, CustomBarterField 
 } from '../types';
-import { savePlatformSettingsToDb, saveUserToDb, updateListingInDb, deleteListingFromDb } from '../services/firebaseService';
+import { savePlatformSettingsToDb, saveUserToDb, updateListingInDb, deleteListingFromDb, clearAllListingsFromDb } from '../services/firebaseService';
 
 interface AdminPanelProps {
   brandConfig: BrandConfig;
@@ -1004,32 +1004,46 @@ export default function AdminPanel({
                   </h2>
                 </div>
 
-                {/* Filter Status Buttons */}
-                <div className="flex bg-gray-100 p-1 rounded-xl text-xs font-bold space-x-1 space-x-reverse">
+                {/* Filter Status Buttons & Clear All Action */}
+                <div className="flex flex-wrap items-center gap-2">
                   <button
-                    onClick={() => setListingFilterStatus('all')}
-                    className={`px-3 py-1 rounded-lg cursor-pointer ${listingFilterStatus === 'all' ? 'bg-white text-gray-900 shadow-2xs' : 'text-gray-500'}`}
+                    onClick={async () => {
+                      if (window.confirm('هل أنت تأكد من مسح جميع المنتجات والعروض الحالية للبدء بحساب نظيف للجميع؟')) {
+                        await clearAllListingsFromDb();
+                      }
+                    }}
+                    className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center space-x-1 space-x-reverse"
                   >
-                    الكل
+                    <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                    <span>حذف كافة المنتجات المضافة</span>
                   </button>
-                  <button
-                    onClick={() => setListingFilterStatus('active')}
-                    className={`px-3 py-1 rounded-lg cursor-pointer ${listingFilterStatus === 'active' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-gray-500'}`}
-                  >
-                    النشطة
-                  </button>
-                  <button
-                    onClick={() => setListingFilterStatus('completed')}
-                    className={`px-3 py-1 rounded-lg cursor-pointer ${listingFilterStatus === 'completed' ? 'bg-white text-blue-700 shadow-2xs' : 'text-gray-500'}`}
-                  >
-                    المكتملة
-                  </button>
-                  <button
-                    onClick={() => setListingFilterStatus('hidden')}
-                    className={`px-3 py-1 rounded-lg cursor-pointer ${listingFilterStatus === 'hidden' ? 'bg-white text-amber-700 shadow-2xs' : 'text-gray-500'}`}
-                  >
-                    المخفية
-                  </button>
+
+                  <div className="flex bg-gray-100 p-1 rounded-xl text-xs font-bold space-x-1 space-x-reverse">
+                    <button
+                      onClick={() => setListingFilterStatus('all')}
+                      className={`px-3 py-1 rounded-lg cursor-pointer ${listingFilterStatus === 'all' ? 'bg-white text-gray-900 shadow-2xs' : 'text-gray-500'}`}
+                    >
+                      الكل
+                    </button>
+                    <button
+                      onClick={() => setListingFilterStatus('active')}
+                      className={`px-3 py-1 rounded-lg cursor-pointer ${listingFilterStatus === 'active' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-gray-500'}`}
+                    >
+                      النشطة
+                    </button>
+                    <button
+                      onClick={() => setListingFilterStatus('completed')}
+                      className={`px-3 py-1 rounded-lg cursor-pointer ${listingFilterStatus === 'completed' ? 'bg-white text-blue-700 shadow-2xs' : 'text-gray-500'}`}
+                    >
+                      المكتملة
+                    </button>
+                    <button
+                      onClick={() => setListingFilterStatus('hidden')}
+                      className={`px-3 py-1 rounded-lg cursor-pointer ${listingFilterStatus === 'hidden' ? 'bg-white text-amber-700 shadow-2xs' : 'text-gray-500'}`}
+                    >
+                      المخفية
+                    </button>
+                  </div>
                 </div>
               </div>
 

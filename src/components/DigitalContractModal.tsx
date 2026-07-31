@@ -79,30 +79,31 @@ export default function DigitalContractModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-gray-900/70 backdrop-blur-xs overflow-y-auto" id="digital_contract_modal">
-      <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 text-right border border-gray-200 shadow-2xl relative my-6 space-y-6 max-h-[92vh] overflow-y-auto print:max-h-none print:shadow-none print:border-none print:p-0">
-        
-        {/* Top Header / Modal Actions */}
-        <div className="flex items-center justify-between pb-4 border-b border-gray-150 print:hidden">
-          <div className="flex items-center space-x-2 space-x-reverse">
-            <div className="w-9 h-9 rounded-xl bg-[#786142] text-white flex items-center justify-center font-black">
-              <FileText className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-black text-gray-900 text-base">العقد الإلكتروني الموثق للمقايضة</h3>
-              <p className="text-[11px] text-gray-500 font-medium">وثيقة اتفاق ملزمة وموثقة رقمياً</p>
-            </div>
+    <div className="max-w-4xl mx-auto px-2 sm:px-4 py-6 text-right" id="digital_contract_view">
+      
+      {/* Top Header / Page Navigation */}
+      <div className="flex items-center justify-between mb-6 bg-white p-4 rounded-2xl border border-gray-200 shadow-xs print:hidden">
+        <div className="flex items-center space-x-3 space-x-reverse">
+          <div className="w-10 h-10 rounded-xl bg-[#786142] text-white flex items-center justify-center font-black">
+            <FileText className="w-5 h-5" />
           </div>
-
-          <button 
-            onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div>
+            <h2 className="font-extrabold text-gray-900 text-base sm:text-lg">العقد الإلكتروني الموثق للمقايضة</h2>
+            <p className="text-xs text-gray-500 font-medium">وثيقة اتفاق ملزمة وموثقة رقمياً</p>
+          </div>
         </div>
 
-        {/* PRINTABLE CONTRACT DOCUMENT BODY */}
+        <button 
+          onClick={onClose}
+          className="flex items-center space-x-1.5 space-x-reverse bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer"
+        >
+          <span>العودة</span>
+          <X className="w-4 h-4 text-gray-600" />
+        </button>
+      </div>
+
+      {/* PRINTABLE CONTRACT DOCUMENT BODY */}
+      <div className="bg-white rounded-3xl p-6 sm:p-10 text-right border border-gray-200 shadow-xs space-y-6 print:shadow-none print:border-none print:p-0">
         <div className="space-y-6 bg-gradient-to-b from-amber-50/20 via-white to-white p-6 sm:p-8 rounded-2xl border border-amber-200/80 shadow-xs relative">
           
           {/* Watermark Seal */}
@@ -113,21 +114,6 @@ export default function DigitalContractModal({
           {/* Official Document Banner */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b-2 border-[#786142]/30 pb-5">
             <div>
-              <div className="flex flex-wrap items-center gap-2 mb-1">
-                <span className="bg-[#786142] text-white text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-wider">
-                  {cfg.documentBadgeText || 'وثيقة رسمية'}
-                </span>
-                <span className="text-emerald-700 text-xs font-bold flex items-center gap-1">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span>موثق بالكامل</span>
-                </span>
-                {cfg.enableIdentityVerification !== false && (
-                  <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1">
-                    <BadgeCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>توثيق النفاذ الوطني (NAFATH)</span>
-                  </span>
-                )}
-              </div>
               <h1 className="text-xl sm:text-2xl font-black text-gray-900">{cfg.contractTitle || 'عقد مقايضة وتنازل رسمية'}</h1>
               <p className="text-xs text-gray-500 font-medium mt-0.5">{cfg.contractSubtitle || 'منصة قايض السعودية للمقايضة المباشرة'}</p>
             </div>
@@ -284,7 +270,7 @@ export default function DigitalContractModal({
             onClick={onClose}
             className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs rounded-xl transition-all cursor-pointer"
           >
-            إغلاق
+            العودة
           </button>
         </div>
 

@@ -3,6 +3,7 @@ import {
   doc, 
   setDoc, 
   getDoc,
+  getDocs,
   onSnapshot, 
   addDoc, 
   updateDoc, 
@@ -21,8 +22,8 @@ export function subscribeToListings(callback: (listings: Listing[]) => void) {
 
     snapshot.forEach((docSnap) => {
       const id = docSnap.id;
-      // Filter out demo listings if present in DB
-      if (id.startsWith('listing_') && !isNaN(Number(id.replace('listing_', '')))) {
+      // Filter out demo listings if present in DB (e.g., listing_1, listing_2, etc.)
+      if (id.startsWith('listing_') && (!isNaN(Number(id.replace('listing_', ''))) || id.length < 15)) {
         deleteDoc(doc(db, 'listings', id)).catch(() => {});
         return;
       }
@@ -62,6 +63,50 @@ export async function deleteListingFromDb(id: string) {
   await deleteDoc(doc(db, 'listings', id));
 }
 
+export async function clearAllListingsFromDb() {
+  try {
+    const listingsRef = collection(db, 'listings');
+    const snapshot = await getDocs(listingsRef);
+    const deletePromises = snapshot.docs.map((docSnap) => deleteDoc(doc(db, 'listings', docSnap.id)));
+    await Promise.all(deletePromises);
+  } catch (err) {
+    console.error("Error clearing all listings:", err);
+  }
+}
+
+export async function clearAllDemoDataFromDb() {
+  try {
+    // Clear all listings
+    await clearAllListingsFromDb();
+
+    // Clear demo users except owner
+    const usersRef = collection(db, 'users');
+    const userSnapshot = await getDocs(usersRef);
+    const userDeletePromises = userSnapshot.docs.map((docSnap) => {
+      const u = docSnap.data() as User;
+      if (docSnap.id !== 'user_owner_crazyretiree' && u.email !== 'crazyretiree@gmail.com' && u.phone !== 'crazyretiree@gmail.com') {
+        return deleteDoc(doc(db, 'users', docSnap.id));
+      }
+      return Promise.resolve();
+    });
+    await Promise.all(userDeletePromises);
+
+    // Clear all chats
+    const chatsRef = collection(db, 'chats');
+    const chatSnapshot = await getDocs(chatsRef);
+    const chatDeletePromises = chatSnapshot.docs.map((docSnap) => deleteDoc(doc(db, 'chats', docSnap.id)));
+    await Promise.all(chatDeletePromises);
+
+    // Clear all questions
+    const qRef = collection(db, 'questions');
+    const qSnapshot = await getDocs(qRef);
+    const qDeletePromises = qSnapshot.docs.map((docSnap) => deleteDoc(doc(db, 'questions', docSnap.id)));
+    await Promise.all(qDeletePromises);
+  } catch (err) {
+    console.error("Error clearing demo data:", err);
+  }
+}
+
 // 2. USERS
 export function subscribeToUsers(callback: (users: User[]) => void) {
   const usersRef = collection(db, 'users');
@@ -87,7 +132,7 @@ export function subscribeToUsers(callback: (users: User[]) => void) {
     snapshot.forEach((docSnap) => {
       const id = docSnap.id;
       // Clean demo users if present
-      if (['user_admin', 'user_ahmed', 'user_sara', 'user_khaled', 'user_maryam', 'user_faisal', 'user_renad', 'user_mona', 'user_mohammed', 'user_omar', 'user_saud', 'user_huda'].includes(id)) {
+      if (['user_admin', 'user_ahmed', 'user_sara', 'user_khaled', 'user_maryam', 'user_faisal', 'user_renad', 'user_mona', 'user_mohammed', 'user_omar', 'user_saud', 'user_huda'].includes(id) || id.startsWith('user_demo_')) {
         deleteDoc(doc(db, 'users', id)).catch(() => {});
         return;
       }
