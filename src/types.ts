@@ -199,8 +199,20 @@ export interface BrandConfig {
   headerNoticeText?: string;
   showHeaderSearch?: boolean;
   showHeaderTagline?: boolean;
+  showHeaderAddButton?: boolean;
+  headerAddButtonText?: string;
+  showHeaderLanguageSelector?: boolean;
+  showHeaderNotifications?: boolean;
   showFooter?: boolean;
   showCopyright?: boolean;
+  showFooterSocialLinks?: boolean;
+  footerWhatsapp?: string;
+  footerEmail?: string;
+  footerPhone?: string;
+  footerTwitter?: string;
+  footerInstagram?: string;
+  showFooterPagesLinks?: boolean;
+  showFooterAccentBar?: boolean;
 }
 
 

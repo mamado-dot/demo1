@@ -104,80 +104,84 @@ export default function Header({
             <div className={`flex items-center space-x-3 ${language === 'ar' ? 'space-x-reverse' : ''}`} id="user_actions_header">
               
               {/* Add Product Button (Desktop, like in the screenshot) */}
-              <button
-                onClick={() => setActiveTab('add')}
-                className={`hidden md:flex items-center space-x-1 ${language === 'ar' ? 'space-x-reverse' : ''} bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl px-4 py-2 transition-all cursor-pointer`}
-              >
-                <span>+ {t.addProduct}</span>
-              </button>
+              {brandConfig.showHeaderAddButton !== false && (
+                <button
+                  onClick={() => setActiveTab('add')}
+                  className={`hidden md:flex items-center space-x-1 ${language === 'ar' ? 'space-x-reverse' : ''} bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl px-4 py-2 transition-all cursor-pointer`}
+                >
+                  <span>+ {brandConfig.headerAddButtonText || t.addProduct}</span>
+                </button>
+              )}
 
               {/* Notification Center */}
-              <div className="relative">
-                <button
-                  id="notif_bell_btn"
-                  onClick={() => setShowNotifications(!showNotifications)}
-                  className="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-50 rounded-full relative transition-colors duration-150 cursor-pointer"
-                >
-                  <Bell className="w-5.5 h-5.5" />
-                  {unreadCount > 0 && (
-                    <span id="unread_notif_count" className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white animate-bounce">
-                      {unreadCount}
-                    </span>
-                  )}
-                </button>
+              {brandConfig.showHeaderNotifications !== false && (
+                <div className="relative">
+                  <button
+                    id="notif_bell_btn"
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    className="p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-50 rounded-full relative transition-colors duration-150 cursor-pointer"
+                  >
+                    <Bell className="w-5.5 h-5.5" />
+                    {unreadCount > 0 && (
+                      <span id="unread_notif_count" className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white animate-bounce">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </button>
 
-                {/* Notifications Dropdown */}
-                {showNotifications && (
-                  <div id="notif_dropdown" className={`absolute ${language === 'ar' ? 'left-0 origin-top-left' : 'right-0 origin-top-right'} mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden transform transition-all duration-200`}>
-                    <div className={`px-4 py-2 border-b border-gray-50 flex justify-between items-center bg-gray-50 ${language === 'ar' ? 'flex-row' : 'flex-row-reverse'}`}>
-                      <h3 className="font-bold text-gray-900 text-sm">{t.notifications}</h3>
-                      <span className="text-[10px] text-gray-400">{t.latestUpdates}</span>
-                    </div>
-                    <div className="max-h-72 overflow-y-auto divide-y divide-gray-50">
-                      {notifications.length === 0 ? (
-                        <div className="px-4 py-6 text-center text-gray-400 text-xs">
-                          {t.noNotifications}
-                        </div>
-                      ) : (
-                        notifications.map((notification) => (
-                          <div
-                            key={notification.id}
-                            onClick={() => {
-                              markNotificationAsRead(notification.id);
-                              if (notification.type === 'message' || notification.type === 'offer') {
-                                setActiveTab('chat');
-                              } else if (notification.type === 'match') {
-                                setActiveTab('my_swaps');
-                              } else if (notification.type === 'rating') {
-                                setActiveTab('profile');
-                              }
-                              setShowNotifications(false);
-                            }}
-                            className={`p-3 text-start hover:bg-brand-50/50 cursor-pointer transition-colors duration-150 flex items-start space-x-2 ${language === 'ar' ? 'space-x-reverse' : ''} ${
-                              !notification.read ? 'bg-brand-50/30' : ''
-                            }`}
-                          >
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between">
-                                <span className={`text-xs font-semibold ${!notification.read ? 'text-brand-700' : 'text-gray-700'}`}>
-                                  {notification.title}
-                                </span>
-                                {!notification.read && <span className="h-2 w-2 rounded-full bg-brand-600"></span>}
-                              </div>
-                              <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                                {notification.description}
-                              </p>
-                              <span className="text-[9px] text-gray-400 mt-1 block">
-                                {notification.timestamp}
-                              </span>
-                            </div>
+                  {/* Notifications Dropdown */}
+                  {showNotifications && (
+                    <div id="notif_dropdown" className={`absolute ${language === 'ar' ? 'left-0 origin-top-left' : 'right-0 origin-top-right'} mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden transform transition-all duration-200`}>
+                      <div className={`px-4 py-2 border-b border-gray-50 flex justify-between items-center bg-gray-50 ${language === 'ar' ? 'flex-row' : 'flex-row-reverse'}`}>
+                        <h3 className="font-bold text-gray-900 text-sm">{t.notifications}</h3>
+                        <span className="text-[10px] text-gray-400">{t.latestUpdates}</span>
+                      </div>
+                      <div className="max-h-72 overflow-y-auto divide-y divide-gray-50">
+                        {notifications.length === 0 ? (
+                          <div className="px-4 py-6 text-center text-gray-400 text-xs">
+                            {t.noNotifications}
                           </div>
-                        ))
-                      )}
+                        ) : (
+                          notifications.map((notification) => (
+                            <div
+                              key={notification.id}
+                              onClick={() => {
+                                markNotificationAsRead(notification.id);
+                                if (notification.type === 'message' || notification.type === 'offer') {
+                                  setActiveTab('chat');
+                                } else if (notification.type === 'match') {
+                                  setActiveTab('my_swaps');
+                                } else if (notification.type === 'rating') {
+                                  setActiveTab('profile');
+                                }
+                                setShowNotifications(false);
+                              }}
+                              className={`p-3 text-start hover:bg-brand-50/50 cursor-pointer transition-colors duration-150 flex items-start space-x-2 ${language === 'ar' ? 'space-x-reverse' : ''} ${
+                                !notification.read ? 'bg-brand-50/30' : ''
+                              }`}
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                  <span className={`text-xs font-semibold ${!notification.read ? 'text-brand-700' : 'text-gray-700'}`}>
+                                    {notification.title}
+                                  </span>
+                                  {!notification.read && <span className="h-2 w-2 rounded-full bg-brand-600"></span>}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                                  {notification.description}
+                                </p>
+                                <span className="text-[9px] text-gray-400 mt-1 block">
+                                  {notification.timestamp}
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
 
               {/* User Quick Info with Dropdown Menu */}
               <div className="relative" id="profile_menu_container">
@@ -213,6 +217,16 @@ export default function Header({
                         className={`w-full flex items-center ${language === 'ar' ? 'text-right' : 'text-left'} px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors duration-150 cursor-pointer`}
                       >
                         <span>{language === 'en' ? 'My Profile' : 'ملفي الشخصي'}</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setActiveTab('my_products');
+                          setShowProfileMenu(false);
+                        }}
+                        className={`w-full flex items-center ${language === 'ar' ? 'text-right' : 'text-left'} px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors duration-150 cursor-pointer`}
+                      >
+                        <span>{language === 'en' ? 'My Products' : 'منتجاتي'}</span>
                       </button>
 
                       <button

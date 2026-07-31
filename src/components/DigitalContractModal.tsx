@@ -94,21 +94,12 @@ export default function DigitalContractModal({
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 space-x-reverse">
-            <button
-              onClick={handlePrintOrPdf}
-              className="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold rounded-xl transition-all flex items-center space-x-1.5 space-x-reverse cursor-pointer"
-            >
-              <Printer className="w-3.5 h-3.5 text-gray-700" />
-              <span>طباعة</span>
-            </button>
-            <button 
-              onClick={onClose}
-              className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          <button 
+            onClick={onClose}
+            className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* PRINTABLE CONTRACT DOCUMENT BODY */}
@@ -275,10 +266,17 @@ export default function DigitalContractModal({
           <div className="flex items-center space-x-2 space-x-reverse">
             <button
               onClick={handlePrintOrPdf}
-              className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center space-x-1.5 space-x-reverse"
+              className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center space-x-1.5 space-x-reverse"
             >
               <Download className="w-4 h-4" />
-              <span>تحميل العقد بصيغة PDF</span>
+              <span>حفظ</span>
+            </button>
+            <button
+              onClick={handlePrintOrPdf}
+              className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-extrabold text-xs rounded-xl transition-all cursor-pointer shadow-xs flex items-center space-x-1.5 space-x-reverse"
+            >
+              <Printer className="w-4 h-4 text-gray-700" />
+              <span>طباعة</span>
             </button>
           </div>
 

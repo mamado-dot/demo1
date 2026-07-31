@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
-import { Listing, User, BarterOptions } from '../types';
+import { X, Plus, AlertCircle, Check, Package, ShieldAlert } from 'lucide-react';
+import { Listing, User, BarterOptions, Chat } from '../types';
 
 interface BarterOfferModalProps {
   isOpen: boolean;
@@ -9,10 +9,11 @@ interface BarterOfferModalProps {
   userListings: Listing[];
   currentUser: User | null;
   barterOptions?: BarterOptions;
+  existingChats?: Chat[];
   onOpenAddListing: () => void;
   onSubmitOffer: (data: {
     targetListing: Listing;
-    offeredListing?: Listing;
+    offeredListing: Listing;
     cashDifferenceType: 'none' | 'offerer_pays' | 'offerer_requests';
     cashDifferenceAmount: number;
     note: string;
@@ -30,6 +31,7 @@ export default function BarterOfferModal({
   userListings,
   currentUser,
   barterOptions,
+  existingChats = [],
   onOpenAddListing,
   onSubmitOffer,
 }: BarterOfferModalProps) {
@@ -61,11 +63,43 @@ export default function BarterOfferModal({
     (l) => l.ownerId === currentUser?.id && l.status !== 'مكتمل'
   );
 
+  // Products currently locked in active/pending barter offers across ALL chats
+  const busyProductIdsInActiveOffers = existingChats
+    .filter(
+      (c) =>
+        c.offeredListingId &&
+        c.offerStatus !== 'مرفوض' &&
+        c.offerStatus !== 'مكتمل'
+    )
+    .map((c) => c.offeredListingId as string);
+
+  // Offers already submitted specifically for this target listing
+  const existingUserOffersForTarget = existingChats.filter(
+    (c) => c.listingId === targetListing?.id && c.offerStatus !== 'مرفوض' && c.offerStatus !== 'مكتمل'
+  );
+  const hasExistingOfferOnTarget = existingUserOffersForTarget.length > 0;
+
+  const allListingsBusy =
+    myActiveListings.length > 0 &&
+    myActiveListings.every((l) => busyProductIdsInActiveOffers.includes(l.id));
+
   useEffect(() => {
-    if (myActiveListings.length > 0 && !selectedListingId) {
-      setSelectedListingId(myActiveListings[0].id);
+    if (myActiveListings.length > 0) {
+      // Find first active listing that is NOT busy in any offer
+      const availableListing = myActiveListings.find(
+        (l) => !busyProductIdsInActiveOffers.includes(l.id)
+      );
+      const isSelectedAvailable = myActiveListings.some(
+        (l) => l.id === selectedListingId && !busyProductIdsInActiveOffers.includes(l.id)
+      );
+
+      if (!isSelectedAvailable) {
+        setSelectedListingId(availableListing ? availableListing.id : null);
+      }
+    } else {
+      setSelectedListingId(null);
     }
-  }, [myActiveListings, selectedListingId]);
+  }, [myActiveListings, selectedListingId, targetListing?.id, existingChats]);
 
   if (!isOpen || !targetListing) return null;
 
@@ -74,8 +108,8 @@ export default function BarterOfferModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // If product selection is enabled, enforce selecting a product
-    if (options.enableProductSelection && !selectedOfferedListing && myActiveListings.length > 0) {
+    // STRICT REQUIREMENT: User MUST have selected one of their active products
+    if (!selectedOfferedListing) {
       return;
     }
 
@@ -119,7 +153,7 @@ export default function BarterOfferModal({
         <div className="mb-6 pb-4 border-b border-gray-100" id="barter_modal_header">
           <h2 className="text-lg font-black text-gray-900">تقديم عرض مقايضة مباشر</h2>
           <p className="text-xs text-gray-500 mt-0.5">
-            حدد خيارات المقايضة الخاصة بك للبدء بتقديم العرض إلى صاحب السلعة.
+            حدد المنتج الذي ترغب بمقايضته والتفاصيل المطلوبة لإرسال طلب المقايضة إلى صاحب العرض.
           </p>
         </div>
 
@@ -149,253 +183,289 @@ export default function BarterOfferModal({
             </div>
           </div>
 
-          {/* OPTION 1: Select Offered Item (If Enabled) */}
-          {options.enableProductSelection && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-black text-gray-900">
-                  1. اختر منتجك الذي ترغب بمقايضته مقابله *
-                </label>
-
-                {myActiveListings.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onClose();
-                      onOpenAddListing();
-                    }}
-                    className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer"
-                  >
-                    إضافة منتج جديد
-                  </button>
-                )}
-              </div>
-
-              {myActiveListings.length === 0 ? (
-                <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-5 text-center space-y-3">
-                  <div>
-                    <p className="font-bold text-gray-900 text-xs">ليس لديك أي منتجات أو خدمات معروضة حالياً لمقايضتها!</p>
-                    <p className="text-[11px] text-gray-500 mt-1">
-                      لتقديم عرض مقايضة، يجب عليك أولاً إضافة المنتج الذي ترغب بالاستغناء عنه لمقايضته.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onClose();
-                      onOpenAddListing();
-                    }}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all cursor-pointer"
-                  >
-                    أضف منتجك الآن للمقايضة
-                  </button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-56 overflow-y-auto p-1">
-                  {myActiveListings.map((item) => {
-                    const isSelected = item.id === selectedListingId;
-
-                    return (
-                      <div
-                        key={item.id}
-                        onClick={() => setSelectedListingId(item.id)}
-                        className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center space-x-3 space-x-reverse relative ${
-                          isSelected
-                            ? 'border-emerald-600 bg-emerald-50/40 ring-2 ring-emerald-500/20 shadow-xs'
-                            : 'border-gray-200 bg-white hover:border-gray-300'
-                        }`}
-                      >
-                        <img
-                          src={item.imageUrl}
-                          alt={item.title}
-                          className="w-14 h-14 rounded-xl object-cover shrink-0 border border-gray-100"
-                          referrerPolicy="no-referrer"
-                        />
-                        <div className="flex-1 min-w-0 text-right">
-                          <h5 className="font-extrabold text-gray-900 text-xs truncate">{item.title}</h5>
-                          <span className="text-[10px] text-gray-400 block mt-0.5">{item.category}</span>
-                        </div>
-                        {isSelected && (
-                          <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md shrink-0">
-                            محدد
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+          {/* Existing offer warning banner */}
+          {hasExistingOfferOnTarget && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-3.5 text-xs font-bold flex items-center gap-2.5">
+              <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
+              <span>ملاحظة: لديك عرض مقايضة جارٍ سابقاً على هذا المنتج.</span>
             </div>
           )}
 
-          {/* OPTION 2: Cash Top-up Adjustment (If Enabled) */}
-          {options.enableCashDifference && (
-            <div className="space-y-3 pt-2 border-t border-gray-100">
-              <label className="block text-xs font-black text-gray-900">
-                2. فارق مبلغ مالي إضافي (اختياري إن وجد)
+          {allListingsBusy && !hasExistingOfferOnTarget && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-3.5 text-xs font-bold flex items-center gap-2.5">
+              <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
+              <span>ملاحظة: جميع منتجاتك المعروضة مُقدمة حالياً في عروض مقايضة جارية. لا يمكنك استخدام المنتج نفسه في أكثر من عرض في نفس الوقت.</span>
+            </div>
+          )}
+
+          {/* REQUIREMENT 1: Select Offered Item (Mandatory) */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-black text-gray-900 flex items-center gap-1">
+                <span>1. حدد المنتج من حسابك لمقايضته *</span>
               </label>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {myActiveListings.length > 0 && (
                 <button
                   type="button"
-                  onClick={() => setCashType('none')}
-                  className={`p-3 rounded-xl border text-xs font-bold transition-all text-center cursor-pointer ${
-                    cashType === 'none'
-                      ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
-                      : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100'
-                  }`}
+                  onClick={() => {
+                    onClose();
+                    onOpenAddListing();
+                  }}
+                  className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer flex items-center gap-1"
                 >
-                  بدون إضافة مالية (مقايضة رأس برأس)
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>إضافة منتج جديد</span>
                 </button>
+              )}
+            </div>
 
+            {myActiveListings.length === 0 ? (
+              <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-5 text-center space-y-3">
+                <div className="w-10 h-10 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center mx-auto">
+                  <AlertCircle className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-black text-amber-900 text-sm">يلزم وجود منتج في حسابك للمقايضة!</p>
+                </div>
                 <button
                   type="button"
-                  onClick={() => setCashType('offerer_pays')}
-                  className={`p-3 rounded-xl border text-xs font-bold transition-all text-center cursor-pointer ${
-                    cashType === 'offerer_pays'
-                      ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
-                      : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100'
-                  }`}
+                  onClick={() => {
+                    onClose();
+                    onOpenAddListing();
+                  }}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-6 py-2.5 rounded-xl transition-all cursor-pointer inline-flex items-center gap-2 shadow-xs"
                 >
-                  أنا سأدفع فارق مبلغ لصاحب العرض
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setCashType('offerer_requests')}
-                  className={`p-3 rounded-xl border text-xs font-bold transition-all text-center cursor-pointer ${
-                    cashType === 'offerer_requests'
-                      ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
-                      : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  أطلب دفع فارق من صاحب العرض
+                  <Plus className="w-4 h-4" />
+                  <span>أضف منتجك الآن للمقايضة</span>
                 </button>
               </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-56 overflow-y-auto p-1">
+                {myActiveListings.map((item) => {
+                  const isSelected = item.id === selectedListingId;
+                  const isBusy = busyProductIdsInActiveOffers.includes(item.id);
 
-              {cashType !== 'none' && (
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-1.5">
-                  <label className="block text-xs font-bold text-gray-800">
-                    {cashType === 'offerer_pays'
-                      ? 'المبلغ الذي تتعهد بدفعه بالإضافة لسلعتك (بالريال السعودي):'
-                      : 'المبلغ الذي تطلبه من صاحب السلعة كفارق (بالريال السعودي):'}
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => {
+                        if (!isBusy) {
+                          setSelectedListingId(item.id);
+                        }
+                      }}
+                      className={`p-3 rounded-2xl border transition-all flex items-center space-x-3 space-x-reverse relative ${
+                        isBusy
+                          ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                          : isSelected
+                            ? 'border-emerald-600 bg-emerald-50/50 ring-2 ring-emerald-500/20 shadow-xs cursor-pointer'
+                            : 'border-gray-200 bg-white hover:border-gray-300 cursor-pointer'
+                      }`}
+                    >
+                      <img
+                        src={item.imageUrl}
+                        alt={item.title}
+                        className="w-14 h-14 rounded-xl object-cover shrink-0 border border-gray-100"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="flex-1 min-w-0 text-right">
+                        <h5 className="font-extrabold text-gray-900 text-xs truncate">{item.title}</h5>
+                        <span className="text-[10px] text-gray-400 block mt-0.5">{item.category}</span>
+                      </div>
+                      {isBusy ? (
+                        <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md shrink-0">
+                          مشغول بعرض آخر
+                        </span>
+                      ) : isSelected && (
+                        <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md shrink-0 flex items-center gap-1">
+                          <Check className="w-3 h-3 text-emerald-600" />
+                          <span>محدد</span>
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Show additional options only if user has active listings */}
+          {myActiveListings.length > 0 && (
+            <>
+              {/* OPTION 2: Cash Top-up Adjustment (If Enabled) */}
+              {options.enableCashDifference && (
+                <div className="space-y-3 pt-2 border-t border-gray-100">
+                  <label className="block text-xs font-black text-gray-900">
+                    2. فارق مبلغ مالي إضافي (اختياري إن وجد)
+                  </label>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setCashType('none')}
+                      className={`p-3 rounded-xl border text-xs font-bold transition-all text-center cursor-pointer ${
+                        cashType === 'none'
+                          ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
+                          : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      بدون إضافة مالية (مقايضة رأس برأس)
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setCashType('offerer_pays')}
+                      className={`p-3 rounded-xl border text-xs font-bold transition-all text-center cursor-pointer ${
+                        cashType === 'offerer_pays'
+                          ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
+                          : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      أنا سأدفع فارق مبلغ لصاحب العرض
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setCashType('offerer_requests')}
+                      className={`p-3 rounded-xl border text-xs font-bold transition-all text-center cursor-pointer ${
+                        cashType === 'offerer_requests'
+                          ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
+                          : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      أطلب دفع فارق من صاحب العرض
+                    </button>
+                  </div>
+
+                  {cashType !== 'none' && (
+                    <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-1.5">
+                      <label className="block text-xs font-bold text-gray-800">
+                        {cashType === 'offerer_pays'
+                          ? 'المبلغ الذي تتعهد بدفعه بالإضافة لسلعتك (بالريال السعودي):'
+                          : 'المبلغ الذي تطلبه من صاحب السلعة كفارق (بالريال السعودي):'}
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={cashAmount || ''}
+                        onChange={(e) => setCashAmount(Math.max(0, parseInt(e.target.value) || 0))}
+                        placeholder="مثال: 200"
+                        className="w-full border border-gray-300 rounded-xl p-2.5 text-xs text-gray-900 font-bold bg-white focus:ring-2 focus:ring-emerald-500 outline-hidden"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* OPTION 3: Location Field (If Enabled) */}
+              {options.enableLocationField && (
+                <div className="space-y-1.5 pt-2 border-t border-gray-100">
+                  <label className="block text-xs font-black text-gray-900">
+                    موقع أو مدينة التسليم المقترحة (اختياري)
                   </label>
                   <input
-                    type="number"
-                    min="1"
-                    value={cashAmount || ''}
-                    onChange={(e) => setCashAmount(Math.max(0, parseInt(e.target.value) || 0))}
-                    placeholder="مثال: 200"
-                    className="w-full border border-gray-300 rounded-xl p-2.5 text-xs text-gray-900 font-bold bg-white focus:ring-2 focus:ring-emerald-500 outline-hidden"
+                    type="text"
+                    value={deliveryLocation}
+                    onChange={(e) => setDeliveryLocation(e.target.value)}
+                    placeholder="مثال: شمال الرياض - حي الملقا"
+                    className="w-full border border-gray-200 rounded-xl p-3 text-xs text-gray-800 bg-gray-50/50 focus:ring-2 focus:ring-emerald-500 outline-hidden"
                   />
                 </div>
               )}
-            </div>
-          )}
 
-          {/* OPTION 3: Location Field (If Enabled) */}
-          {options.enableLocationField && (
-            <div className="space-y-1.5 pt-2 border-t border-gray-100">
-              <label className="block text-xs font-black text-gray-900">
-                موقع أو مدينة التسليم المقترحة (اختياري)
-              </label>
-              <input
-                type="text"
-                value={deliveryLocation}
-                onChange={(e) => setDeliveryLocation(e.target.value)}
-                placeholder="مثال: شمال الرياض - حي الملقا"
-                className="w-full border border-gray-200 rounded-xl p-3 text-xs text-gray-800 bg-gray-50/50 focus:ring-2 focus:ring-emerald-500 outline-hidden"
-              />
-            </div>
-          )}
+              {/* OPTION 4: Delivery Method Option (If Enabled) */}
+              {options.enableDeliveryOption && (
+                <div className="space-y-2 pt-2 border-t border-gray-100">
+                  <label className="block text-xs font-black text-gray-900">
+                    طريقة التوصيل والاستلام المفضل
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['يداً بـ يد (تسليم مباشر)', 'شحن / توصيل للمنزل'].map((method) => (
+                      <button
+                        key={method}
+                        type="button"
+                        onClick={() => setDeliveryMethod(method)}
+                        className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-center cursor-pointer ${
+                          deliveryMethod === method
+                            ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
+                            : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        {method}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-          {/* OPTION 4: Delivery Method Option (If Enabled) */}
-          {options.enableDeliveryOption && (
-            <div className="space-y-2 pt-2 border-t border-gray-100">
-              <label className="block text-xs font-black text-gray-900">
-                طريقة التوصيل والاستلام المفضل
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {['يداً بـ يد (تسليم مباشر)', 'شحن / توصيل للمنزل'].map((method) => (
-                  <button
-                    key={method}
-                    type="button"
-                    onClick={() => setDeliveryMethod(method)}
-                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-center cursor-pointer ${
-                      deliveryMethod === method
-                        ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
-                        : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    {method}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+              {/* OPTION 5: Inspection Option (If Enabled) */}
+              {options.enableInspectionOption && (
+                <div className="pt-2 border-t border-gray-100">
+                  <label className="flex items-center space-x-2 space-x-reverse cursor-pointer bg-gray-50 p-3 rounded-xl border border-gray-200/70">
+                    <input
+                      type="checkbox"
+                      checked={requiresInspection}
+                      onChange={(e) => setRequiresInspection(e.target.checked)}
+                      className="w-4 h-4 accent-emerald-600 rounded"
+                    />
+                    <span className="text-xs font-bold text-gray-800">
+                      أشترط معاينة وفحص السلعة قبل إتمام المقايضة النهائية
+                    </span>
+                  </label>
+                </div>
+              )}
 
-          {/* OPTION 5: Inspection Option (If Enabled) */}
-          {options.enableInspectionOption && (
-            <div className="pt-2 border-t border-gray-100">
-              <label className="flex items-center space-x-2 space-x-reverse cursor-pointer bg-gray-50 p-3 rounded-xl border border-gray-200/70">
-                <input
-                  type="checkbox"
-                  checked={requiresInspection}
-                  onChange={(e) => setRequiresInspection(e.target.checked)}
-                  className="w-4 h-4 accent-emerald-600 rounded"
-                />
-                <span className="text-xs font-bold text-gray-800">
-                  أشترط معاينة وفحص السلعة قبل إتمام المقايضة النهائية
-                </span>
-              </label>
-            </div>
-          )}
+              {/* DYNAMIC CUSTOM FIELDS (If Any) */}
+              {activeCustomFields.map((field) => (
+                <div key={field.id} className="space-y-1.5 pt-2 border-t border-gray-100">
+                  <label className="block text-xs font-black text-gray-900">
+                    {field.label} {field.isRequired ? '*' : '(اختياري)'}
+                  </label>
+                  <input
+                    type="text"
+                    required={field.isRequired}
+                    value={customFieldsData[field.id] || ''}
+                    onChange={(e) => setCustomFieldsData({ ...customFieldsData, [field.id]: e.target.value })}
+                    placeholder={field.placeholder || 'أدخل التفاصيل...'}
+                    className="w-full border border-gray-200 rounded-xl p-3 text-xs text-gray-800 bg-gray-50/50 focus:ring-2 focus:ring-emerald-500 outline-hidden"
+                  />
+                </div>
+              ))}
 
-          {/* DYNAMIC CUSTOM FIELDS (If Any) */}
-          {activeCustomFields.map((field) => (
-            <div key={field.id} className="space-y-1.5 pt-2 border-t border-gray-100">
-              <label className="block text-xs font-black text-gray-900">
-                {field.label} {field.isRequired ? '*' : '(اختياري)'}
-              </label>
-              <input
-                type="text"
-                required={field.isRequired}
-                value={customFieldsData[field.id] || ''}
-                onChange={(e) => setCustomFieldsData({ ...customFieldsData, [field.id]: e.target.value })}
-                placeholder={field.placeholder || 'أدخل التفاصيل...'}
-                className="w-full border border-gray-200 rounded-xl p-3 text-xs text-gray-800 bg-gray-50/50 focus:ring-2 focus:ring-emerald-500 outline-hidden"
-              />
-            </div>
-          ))}
-
-          {/* OPTION 6: Notes (If Enabled) */}
-          {options.enableOfferNote && (
-            <div className="space-y-1.5 pt-2 border-t border-gray-100">
-              <label className="block text-xs font-black text-gray-900">
-                ملاحظات إضافية على العرض (اختياري)
-              </label>
-              <textarea
-                rows={2}
-                value={offerNote}
-                onChange={(e) => setOfferNote(e.target.value)}
-                placeholder="مثال: منتجي بحالة الوكالة ويشمل الضمان والكرتون الأصلي..."
-                className="w-full border border-gray-200 rounded-xl p-3 text-xs text-gray-800 bg-gray-50/50 focus:ring-2 focus:ring-emerald-500 outline-hidden"
-              />
-            </div>
+              {/* OPTION 6: Notes (If Enabled) */}
+              {options.enableOfferNote && (
+                <div className="space-y-1.5 pt-2 border-t border-gray-100">
+                  <label className="block text-xs font-black text-gray-900">
+                    ملاحظات إضافية على العرض (اختياري)
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={offerNote}
+                    onChange={(e) => setOfferNote(e.target.value)}
+                    placeholder="مثال: منتجي بحالة الوكالة ويشمل الضمان والكرتون الأصلي..."
+                    className="w-full border border-gray-200 rounded-xl p-3 text-xs text-gray-800 bg-gray-50/50 focus:ring-2 focus:ring-emerald-500 outline-hidden"
+                  />
+                </div>
+              )}
+            </>
           )}
 
           {/* Submit Actions */}
           <div className="flex space-x-3 space-x-reverse pt-2">
             <button
               type="submit"
-              disabled={options.enableProductSelection && !selectedOfferedListing && myActiveListings.length > 0}
+              disabled={!selectedOfferedListing || busyProductIdsInActiveOffers.includes(selectedOfferedListing.id)}
               className={`flex-1 py-3 px-6 rounded-2xl font-black text-xs transition-all cursor-pointer ${
-                options.enableProductSelection && !selectedOfferedListing && myActiveListings.length > 0
+                !selectedOfferedListing || busyProductIdsInActiveOffers.includes(selectedOfferedListing.id)
                   ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
                   : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
               }`}
             >
-              إرسال طلب المقايضة إلى {targetListing.ownerName}
+              {allListingsBusy
+                ? 'جميع منتجاتك مسجلة في عروض مقايضة جارية'
+                : !selectedOfferedListing 
+                  ? 'يرجى اختيار منتج متوفر للمقايضة' 
+                  : `إرسال طلب المقايضة إلى ${targetListing.ownerName}`}
             </button>
 
             <button
@@ -413,3 +483,4 @@ export default function BarterOfferModal({
     </div>
   );
 }
+

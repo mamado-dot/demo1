@@ -27,10 +27,10 @@ export default function AuthModal({
 
   // Register Form State
   const [regName, setRegName] = useState('');
-  const [regPhoneOrEmail, setRegPhoneOrEmail] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPhone, setRegPhone] = useState('');
   const [regCity, setRegCity] = useState<City>('الرياض');
   const [regPassword, setRegPassword] = useState('');
-  const [regBio, setRegBio] = useState('');
 
   // UI state
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -50,12 +50,12 @@ export default function AuthModal({
       const result = await signInWithPopup(auth, googleProvider);
       const googleUser = result.user;
       
-      const userEmail = googleUser.email || '';
-      const isOwner = userEmail.toLowerCase() === 'crazyretiree@gmail.com' || userEmail.toLowerCase().includes('crazyretiree');
+      const userEmail = (googleUser.email || '').toLowerCase();
+      const isOwner = userEmail === 'crazyretiree@gmail.com' || userEmail.includes('crazyretiree');
 
       const loggedInUser: User = {
-        id: googleUser.uid || `user_g_${Date.now()}`,
-        name: googleUser.displayName || userEmail.split('@')[0] || 'مستخدم قوقل',
+        id: isOwner ? 'user_owner_crazyretiree' : googleUser.uid || `user_g_${Date.now()}`,
+        name: isOwner ? 'مالك المنصة' : googleUser.displayName || userEmail.split('@')[0] || 'مستخدم قوقل',
         phone: userEmail,
         email: userEmail,
         avatar: googleUser.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
@@ -63,7 +63,7 @@ export default function AuthModal({
         rating: 5.0,
         completedSwaps: isOwner ? 100 : 0,
         reliabilityLevel: 'ممتاز',
-        bio: isOwner ? 'مالك ومؤسس منصة قايض للمقايضة العادلة.' : 'حساب موثق عبر تسجيل دخول Google.',
+        bio: '',
         isAdmin: isOwner,
         joinedDate: new Date().toISOString().split('T')[0]
       };
@@ -73,7 +73,6 @@ export default function AuthModal({
       onClose();
     } catch (err: any) {
       console.info("Google Popup Auth fallback activated:", err?.message || err);
-      // Auto-show clean Google account selector without red error banner
       setShowGoogleEmailFallback(true);
     } finally {
       setGoogleLoading(false);
@@ -89,16 +88,15 @@ export default function AuthModal({
 
     const loggedInUser: User = {
       id: isOwner ? 'user_owner_crazyretiree' : `user_g_direct_${Date.now()}`,
-      name: isOwner ? 'مالك المنصة (CrazyRetiree)' : email.split('@')[0],
+      name: isOwner ? 'مالك المنصة' : email.split('@')[0],
       phone: email,
-      avatar: isOwner 
-        ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
-        : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+      email: email,
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
       city: 'الرياض',
       rating: 5.0,
       completedSwaps: isOwner ? 100 : 0,
       reliabilityLevel: 'ممتاز',
-      bio: isOwner ? 'مالك ومؤسس منصة قايض للمقايضة العادلة.' : 'حساب موثق عبر بريد Google.',
+      bio: '',
       isAdmin: isOwner,
       joinedDate: new Date().toISOString().split('T')[0]
     };
@@ -117,16 +115,15 @@ export default function AuthModal({
 
     const loggedInUser: User = {
       id: isOwner ? 'user_owner_crazyretiree' : `user_auth_${Date.now()}`,
-      name: isOwner ? 'مالك المنصة (CrazyRetiree)' : loginIdentifier.trim(),
-      phone: loginIdentifier.trim(),
-      avatar: isOwner 
-        ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
-        : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+      name: isOwner ? 'مالك المنصة' : loginIdentifier.trim(),
+      phone: identifier.includes('@') ? '' : loginIdentifier.trim(),
+      email: identifier.includes('@') ? identifier : '',
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
       city: 'الرياض',
       rating: 5.0,
       completedSwaps: isOwner ? 100 : 0,
       reliabilityLevel: 'ممتاز',
-      bio: isOwner ? 'مالك ومؤسس منصة قايض للمقايضة العادلة.' : 'عضو مسجل في منصة قايض للمقايضة.',
+      bio: '',
       isAdmin: isOwner
     };
 
@@ -137,23 +134,25 @@ export default function AuthModal({
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!regName.trim()) return;
+    if (!regName.trim() || !regEmail.trim() || !regPhone.trim()) return;
 
-    const emailOrPhone = regPhoneOrEmail.trim().toLowerCase();
-    const isOwner = emailOrPhone === 'crazyretiree@gmail.com' || emailOrPhone.includes('crazyretiree');
+    const email = regEmail.trim().toLowerCase();
+    const phone = regPhone.trim();
+    const name = regName.trim();
+
+    const isOwner = email === 'crazyretiree@gmail.com' || email.includes('crazyretiree') || phone.toLowerCase().includes('crazyretiree');
 
     const newUser: User = {
       id: isOwner ? 'user_owner_crazyretiree' : `user_reg_${Date.now()}`,
-      name: isOwner ? 'مالك المنصة (CrazyRetiree)' : regName.trim(),
-      phone: regPhoneOrEmail.trim(),
-      avatar: isOwner 
-        ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
-        : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+      name: name,
+      email: email,
+      phone: phone,
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
       city: regCity,
       rating: 5.0,
       completedSwaps: isOwner ? 100 : 0,
-      reliabilityLevel: isOwner ? 'ممتاز' : 'مبتدئ',
-      bio: isOwner ? 'مالك ومؤسس منصة قايض للمقايضة العادلة.' : (regBio || 'عضو جديد مهتم بالتبادل والمقايضة العادلة في مجتمع قايض.'),
+      reliabilityLevel: 'ممتاز',
+      bio: '',
       isAdmin: isOwner,
       joinedDate: new Date().toISOString().split('T')[0]
     };
@@ -219,43 +218,14 @@ export default function AuthModal({
           {showGoogleEmailFallback && (
             <div className="mt-3 text-right p-3.5 bg-blue-50/70 border border-blue-200/80 rounded-2xl space-y-2.5 animate-in fade-in duration-200">
               <p className="text-xs font-black text-blue-900">
-                أدخل أو اختر بريد Google الإلكتروني لتأكيد التسجيل:
+                أدخل بريدك الإلكتروني لتأكيد التسجيل والدخول:
               </p>
-              
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const loggedInUser: User = {
-                      id: 'user_owner_crazyretiree',
-                      name: 'مالك المنصة (CrazyRetiree)',
-                      phone: 'crazyretiree@gmail.com',
-                      email: 'crazyretiree@gmail.com',
-                      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-                      city: 'الرياض',
-                      rating: 5.0,
-                      completedSwaps: 100,
-                      reliabilityLevel: 'ممتاز',
-                      bio: 'مالك ومؤسس منصة قايض للمقايضة العادلة.',
-                      isAdmin: true,
-                      joinedDate: '2026-01-01'
-                    };
-                    saveUserToDb(loggedInUser);
-                    onLoginSuccess(loggedInUser);
-                    onClose();
-                  }}
-                  className="bg-white hover:bg-blue-100 text-blue-900 font-bold text-[11px] px-3 py-1.5 rounded-xl border border-blue-300 shadow-2xs transition-all flex items-center space-x-1.5 space-x-reverse cursor-pointer"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                  <span>crazyretiree@gmail.com (حساب المالك)</span>
-                </button>
-              </div>
 
               <form onSubmit={handleDirectGoogleEmailSubmit} className="flex gap-2 pt-1">
                 <input
                   type="email"
                   required
-                  placeholder="مثال: your.email@gmail.com"
+                  placeholder="name@domain.com"
                   value={googleEmailInput}
                   onChange={(e) => setGoogleEmailInput(e.target.value)}
                   className="flex-1 border border-blue-200 rounded-xl px-3 py-2 text-xs bg-white focus:ring-2 focus:ring-blue-500 outline-hidden text-right font-medium"
@@ -327,7 +297,7 @@ export default function AuthModal({
                 <input
                   type="text"
                   required
-                  placeholder="crazyretiree@gmail.com أو رقم الجوال"
+                  placeholder="البريد الإلكتروني أو رقم الجوال (05xxxxxxxx)"
                   value={loginIdentifier}
                   onChange={(e) => setLoginIdentifier(e.target.value)}
                   className="w-full border border-gray-200 rounded-2xl px-4 py-2.5 text-xs focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-hidden bg-gray-50/30 text-right"
@@ -368,21 +338,35 @@ export default function AuthModal({
                   placeholder="أدخل اسمك الكريم"
                   value={regName}
                   onChange={(e) => setRegName(e.target.value)}
-                  className="w-full border border-gray-200 rounded-2xl px-4 py-2 text-xs focus:ring-2 focus:ring-gray-900 outline-hidden bg-gray-50/50 text-right"
+                  className="w-full border border-gray-200 rounded-2xl px-4 py-2 text-xs focus:ring-2 focus:ring-gray-900 outline-hidden bg-gray-50/50 text-right font-medium"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">
-                  رقم الجوال / البريد الإلكتروني *
+                  البريد الإلكتروني *
                 </label>
                 <input
-                  type="text"
+                  type="email"
                   required
-                  placeholder="05xxxxxxxx أو email@domain.com"
-                  value={regPhoneOrEmail}
-                  onChange={(e) => setRegPhoneOrEmail(e.target.value)}
-                  className="w-full border border-gray-200 rounded-2xl px-4 py-2 text-xs focus:ring-2 focus:ring-gray-900 outline-hidden bg-gray-50/50 text-right"
+                  placeholder="example@domain.com"
+                  value={regEmail}
+                  onChange={(e) => setRegEmail(e.target.value)}
+                  className="w-full border border-gray-200 rounded-2xl px-4 py-2 text-xs focus:ring-2 focus:ring-gray-900 outline-hidden bg-gray-50/50 text-right font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  رقم الجوال *
+                </label>
+                <input
+                  type="tel"
+                  required
+                  placeholder="05xxxxxxxx"
+                  value={regPhone}
+                  onChange={(e) => setRegPhone(e.target.value)}
+                  className="w-full border border-gray-200 rounded-2xl px-4 py-2 text-xs focus:ring-2 focus:ring-gray-900 outline-hidden bg-gray-50/50 text-right font-medium"
                 />
               </div>
 
@@ -393,7 +377,7 @@ export default function AuthModal({
                 <select
                   value={regCity}
                   onChange={(e) => setRegCity(e.target.value as City)}
-                  className="w-full border border-gray-200 rounded-2xl px-4 py-2 text-xs focus:ring-2 focus:ring-gray-900 outline-hidden bg-white cursor-pointer text-right"
+                  className="w-full border border-gray-200 rounded-2xl px-4 py-2 text-xs focus:ring-2 focus:ring-gray-900 outline-hidden bg-white cursor-pointer text-right font-medium"
                 >
                   {CITIES.map(c => (
                     <option key={c} value={c}>{c}</option>
@@ -411,26 +395,13 @@ export default function AuthModal({
                   placeholder="••••••••"
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
-                  className="w-full border border-gray-200 rounded-2xl px-4 py-2 text-xs focus:ring-2 focus:ring-gray-900 outline-hidden bg-gray-50/50 text-right"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  نبذة مختصرة (اختياري)
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="ما هي السلع أو الخدمات التي تهمك عادة بالمقايضة؟"
-                  value={regBio}
-                  onChange={(e) => setRegBio(e.target.value)}
-                  className="w-full border border-gray-200 rounded-2xl px-4 py-2 text-xs focus:ring-2 focus:ring-gray-900 outline-hidden bg-gray-50/50 text-right resize-none"
+                  className="w-full border border-gray-200 rounded-2xl px-4 py-2 text-xs focus:ring-2 focus:ring-gray-900 outline-hidden bg-gray-50/50 text-right font-medium"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-gray-900 hover:bg-black text-white font-bold text-xs py-3.5 rounded-2xl transition-all cursor-pointer flex items-center justify-center space-x-2 space-x-reverse"
+                className="w-full bg-gray-900 hover:bg-black text-white font-bold text-xs py-3.5 rounded-2xl transition-all cursor-pointer flex items-center justify-center space-x-2 space-x-reverse mt-2"
               >
                 <UserPlus className="w-4 h-4" />
                 <span>إنشاء حساب جديد</span>

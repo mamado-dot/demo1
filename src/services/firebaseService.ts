@@ -18,27 +18,17 @@ export function subscribeToListings(callback: (listings: Listing[]) => void) {
   
   return onSnapshot(listingsRef, async (snapshot) => {
     const dbListings: Listing[] = [];
-    const dbListingIds = new Set<string>();
 
     snapshot.forEach((docSnap) => {
-      const data = { id: docSnap.id, ...docSnap.data() } as Listing;
-      dbListings.push(data);
-      dbListingIds.add(docSnap.id);
-    });
-
-    // Check if any INITIAL_LISTINGS are missing in Firestore and auto-sync them
-    let missingSynced = false;
-    for (const item of INITIAL_LISTINGS) {
-      if (!dbListingIds.has(item.id)) {
-        try {
-          await setDoc(doc(db, 'listings', item.id), item);
-          dbListings.push(item);
-          missingSynced = true;
-        } catch (e) {
-          console.error("Error auto-syncing missing listing:", item.id, e);
-        }
+      const id = docSnap.id;
+      // Filter out demo listings if present in DB
+      if (id.startsWith('listing_') && !isNaN(Number(id.replace('listing_', '')))) {
+        deleteDoc(doc(db, 'listings', id)).catch(() => {});
+        return;
       }
-    }
+      const data = { id, ...docSnap.data() } as Listing;
+      dbListings.push(data);
+    });
 
     // Sort by createdAt descending
     dbListings.sort((a, b) => {
@@ -50,7 +40,7 @@ export function subscribeToListings(callback: (listings: Listing[]) => void) {
     callback(dbListings);
   }, (err) => {
     console.error("Listings listener error:", err);
-    callback(INITIAL_LISTINGS);
+    callback([]);
   });
 }
 
@@ -92,17 +82,21 @@ export function subscribeToUsers(callback: (users: User[]) => void) {
     };
 
     const usersList: User[] = [];
-    const dbUserIds = new Set<string>();
     let foundOwner = false;
 
     snapshot.forEach((docSnap) => {
-      const u = { id: docSnap.id, ...docSnap.data() } as User;
-      if (u.phone === 'crazyretiree@gmail.com' || u.id === ownerUser.id) {
+      const id = docSnap.id;
+      // Clean demo users if present
+      if (['user_admin', 'user_ahmed', 'user_sara', 'user_khaled', 'user_maryam', 'user_faisal', 'user_renad', 'user_mona', 'user_mohammed', 'user_omar', 'user_saud', 'user_huda'].includes(id)) {
+        deleteDoc(doc(db, 'users', id)).catch(() => {});
+        return;
+      }
+      const u = { id, ...docSnap.data() } as User;
+      if (u.phone === 'crazyretiree@gmail.com' || u.email === 'crazyretiree@gmail.com' || u.id === ownerUser.id) {
         foundOwner = true;
         u.isAdmin = true; // Ensure admin privilege is attached
       }
       usersList.push(u);
-      dbUserIds.add(u.id);
     });
 
     if (!foundOwner) {
@@ -114,23 +108,10 @@ export function subscribeToUsers(callback: (users: User[]) => void) {
       }
     }
 
-    // Auto sync missing MOCK_USERS to Firestore
-    for (const mockUserKey of Object.keys(MOCK_USERS)) {
-      const mockUser = MOCK_USERS[mockUserKey];
-      if (!dbUserIds.has(mockUser.id)) {
-        try {
-          await setDoc(doc(db, 'users', mockUser.id), mockUser);
-          usersList.push(mockUser);
-        } catch (e) {
-          console.error("Error auto-syncing mock user:", mockUser.id, e);
-        }
-      }
-    }
-
     callback(usersList);
   }, (err) => {
     console.error("Users listener error:", err);
-    callback(Object.values(MOCK_USERS));
+    callback([]);
   });
 }
 

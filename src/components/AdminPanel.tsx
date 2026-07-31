@@ -285,14 +285,6 @@ export default function AdminPanel({
             <span>{savedSuccessMessage}</span>
           </div>
         )}
-
-        <button
-          onClick={handleSaveGeneralSettings}
-          className="bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs px-5 py-2.5 rounded-2xl flex items-center justify-center space-x-2 space-x-reverse shadow-xs cursor-pointer transition-all"
-        >
-          <Save className="w-4 h-4" />
-          <span>حفظ التغييرات العامة</span>
-        </button>
       </div>
 
       {/* Main Grid: Navigation Sidebar & Content */}
@@ -629,17 +621,18 @@ export default function AdminPanel({
             </div>
           )}
 
-          {/* TAB 2: BRANDING & IDENTITY */}
+          {/* TAB 2: BRANDING & IDENTITY (HEADER & FOOTER OPTIONS) */}
           {activeTab === 'branding' && (
             <div className="space-y-6">
               <div className="border-b border-gray-100 pb-4">
                 <h2 className="text-lg font-black text-gray-900 flex items-center space-x-2 space-x-reverse">
                   <Palette className="w-5 h-5 text-brand-600" />
-                  <span>هوية المنصة وشعارها</span>
+                  <span>هوية المنصة، الهيدر والفوتر</span>
                 </h2>
-                <p className="text-xs text-gray-500 mt-0.5">تخصيص اسم المنصة، والشعار، ولون المظهر الرئيسي.</p>
+                <p className="text-xs text-gray-500 mt-0.5">تخصيص كامل لاسم المنصة، الشعار، الألوان، وخيارات الهيدر العلوي والفوتر السفلي.</p>
               </div>
 
+              {/* Basic Brand Info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1">اسم المنصة الرسمي</label>
@@ -652,7 +645,7 @@ export default function AdminPanel({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">شعار المنصة (Tagline)</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">شعار المنصة النصي (Tagline)</label>
                   <input
                     type="text"
                     value={brandConfig.brandTagline}
@@ -666,7 +659,7 @@ export default function AdminPanel({
                   <select
                     value={brandConfig.primaryColor}
                     onChange={(e) => setBrandConfig({ ...brandConfig, primaryColor: e.target.value as any })}
-                    className="w-full text-xs font-bold border border-gray-200 rounded-xl p-2.5 outline-hidden bg-white"
+                    className="w-full text-xs font-bold border border-gray-200 rounded-xl p-2.5 outline-hidden bg-white cursor-pointer"
                   >
                     <option value="emerald">أخضر زمردي (Emerald - الافتراضي)</option>
                     <option value="blue">أزرق ملكي (Blue)</option>
@@ -677,13 +670,193 @@ export default function AdminPanel({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">حقوق الملكية والنشر</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">نص حقوق الملكية والنشر (Footer Copyright)</label>
                   <input
                     type="text"
                     value={brandConfig.copyrightText}
                     onChange={(e) => setBrandConfig({ ...brandConfig, copyrightText: e.target.value })}
                     className="w-full text-xs font-bold border border-gray-200 rounded-xl p-2.5 outline-hidden"
                   />
+                </div>
+              </div>
+
+              {/* HEADER CONFIGURATION SECTION */}
+              <div className="bg-brand-50/40 p-4 sm:p-5 rounded-2xl border border-brand-100 space-y-4">
+                <h3 className="text-xs font-black text-brand-900 flex items-center space-x-2 space-x-reverse">
+                  <Sliders className="w-4 h-4 text-brand-600" />
+                  <span>إعدادات خيارات الهيدر العلوي (Header Options)</span>
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200/80 cursor-pointer">
+                    <span className="text-xs font-bold text-gray-800">إظهار الشريط التنبيهي العلوي</span>
+                    <input
+                      type="checkbox"
+                      checked={brandConfig.showHeaderNotice !== false}
+                      onChange={(e) => setBrandConfig({ ...brandConfig, showHeaderNotice: e.target.checked })}
+                      className="w-4 h-4 rounded-md text-brand-600 accent-brand-600"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200/80 cursor-pointer">
+                    <span className="text-xs font-bold text-gray-800">إظهار مربع البحث السريع بالهيدر</span>
+                    <input
+                      type="checkbox"
+                      checked={brandConfig.showHeaderSearch !== false}
+                      onChange={(e) => setBrandConfig({ ...brandConfig, showHeaderSearch: e.target.checked })}
+                      className="w-4 h-4 rounded-md text-brand-600 accent-brand-600"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200/80 cursor-pointer">
+                    <span className="text-xs font-bold text-gray-800">إظهار الشعار الفرعي بجانب اللوجو</span>
+                    <input
+                      type="checkbox"
+                      checked={brandConfig.showHeaderTagline !== false}
+                      onChange={(e) => setBrandConfig({ ...brandConfig, showHeaderTagline: e.target.checked })}
+                      className="w-4 h-4 rounded-md text-brand-600 accent-brand-600"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200/80 cursor-pointer">
+                    <span className="text-xs font-bold text-gray-800">إظهار زر (+ إضافة عرض) في الهيدر</span>
+                    <input
+                      type="checkbox"
+                      checked={brandConfig.showHeaderAddButton !== false}
+                      onChange={(e) => setBrandConfig({ ...brandConfig, showHeaderAddButton: e.target.checked })}
+                      className="w-4 h-4 rounded-md text-brand-600 accent-brand-600"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200/80 cursor-pointer">
+                    <span className="text-xs font-bold text-gray-800">إظهار أيقونة التنبيهات</span>
+                    <input
+                      type="checkbox"
+                      checked={brandConfig.showHeaderNotifications !== false}
+                      onChange={(e) => setBrandConfig({ ...brandConfig, showHeaderNotifications: e.target.checked })}
+                      className="w-4 h-4 rounded-md text-brand-600 accent-brand-600"
+                    />
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-700 mb-1">نص الشريط التنبيهي العلوي</label>
+                    <input
+                      type="text"
+                      placeholder="مثال: مرحباً بك في منصة قايض..."
+                      value={brandConfig.headerNoticeText || ''}
+                      onChange={(e) => setBrandConfig({ ...brandConfig, headerNoticeText: e.target.value })}
+                      className="w-full text-xs font-medium border border-gray-200 bg-white rounded-xl p-2.5 outline-hidden"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-700 mb-1">تخصيص نص زر إضافة العرض في الهيدر</label>
+                    <input
+                      type="text"
+                      placeholder="إضافة عرض"
+                      value={brandConfig.headerAddButtonText || ''}
+                      onChange={(e) => setBrandConfig({ ...brandConfig, headerAddButtonText: e.target.value })}
+                      className="w-full text-xs font-medium border border-gray-200 bg-white rounded-xl p-2.5 outline-hidden"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* FOOTER CONFIGURATION SECTION */}
+              <div className="bg-gray-50/80 p-4 sm:p-5 rounded-2xl border border-gray-200/80 space-y-4">
+                <h3 className="text-xs font-black text-gray-900 flex items-center space-x-2 space-x-reverse">
+                  <Sliders className="w-4 h-4 text-gray-700" />
+                  <span>إعدادات خيارات الفوتر السفلي (Footer Options)</span>
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 cursor-pointer">
+                    <span className="text-xs font-bold text-gray-800">إظهار الفوتر السفلي بالكامل</span>
+                    <input
+                      type="checkbox"
+                      checked={brandConfig.showFooter !== false}
+                      onChange={(e) => setBrandConfig({ ...brandConfig, showFooter: e.target.checked })}
+                      className="w-4 h-4 rounded-md text-brand-600 accent-brand-600"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 cursor-pointer">
+                    <span className="text-xs font-bold text-gray-800">إظهار شريط الألوان المزخرف أعلى الفوتر</span>
+                    <input
+                      type="checkbox"
+                      checked={brandConfig.showFooterAccentBar !== false}
+                      onChange={(e) => setBrandConfig({ ...brandConfig, showFooterAccentBar: e.target.checked })}
+                      className="w-4 h-4 rounded-md text-brand-600 accent-brand-600"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 cursor-pointer">
+                    <span className="text-xs font-bold text-gray-800">إظهار عمود السياسات والشروط بالفوتر</span>
+                    <input
+                      type="checkbox"
+                      checked={brandConfig.showFooterPagesLinks !== false}
+                      onChange={(e) => setBrandConfig({ ...brandConfig, showFooterPagesLinks: e.target.checked })}
+                      className="w-4 h-4 rounded-md text-brand-600 accent-brand-600"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 cursor-pointer">
+                    <span className="text-xs font-bold text-gray-800">إظهار عمود الدعم والمعلومات</span>
+                    <input
+                      type="checkbox"
+                      checked={brandConfig.showFooterSocialLinks !== false}
+                      onChange={(e) => setBrandConfig({ ...brandConfig, showFooterSocialLinks: e.target.checked })}
+                      className="w-4 h-4 rounded-md text-brand-600 accent-brand-600"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200 cursor-pointer sm:col-span-2">
+                    <span className="text-xs font-bold text-gray-800">إظهار شريط الحقوق والنشر في قاع الفوتر</span>
+                    <input
+                      type="checkbox"
+                      checked={brandConfig.showCopyright !== false}
+                      onChange={(e) => setBrandConfig({ ...brandConfig, showCopyright: e.target.checked })}
+                      className="w-4 h-4 rounded-md text-brand-600 accent-brand-600"
+                    />
+                  </label>
+                </div>
+
+                {/* Footer Contact Fields */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-700 mb-1">البريد الإلكتروني للدعم</label>
+                    <input
+                      type="email"
+                      placeholder="support@badel-platform.sa"
+                      value={brandConfig.footerEmail || ''}
+                      onChange={(e) => setBrandConfig({ ...brandConfig, footerEmail: e.target.value })}
+                      className="w-full text-xs font-medium border border-gray-200 bg-white rounded-xl p-2.5 outline-hidden"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-700 mb-1">رقم واتساب الدعم</label>
+                    <input
+                      type="text"
+                      placeholder="05xxxxxxxx"
+                      value={brandConfig.footerWhatsapp || ''}
+                      onChange={(e) => setBrandConfig({ ...brandConfig, footerWhatsapp: e.target.value })}
+                      className="w-full text-xs font-medium border border-gray-200 bg-white rounded-xl p-2.5 outline-hidden"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-700 mb-1">رقم الهاتف الرسمي</label>
+                    <input
+                      type="text"
+                      placeholder="9200xxxxx"
+                      value={brandConfig.footerPhone || ''}
+                      onChange={(e) => setBrandConfig({ ...brandConfig, footerPhone: e.target.value })}
+                      className="w-full text-xs font-medium border border-gray-200 bg-white rounded-xl p-2.5 outline-hidden"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -1241,6 +1414,31 @@ export default function AdminPanel({
             </div>
           )}
 
+        </div>
+      </div>
+
+      {/* Bottom Save Options Bar */}
+      <div className="mt-8 bg-white rounded-3xl p-5 border border-gray-100 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h3 className="text-sm font-black text-gray-900">حفظ خيارات وإعدادات المنصة</h3>
+          <p className="text-xs text-gray-500 font-medium mt-0.5">اضغط على زر الحفظ أدناه لتطبيق وتأكيد كافة الخيارات والتغييرات المستحدثة.</p>
+        </div>
+
+        <div className="flex items-center space-x-3 space-x-reverse w-full sm:w-auto">
+          {savedSuccessMessage && (
+            <div className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-4 py-2.5 rounded-2xl text-xs font-bold flex items-center space-x-2 space-x-reverse animate-in fade-in">
+              <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>{savedSuccessMessage}</span>
+            </div>
+          )}
+
+          <button
+            onClick={handleSaveGeneralSettings}
+            className="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs px-6 py-3 rounded-2xl flex items-center justify-center space-x-2 space-x-reverse shadow-xs cursor-pointer transition-all"
+          >
+            <Save className="w-4 h-4" />
+            <span>حفظ الخيارات والتغييرات</span>
+          </button>
         </div>
       </div>
     </div>

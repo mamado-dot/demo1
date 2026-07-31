@@ -11,6 +11,7 @@ import AuthModal from './components/AuthModal';
 import Simulator from './components/Simulator';
 import ListingDetails from './components/ListingDetails';
 import MySwaps from './components/MySwaps';
+import MyProducts from './components/MyProducts';
 import AdminPanel from './components/AdminPanel';
 import BarterOfferModal from './components/BarterOfferModal';
 
@@ -35,41 +36,7 @@ import {
   savePlatformSettingsToDb
 } from './services/firebaseService';
 
-const INITIAL_QUESTIONS: ListingQuestion[] = [
-  {
-    id: 'q1',
-    listingId: 'list_1',
-    askerId: 'user_sara',
-    askerName: 'سارة الأحمد',
-    askerAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
-    questionText: 'هل كرتون البلايستيشن 5 ومعه كافة أسلاك الوكالة متوفرة؟ وهل فيه أي خدوش؟',
-    createdAt: new Date(Date.now() - 3600000 * 24).toISOString(), // 1 day ago
-    replyText: 'أهلاً سارة، نعم الكرتون الأصلي بكافة محتوياته متوفر وسليم تماماً، والجهاز خالي تماماً من أي خدوش أو عيوب وبإمكانك فحصه قبل المقايضة.',
-    replyCreatedAt: new Date(Date.now() - 3600000 * 20).toISOString()
-  },
-  {
-    id: 'q2',
-    listingId: 'list_1',
-    askerId: 'user_khaled',
-    askerName: 'خالد الحربي',
-    askerAvatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=150&q=80',
-    questionText: 'هل تقبل مقايضة مع كاميرا احترافية كانون 80D نظيفة جداً؟',
-    createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-    replyText: 'أهلاً بك خالد، يعطيك العافية العرض مغري لكني أبحث بشكل أساسي عن جهاز آيباد برو للدراسة والتصميم، شكراً لك.',
-    replyCreatedAt: new Date(Date.now() - 3600000 * 4).toISOString()
-  },
-  {
-    id: 'q3',
-    listingId: 'list_2',
-    askerId: 'user_ahmed',
-    askerName: 'أحمد العتيبي',
-    askerAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
-    questionText: 'أهلاً سارة، هل يشمل عرضك حجز الدومين والاستضافة للموقع التعريفي؟',
-    createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
-    replyText: 'أهلاً أحمد، العرض يشمل البرمجة والتصميم ورفع الموقع على استضافة مجانية مثل Vercel أو Netlify، وإذا عندك استضافة خاصة أساعدك في الإعداد بالتأكيد.',
-    replyCreatedAt: new Date(Date.now() - 3600000 * 45).toISOString()
-  }
-];
+const INITIAL_QUESTIONS: ListingQuestion[] = [];
 
 const THEME_COLORS = {
   emerald: {
@@ -177,11 +144,11 @@ export default function App() {
       const cached = localStorage.getItem('app_current_user');
       if (cached) {
         const parsed: User = JSON.parse(cached);
-        const isOwner = parsed.phone?.toLowerCase().includes('crazyretiree') || parsed.name?.toLowerCase().includes('crazyretiree') || parsed.id === 'user_owner_crazyretiree';
+        const isOwner = parsed.phone?.toLowerCase().includes('crazyretiree') || parsed.email?.toLowerCase().includes('crazyretiree') || parsed.name?.toLowerCase().includes('crazyretiree') || parsed.id === 'user_owner_crazyretiree';
         if (isOwner) {
           parsed.isAdmin = true;
-          parsed.bio = 'مالك ومؤسس منصة قايض للمقايضة العادلة.';
-          parsed.completedSwaps = 100;
+          parsed.bio = parsed.bio || '';
+          parsed.completedSwaps = parsed.completedSwaps ?? 100;
           parsed.reliabilityLevel = 'ممتاز';
         }
         return parsed;
@@ -193,8 +160,8 @@ export default function App() {
   });
   const [viewingUser, setViewingUser] = useState<User | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
-  const [users, setUsers] = useState<User[]>(Object.values(MOCK_USERS));
-  const [listings, setListings] = useState<Listing[]>(INITIAL_LISTINGS);
+  const [users, setUsers] = useState<User[]>([]);
+  const [listings, setListings] = useState<Listing[]>([]);
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -271,6 +238,8 @@ export default function App() {
     }
   ]);
 
+  const DEFAULT_HERO_IMAGE = 'https://images.unsplash.com/photo-1556742049-0a679149226a?auto=format&fit=crop&w=800&q=80';
+
   const [adBanners, setAdBanners] = useState<AdBanner[]>(() => {
     try {
       const cached = localStorage.getItem('app_ad_banners');
@@ -346,8 +315,10 @@ export default function App() {
   // Firebase Realtime Subscriptions
   useEffect(() => {
     const unsubListings = subscribeToListings((data) => {
-      if (data) {
+      if (data && data.length > 0) {
         setListings(data);
+      } else {
+        setListings(INITIAL_LISTINGS);
       }
     });
 
@@ -393,15 +364,27 @@ export default function App() {
           }
         }
         if (data.landingConfig) {
-          if (data.landingConfig.platformSlogan) setPlatformSlogan(data.landingConfig.platformSlogan);
-          if (data.landingConfig.platformDescription) setPlatformDescription(data.landingConfig.platformDescription);
-          if (data.landingConfig.platformImageUrl) setPlatformImageUrl(data.landingConfig.platformImageUrl);
+          if (data.landingConfig.platformSlogan) {
+            setPlatformSlogan(data.landingConfig.platformSlogan);
+            try { localStorage.setItem('app_platform_slogan', data.landingConfig.platformSlogan); } catch (e) {}
+          }
+          if (data.landingConfig.platformDescription) {
+            setPlatformDescription(data.landingConfig.platformDescription);
+            try { localStorage.setItem('app_platform_description', data.landingConfig.platformDescription); } catch (e) {}
+          }
+          if (data.landingConfig.platformImageUrl) {
+            setPlatformImageUrl(data.landingConfig.platformImageUrl);
+            try { localStorage.setItem('app_platform_image_url', data.landingConfig.platformImageUrl); } catch (e) {}
+          }
           if (data.landingConfig.feature1Title) setFeature1Title(data.landingConfig.feature1Title);
           if (data.landingConfig.feature1Desc) setFeature1Desc(data.landingConfig.feature1Desc);
           if (data.landingConfig.feature2Title) setFeature2Title(data.landingConfig.feature2Title);
           if (data.landingConfig.feature2Desc) setFeature2Desc(data.landingConfig.feature2Desc);
           if (data.landingConfig.feature3Title) setFeature3Title(data.landingConfig.feature3Title);
           if (data.landingConfig.feature3Desc) setFeature3Desc(data.landingConfig.feature3Desc);
+        } else if (data.platformImageUrl) {
+          setPlatformImageUrl(data.platformImageUrl);
+          try { localStorage.setItem('app_platform_image_url', data.platformImageUrl); } catch (e) {}
         }
       }
     });
@@ -434,7 +417,10 @@ export default function App() {
     });
     setPlatformSlogan('قايض وفاوض بما تحتاجه.');
     setPlatformDescription('منصة تتيح لك عرض منتجاتك أو مهارتك ومقايضتها بما تحتاجه مباشرة مع الآخرين - بكل بساطة وأمان.');
-    setPlatformImageUrl('https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80');
+    setPlatformImageUrl(DEFAULT_HERO_IMAGE);
+    try {
+      localStorage.setItem('app_platform_image_url', DEFAULT_HERO_IMAGE);
+    } catch (e) {}
     setFeature1Title('مقايضة مباشر بدون وسيط');
     setFeature1Desc('اعرض منتجك واذكر ما تريده مقابله.');
     setFeature2Title('محادثات فورية');
@@ -444,9 +430,15 @@ export default function App() {
   };
 
   // Editable Landing Section States
-  const [platformSlogan, setPlatformSlogan] = useState('قايض وفاوض بما تحتاجه.');
-  const [platformDescription, setPlatformDescription] = useState('منصة تتيح لك عرض منتجاتك أو مهارتك ومقايضتها بما تحتاجه مباشرة مع الآخرين - بكل بساطة وأمان.');
-  const [platformImageUrl, setPlatformImageUrl] = useState('https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80');
+  const [platformSlogan, setPlatformSlogan] = useState(() => {
+    try { return localStorage.getItem('app_platform_slogan') || 'قايض وفاوض بما تحتاجه.'; } catch (e) { return 'قايض وفاوض بما تحتاجه.'; }
+  });
+  const [platformDescription, setPlatformDescription] = useState(() => {
+    try { return localStorage.getItem('app_platform_description') || 'منصة تتيح لك عرض منتجاتك أو مهارتك ومقايضتها بما تحتاجه مباشرة مع الآخرين - بكل بساطة وأمان.'; } catch (e) { return 'منصة تتيح لك عرض منتجاتك أو مهارتك ومقايضتها بما تحتاجه مباشرة مع الآخرين - بكل بساطة وأمان.'; }
+  });
+  const [platformImageUrl, setPlatformImageUrl] = useState(() => {
+    try { return localStorage.getItem('app_platform_image_url') || DEFAULT_HERO_IMAGE; } catch (e) { return DEFAULT_HERO_IMAGE; }
+  });
   const [feature1Title, setFeature1Title] = useState('مقايضة مباشر بدون وسيط');
   const [feature1Desc, setFeature1Desc] = useState('اعرض منتجك واذكر ما تريده مقابله.');
   const [feature2Title, setFeature2Title] = useState('محادثات فورية');
@@ -490,9 +482,9 @@ export default function App() {
 
   // Setup initial state for logged in user
   const handleLogin = (user: User) => {
-    const isOwner = user.phone?.toLowerCase().includes('crazyretiree') || user.name?.toLowerCase().includes('crazyretiree') || user.id === 'user_owner_crazyretiree';
+    const isOwner = user.phone?.toLowerCase().includes('crazyretiree') || user.email?.toLowerCase().includes('crazyretiree') || user.name?.toLowerCase().includes('crazyretiree') || user.id === 'user_owner_crazyretiree';
     const finalUser: User = isOwner 
-      ? { ...user, isAdmin: true, bio: 'مالك ومؤسس منصة قايض للمقايضة العادلة.', completedSwaps: 100, reliabilityLevel: 'ممتاز' }
+      ? { ...user, isAdmin: true, bio: user.bio || '', completedSwaps: user.completedSwaps ?? 100, reliabilityLevel: 'ممتاز' }
       : user;
 
     setCurrentUser(finalUser);
@@ -579,6 +571,35 @@ export default function App() {
     deleteListingFromDb(listingId);
   };
 
+  // Toggle hide/show for an owned listing
+  const handleToggleHideListing = (listingId: string) => {
+    setListings(prev => prev.map(l => {
+      if (l.id === listingId) {
+        const updatedIsHidden = !l.isHidden;
+        updateListingInDb(listingId, { isHidden: updatedIsHidden });
+        return { ...l, isHidden: updatedIsHidden };
+      }
+      return l;
+    }));
+  };
+
+  // Update listing details
+  const handleUpdateListing = (updatedListing: Listing) => {
+    setListings(prev => prev.map(l => l.id === updatedListing.id ? updatedListing : l));
+    updateListingInDb(updatedListing.id, {
+      title: updatedListing.title,
+      type: updatedListing.type,
+      category: updatedListing.category,
+      city: updatedListing.city,
+      description: updatedListing.description,
+      imageUrl: updatedListing.imageUrl,
+      wantedInReturn: updatedListing.wantedInReturn,
+      cashDifference: updatedListing.cashDifference,
+      status: updatedListing.status,
+      isHidden: updatedListing.isHidden,
+    });
+  };
+
   // Close an owned listing (Mark as completed)
   const handleCloseListing = (listingId: string) => {
     setListings(listings.map(l => l.id === listingId ? { ...l, status: 'مكتمل' } : l));
@@ -645,6 +666,20 @@ export default function App() {
     note: string;
   }) => {
     if (!currentUser) return;
+
+    // Check if the selected offered listing is already offered in another active swap offer
+    const isOfferedProductBusy = chats.some(
+      c => c.offeredListingId === data.offeredListing.id && c.offerStatus !== 'مرفوض' && c.offerStatus !== 'مكتمل'
+    );
+    if (isOfferedProductBusy) {
+      addNotification(
+        'تنبيه المقايضة',
+        `المنتج (${data.offeredListing.title}) مُقدم بالفعل في عرض مقايضة جاري. لا يمكنك تقديم المنتج نفسه في أكثر من عرض في نفس الوقت.`,
+        'offer'
+      );
+      setIsBarterModalOpen(false);
+      return;
+    }
 
     const otherUser: User = MOCK_USERS[data.targetListing.ownerId] || {
       id: data.targetListing.ownerId,
@@ -1180,11 +1215,11 @@ export default function App() {
                   {/* Column 2: Hero Illustration Image (Side-by-side with text) */}
                   <div className="col-span-5 sm:col-span-5 lg:col-span-5 flex items-center justify-center relative h-36 sm:h-56 md:h-72 lg:h-96 order-2 bg-transparent p-1" id="hero_image_cell">
                     <img 
-                      src={platformImageUrl || 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80'} 
+                      src={platformImageUrl || DEFAULT_HERO_IMAGE} 
                       alt="Barter illustration" 
                       className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-102 rounded-2xl shadow-xs"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80';
+                        (e.target as HTMLImageElement).src = DEFAULT_HERO_IMAGE;
                       }}
                       referrerPolicy="no-referrer"
                     />
@@ -1464,6 +1499,7 @@ export default function App() {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                   onViewProfile={handleViewProfile}
+                  onNavigateToMyProducts={() => setActiveTab('my_products')}
                   onStartChat={(userToChat) => {
                     handleSendDirectMessage(userToChat.id, 'مرحباً، أود الاستفسار عن عروضك المعروضة للمقايضة.', 'استفسار عام');
                   }}
@@ -1490,6 +1526,27 @@ export default function App() {
                   interestedListings={interestedListings}
                   onToggleInterest={handleToggleInterest}
                   onViewProfile={handleViewProfile}
+                />
+              </div>
+            )}
+
+            {/* VIEW: MY PRODUCTS PAGE (منتجاتي) */}
+            {activeTab === 'my_products' && (
+              <div id="my_products_view_panel">
+                <MyProducts
+                  currentUser={currentUser}
+                  userListings={listings}
+                  onUpdateListing={handleUpdateListing}
+                  onDeleteListing={handleDeleteListing}
+                  onToggleHideListing={handleToggleHideListing}
+                  onMarkCompleted={handleCloseListing}
+                  onOpenAddListing={() => setActiveTab('add')}
+                  onViewDetails={(listing) => {
+                    setSelectedListing(listing);
+                    setActiveTab('details_page');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  language={language}
                 />
               </div>
             )}
@@ -1621,6 +1678,7 @@ export default function App() {
               userListings={listings}
               currentUser={currentUser}
               barterOptions={barterOptions}
+              existingChats={chats}
               onOpenAddListing={() => {
                 setIsBarterModalOpen(false);
                 handleTabChange('add');

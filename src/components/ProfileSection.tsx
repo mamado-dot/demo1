@@ -17,6 +17,7 @@ interface ProfileSectionProps {
   onViewProfile?: (userId: string, userName?: string, userAvatar?: string) => void;
   onStartChat?: (user: UserType) => void;
   onBackToFeed?: () => void;
+  onNavigateToMyProducts?: () => void;
   language?: 'en' | 'ar';
   initialSubTab?: 'listings' | 'reviews' | 'trust';
 }
@@ -34,6 +35,7 @@ export default function ProfileSection({
   onViewProfile,
   onStartChat,
   onBackToFeed,
+  onNavigateToMyProducts,
   language = 'ar',
   initialSubTab = 'listings',
 }: ProfileSectionProps) {
@@ -160,23 +162,33 @@ export default function ProfileSection({
               </div>
             </div>
 
-            {/* Action Button: Edit Profile (if own) or Message Owner (if another) */}
+            {/* Action Buttons: Edit Profile & Manage Products */}
             {isOwnProfile ? (
-              <button
-                onClick={() => {
-                  setEditName(targetUser.name);
-                  setEditCity(targetUser.city);
-                  setEditBio(targetUser.bio || '');
-                  setEditAvatar(targetUser.avatar || '');
-                  setEditPhone(targetUser.phone || '');
-                  setEditEmail(targetUser.email || (targetUser.phone?.includes('@') ? targetUser.phone : ''));
-                  setIsEditingProfile(true);
-                }}
-                className={`flex items-center space-x-1.5 ${isRtl ? 'space-x-reverse' : ''} bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 font-bold text-xs px-4 py-2.5 rounded-xl transition-all cursor-pointer`}
-              >
-                <Edit3 className="w-3.5 h-3.5 text-gray-500" />
-                <span>{isRtl ? 'تعديل الملف الشخصي' : 'Edit Profile'}</span>
-              </button>
+              <div className="flex items-center space-x-2 space-x-reverse flex-wrap gap-y-2">
+                {onNavigateToMyProducts && (
+                  <button
+                    onClick={onNavigateToMyProducts}
+                    className="flex items-center space-x-1.5 space-x-reverse bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-4 py-2.5 rounded-xl transition-all cursor-pointer shadow-xs"
+                  >
+                    <span>{isRtl ? 'إدارة منتجاتي' : 'Manage My Products'}</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setEditName(targetUser.name);
+                    setEditCity(targetUser.city);
+                    setEditBio(targetUser.bio || '');
+                    setEditAvatar(targetUser.avatar || '');
+                    setEditPhone(targetUser.phone || '');
+                    setEditEmail(targetUser.email || (targetUser.phone?.includes('@') ? targetUser.phone : ''));
+                    setIsEditingProfile(true);
+                  }}
+                  className={`flex items-center space-x-1.5 ${isRtl ? 'space-x-reverse' : ''} bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 font-bold text-xs px-4 py-2.5 rounded-xl transition-all cursor-pointer`}
+                >
+                  <Edit3 className="w-3.5 h-3.5 text-gray-500" />
+                  <span>{isRtl ? 'تعديل الملف الشخصي' : 'Edit Profile'}</span>
+                </button>
+              </div>
             ) : (
               <span className="text-[11px] text-amber-900 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200/60 font-bold">
                 المحادثات تفعل عند تقديم طلب مقايضة على العروض

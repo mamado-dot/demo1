@@ -73,7 +73,9 @@ export default function Footer({
     <footer className="w-full bg-white border-t border-gray-100 mt-16 text-gray-700" id="standalone_footer">
       
       {/* Top Banner Accent */}
-      <div className="h-1.5 bg-gradient-to-r from-brand-600 via-amber-500 to-brand-700 w-full" />
+      {brandConfig.showFooterAccentBar !== false && (
+        <div className="h-1.5 bg-gradient-to-r from-brand-600 via-amber-500 to-brand-700 w-full" />
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
@@ -152,49 +154,61 @@ export default function Footer({
           </div>
 
           {/* Col 3: Standalone Policies & Terms */}
-          <div className="space-y-3" id="footer_policies_column">
-            <h3 className="text-xs font-black text-gray-900 border-r-3 border-brand-600 pr-2.5">
-              {language === 'en' ? 'Policies & Terms' : 'السياسات والشروط'}
-            </h3>
-            <ul className="space-y-2 text-xs font-bold text-gray-600">
-              {activePages.map((page) => (
-                <li key={page.id}>
-                  <button
-                    onClick={() => {
-                      onSelectCustomPage(page);
-                      setActiveTab('custom_page');
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="hover:text-brand-600 transition-colors cursor-pointer flex items-center space-x-1.5 space-x-reverse text-right"
-                  >
-                    <FileText className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                    <span className="truncate">{page.title}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {brandConfig.showFooterPagesLinks !== false && (
+            <div className="space-y-3" id="footer_policies_column">
+              <h3 className="text-xs font-black text-gray-900 border-r-3 border-brand-600 pr-2.5">
+                {language === 'en' ? 'Policies & Terms' : 'السياسات والشروط'}
+              </h3>
+              <ul className="space-y-2 text-xs font-bold text-gray-600">
+                {activePages.map((page) => (
+                  <li key={page.id}>
+                    <button
+                      onClick={() => {
+                        onSelectCustomPage(page);
+                        setActiveTab('custom_page');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className="hover:text-brand-600 transition-colors cursor-pointer flex items-center space-x-1.5 space-x-reverse text-right"
+                    >
+                      <FileText className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                      <span className="truncate">{page.title}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Col 4: Support & Community */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-black text-gray-900 border-r-3 border-brand-600 pr-2.5">
-              {language === 'en' ? 'Support & Contact' : 'الدعم والمساعدة'}
-            </h3>
-            <div className="space-y-2 text-xs font-medium text-gray-600">
-              <div className="flex items-center space-x-2 space-x-reverse">
-                <Mail className="w-4 h-4 text-brand-600 shrink-0" />
-                <span>support@badel-platform.sa</span>
-              </div>
-              <div className="flex items-center space-x-2 space-x-reverse">
-                <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>خدمة عملاء مباشرة على مدار الساعة</span>
-              </div>
-              <div className="flex items-center space-x-2 space-x-reverse">
-                <MapPin className="w-4 h-4 text-amber-600 shrink-0" />
-                <span>المملكة العربية السعودية</span>
+          {brandConfig.showFooterSocialLinks !== false && (
+            <div className="space-y-3">
+              <h3 className="text-xs font-black text-gray-900 border-r-3 border-brand-600 pr-2.5">
+                {language === 'en' ? 'Support & Contact' : 'الدعم والمساعدة'}
+              </h3>
+              <div className="space-y-2 text-xs font-medium text-gray-600">
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <Mail className="w-4 h-4 text-brand-600 shrink-0" />
+                  <span>{brandConfig.footerEmail || 'support@badel-platform.sa'}</span>
+                </div>
+                {brandConfig.footerPhone && (
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <Phone className="w-4 h-4 text-brand-600 shrink-0" />
+                    <span dir="ltr">{brandConfig.footerPhone}</span>
+                  </div>
+                )}
+                {brandConfig.footerWhatsapp && (
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>واتساب: {brandConfig.footerWhatsapp}</span>
+                  </div>
+                )}
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <MapPin className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>المملكة العربية السعودية</span>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
         </div>
 

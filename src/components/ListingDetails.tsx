@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { 
   ArrowRight, 
-  MapPin, 
   Star, 
   ArrowLeftRight, 
   MessageSquare, 
@@ -11,7 +10,6 @@ import {
   Send, 
   MessageCircle, 
   Lock,
-  ChevronLeft,
   Calendar,
   AlertCircle,
   HelpCircle,
@@ -107,20 +105,6 @@ export default function ListingDetails({
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
               />
-              
-              {/* Badges on image */}
-              <div className="absolute top-4 right-4 flex flex-wrap gap-2">
-                <span className="bg-emerald-600 text-white px-3.5 py-1 rounded-xl text-xs font-extrabold shadow-sm">
-                  {listing.type}
-                </span>
-                <span className="bg-white/95 backdrop-blur-xs text-gray-950 px-3 py-1 rounded-xl text-xs font-bold border border-gray-100 shadow-sm">
-                  {listing.category}
-                </span>
-                <span className="bg-gray-900/80 backdrop-blur-xs text-white px-3 py-1 rounded-xl text-xs font-medium flex items-center space-x-1 space-x-reverse">
-                  <MapPin className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>{listing.city}</span>
-                </span>
-              </div>
 
               {isCompleted && (
                 <div className="absolute inset-0 bg-gray-950/60 backdrop-blur-xs flex items-center justify-center">
@@ -143,8 +127,25 @@ export default function ListingDetails({
                   <Calendar className="w-4 h-4 text-gray-400" />
                   <span>نُشر في: {new Date(listing.createdAt).toLocaleDateString('ar-SA')}</span>
                 </div>
-                <span>•</span>
-                <div>الحالة: <span className="font-semibold text-emerald-600">نشط وجاهز للتبادل</span></div>
+              </div>
+
+              {/* Owner Name under Status */}
+              <div className="mt-3 pt-3 border-t border-gray-100/80 flex items-center justify-between text-xs">
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <span className="text-gray-400 font-medium">صاحب العرض:</span>
+                  <button 
+                    onClick={() => onViewProfile?.(listing.ownerId, listing.ownerName, listing.ownerAvatar)}
+                    className="flex items-center space-x-1.5 space-x-reverse text-gray-900 font-extrabold hover:text-[#786142] hover:underline cursor-pointer group"
+                  >
+                    <img
+                      src={listing.ownerAvatar}
+                      alt={listing.ownerName}
+                      className="w-5.5 h-5.5 rounded-full object-cover ring-1 ring-gray-200 group-hover:ring-[#786142] transition-all"
+                      referrerPolicy="no-referrer"
+                    />
+                    <span>{listing.ownerName}</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -359,51 +360,10 @@ export default function ListingDetails({
 
         </div>
 
-        {/* LEFT COLUMN: Sidebar with Lister Profile and Action triggers (Col span 4) */}
+        {/* LEFT COLUMN: Sidebar with Action triggers (Col span 4) */}
         <div className="lg:col-span-4 space-y-6" id="details_left_col">
           
-          {/* 1. Lister Profile Widget */}
-          <div className="bg-white rounded-3xl border border-gray-100 p-5 space-y-4 shadow-xs" id="lister_widget">
-            <div className="flex items-center justify-between border-b border-gray-50 pb-2.5">
-              <h3 className="text-xs font-extrabold text-gray-400">صاحب العرض</h3>
-              {onViewProfile && (
-                <button
-                  onClick={() => onViewProfile(listing.ownerId, listing.ownerName, listing.ownerAvatar)}
-                  className="text-[11px] font-bold text-[#786142] hover:text-[#5c4931] hover:underline cursor-pointer flex items-center gap-1"
-                >
-                  <span>عرض الملف الكامل</span>
-                  <ChevronLeft className="w-3 h-3" />
-                </button>
-              )}
-            </div>
-            
-            {/* Lister Profile Row */}
-            <div 
-              className="flex items-center space-x-3 space-x-reverse cursor-pointer group p-1.5 -m-1.5 rounded-2xl hover:bg-[#FAF8F5] transition-all" 
-              id="lister_profile_info"
-              onClick={() => onViewProfile?.(listing.ownerId, listing.ownerName, listing.ownerAvatar)}
-              title={`عرض الملف الشخصي لـ ${listing.ownerName}`}
-            >
-              <img
-                src={listing.ownerAvatar}
-                alt={listing.ownerName}
-                className="w-12 h-12 rounded-full object-cover ring-2 ring-emerald-50 group-hover:ring-[#8A6A4B] transition-all"
-                referrerPolicy="no-referrer"
-              />
-              <div className="text-right flex-1">
-                <h4 className="font-extrabold text-gray-900 text-sm group-hover:text-[#786142] group-hover:underline underline-offset-2 transition-all">{listing.ownerName}</h4>
-                <div className="flex items-center space-x-1 space-x-reverse mt-0.5">
-                  <span className="text-[10px] text-gray-400">{listing.city}</span>
-                  <span className="text-[10px] text-gray-300">•</span>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 rounded">
-                    مستوى {listing.ownerReliability}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 2. Direct Actions (Three options on left side) */}
+          {/* Direct Actions (Options on left side) */}
           <div className="bg-white rounded-3xl border border-gray-100 p-5 space-y-3 shadow-xs" id="lister_actions_box">
             {/* Option 1: إضافة كمهتم بالمقايضة (Add interested in barter) */}
             <button
@@ -449,27 +409,6 @@ export default function ListingDetails({
               </span>
             </button>
 
-            {/* Barter Policy Note */}
-            <div className="bg-amber-50/60 p-3.5 rounded-2xl border border-amber-200/60 text-[11px] text-amber-950 space-y-1">
-              <span className="font-extrabold block text-amber-900">نظام المقايضة والاتفاق:</span>
-              <p className="text-[10.5px] leading-relaxed text-amber-900/80">
-                تجري جميع المفاوضات والتنسيقات عند تقديم طلب مقايضة رسمي، لتفعيل المحادثة الموثقة وإصدار العقد الرقمي.
-              </p>
-            </div>
-
-          </div>
-
-          {/* Tips for Safe Swapping Info */}
-          <div className="bg-emerald-50/30 rounded-3xl p-4 border border-emerald-100/20 text-right space-y-2">
-            <h4 className="text-xs font-bold text-emerald-800 flex items-center space-x-1.5 space-x-reverse">
-              <AlertCircle className="w-3.5 h-3.5 text-emerald-600" />
-              <span>نصائح لمقايضة آمنة:</span>
-            </h4>
-            <ul className="text-[10.5px] text-emerald-950 space-y-1 pr-1.5 list-disc leading-relaxed">
-              <li>قم بالاتفاق المتبادل في مكان عام آمن ومزدحم.</li>
-              <li>افحص السلعة المعروضة جيداً للتأكد من سلامتها قبل إتمام التبادل.</li>
-              <li>استخدم نظام المحادثة الموثق في منصة بادل لمتابعة اتفاقياتك بشكل آمن.</li>
-            </ul>
           </div>
 
         </div>
