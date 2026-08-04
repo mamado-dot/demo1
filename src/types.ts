@@ -1,219 +1,305 @@
-export type City = 'الرياض' | 'جدة' | 'الدمام' | 'مكة' | 'المدينة المنورة' | 'أبها' | 'الخبر';
+export type ItemCondition = 'جديد (بالكرتون)' | 'ممتاز كالجديد' | 'مستعمل بحالة جيدة' | 'مستعمل مع خدوش بسيطة';
 
-export type ListingType = 'سلعة' | 'خدمة';
+export type ItemStatus = 'active' | 'in_deal' | 'bartered' | 'hidden';
+
+export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'contract_pending' | 'completed' | 'cancelled';
+
+export type CategoryName = 
+  | 'إلكترونيات وأجهزة' 
+  | 'سيارات ومركبات' 
+  | 'أثاث ومستلزمات منزل' 
+  | 'آلات موسيقية' 
+  | 'ساعات ومستلزمات شخصية' 
+  | 'ألعاب ورياضة' 
+  | 'كتب ومقتنيات نادرة';
+
+export type UserMembershipTier = 'عضو عادي' | 'عضو موثق' | 'عضو مشترك';
 
 export interface User {
   id: string;
   name: string;
-  avatar: string;
-  city: City;
-  rating: number;
-  completedSwaps: number;
-  reliabilityLevel: 'ممتاز' | 'جيد جداً' | 'مبتدئ';
-  bio: string;
-  isAdmin?: boolean;
-  isBanned?: boolean;
-  phone?: string;
   email?: string;
-  joinedDate?: string;
-  isVerified?: boolean;
-  isNafathVerified?: boolean;
-}
-
-export interface Listing {
-  id: string;
-  title: string;
-  type: ListingType;
-  category: string;
-  city: City;
-  description: string;
-  imageUrl: string;
-  ownerId: string;
-  ownerName: string;
-  ownerRating: number;
-  ownerReliability: string;
-  ownerAvatar: string;
-  wantedInReturn: string; // What they want in return
-  cashDifference?: string | number;
-  createdAt: string;
-  status: 'نشط' | 'مكتمل'; // active or completed
-  isHidden?: boolean;
-}
-
-export interface Message {
-  id: string;
-  senderId: string;
-  text: string;
-  timestamp: string;
-}
-
-export interface CustomBarterField {
-  id: string;
-  label: string;
-  placeholder?: string;
-  isEnabled: boolean;
-  isRequired: boolean;
-}
-
-export interface BarterOptions {
-  enableProducts?: boolean;
-  enableServices?: boolean;
-  enableCashDifference: boolean;
-  enableOfferNote: boolean;
-  enableProductSelection: boolean;
-  enableSwapRating: boolean;
-  enableFilterTabs: boolean;
-  enableLocationField: boolean;
-  enableDeliveryOption: boolean;
-  enableInspectionOption: boolean;
-  enableOfferCancel: boolean;
-  customFields: CustomBarterField[];
-}
-
-export interface Chat {
-  id: string;
-  listingId: string;
-  listingTitle: string;
-  listingImageUrl: string;
-  listingWantedInReturn: string;
-  offeredListingId?: string;
-  offeredListingTitle?: string;
-  offeredListingImageUrl?: string;
-  cashDifferenceType?: 'none' | 'offerer_pays' | 'offerer_requests';
-  cashDifferenceAmount?: number;
-  offerNote?: string;
-  deliveryLocation?: string;
-  deliveryMethod?: string;
-  requiresInspection?: boolean;
-  customFieldsData?: Record<string, string>;
-  otherUser: User;
-  messages: Message[];
-  offerStatus?: 'معلق' | 'مقبول' | 'مرفوض' | 'مكتمل'; // swap offer status
-  offererConfirmed?: boolean;
-  ownerConfirmed?: boolean;
-  contractNumber?: string;
-  contractDate?: string;
-}
-
-export interface Notification {
-  id: string;
-  title: string;
-  description: string;
-  timestamp: string;
-  read: boolean;
-  type: 'message' | 'offer' | 'rating' | 'match';
-  relatedId?: string; // listingId, chatId, etc.
-}
-
-export interface Review {
-  id: string;
-  reviewerName: string;
-  reviewerAvatar: string;
+  password?: string;
+  isOwner?: boolean;
+  avatar: string;
+  city: string;
+  phone: string;
+  verified: boolean;
   rating: number;
-  comment: string;
-  date: string;
+  completedBartersCount: number;
+  isActive?: boolean;
+  membershipTier?: UserMembershipTier;
 }
 
-export interface ListingQuestion {
+export interface TradeNegotiationMessage {
   id: string;
-  listingId: string;
-  askerId: string;
-  askerName: string;
-  askerAvatar: string;
-  questionText: string;
-  createdAt: string;
-  replyText?: string;
-  replyCreatedAt?: string;
-}
-
-export interface CustomPage {
-  id: string;
-  slug: string;
-  title: string;
-  content: string;
-  isActive: boolean;
-  updatedAt: string;
-}
-
-export interface AdBanner {
-  id: string;
-  title: string;
-  imageUrl: string;
-  targetUrl?: string;
-  position: 'header' | 'footer';
-  isActive: boolean;
-  badgeText?: string;
-}
-
-export interface ContractClause {
-  id: string;
-  title: string;
+  offerId: string;
+  senderId: string;
+  senderName: string;
+  senderAvatar: string;
   text: string;
-  isEnabled: boolean;
+  createdAt: string;
 }
 
-export interface ContractSettings {
-  contractTitle: string;
-  contractSubtitle: string;
-  documentBadgeText: string;
-  party1Header: string;
-  party1Label: string;
-  party2Label: string;
-  detailsHeader: string;
-  termsHeader: string;
-  legalDeclaration: string;
-  sealText: string;
-  sealSubtext: string;
-  sealImageUrl?: string;
-  showQrCode: boolean;
-  showInspectionTerms: boolean;
-  enableIdentityVerification?: boolean;
-  requireNafathForContract?: boolean;
-  customClauses: ContractClause[];
+export interface ItemQuestion {
+  id: string;
+  itemId: string;
+  userId: string;
+  userName: string;
+  userAvatar: string;
+  question: string;
+  createdAt: string;
+  answer?: string;
+  answeredAt?: string;
 }
 
-export interface SiteSettings {
-  homeListingsLimit: number;
-  gridColumns?: number; // 2 | 3 | 4 | 5 (default 4 per row)
-  showCategoryFilters?: boolean;
-  showCityFilters?: boolean;
-  showSearchFilter?: boolean;
-  requireImageForListings: boolean;
-  allowDirectPhoneContact: boolean;
-  autoApproveListings: boolean;
-  barterTermsNotice: string;
-  maintenanceMode: boolean;
-  contractSettings?: ContractSettings;
+export interface BarterItem {
+  id: string;
+  title: string;
+  category: CategoryName;
+  description: string;
+  condition: ItemCondition;
+  estimatedValue: number; // بالريال السعودي
+  images: string[];
+  location: string;
+  ownerId: string;
+  status: ItemStatus;
+  createdAt: string;
+  
+  // شروط وتطلعات المقايضة
+  desiredCategory: string;
+  desiredDescription: string;
+  allowCashDifference: boolean;
+  maxCashDifference?: number; // أقصى فارق سعر مسموح به
+  deliveryPreference: 'استلام يدوي' | 'شحن بريدي' | 'كلاهما يفي بالغرض';
+  
+  // إحصائيات
+  views: number;
+  likes: number;
 }
 
-export interface BrandConfig {
-  primaryColor: 'emerald' | 'blue' | 'purple' | 'rose' | 'amber' | 'brown';
-  brandName: string;
-  brandLogo: string;
-  brandTagline: string;
-  copyrightText: string;
-  simulatedUsers: number;
-  simulatedListings: number;
-  simulatedSwaps: number;
-  showHeaderNotice?: boolean;
-  headerNoticeText?: string;
-  showHeaderSearch?: boolean;
-  showHeaderTagline?: boolean;
-  showHeaderAddButton?: boolean;
-  headerAddButtonText?: string;
-  showHeaderLanguageSelector?: boolean;
-  showHeaderNotifications?: boolean;
-  showFooter?: boolean;
-  showCopyright?: boolean;
+export interface TradeOffer {
+  id: string;
+  targetItemId: string; // السلعة المعروضة الأصلية
+  offeredItemId: string; // السلعة المقدمة للمقايضة
+  offeredByUserId: string;
+  targetOwnerUserId: string;
+  cashDifference: number; // فارق السعر النقدي (+ تدفع للمستهدف، - تطلب من المستهدف)
+  note: string;
+  status: OfferStatus;
+  createdAt: string;
+  deliveryMethod: 'استلام يدوي' | 'شحن بريدي';
+  
+  // موافقات العقد
+  offeredBySigned?: boolean;
+  targetOwnerSigned?: boolean;
+  contractId?: string;
+}
+
+export interface BarterContract {
+  id: string;
+  contractNumber: string; // e.g. BARTER-2026-9812
+  offerId: string;
+  partyA: {
+    userId: string;
+    name: string;
+    phone: string;
+    city: string;
+    itemId: string;
+    itemTitle: string;
+    itemEstimatedValue: number;
+    signatureDate: string;
+  };
+  partyB: {
+    userId: string;
+    name: string;
+    phone: string;
+    city: string;
+    itemId: string;
+    itemTitle: string;
+    itemEstimatedValue: number;
+    signatureDate: string;
+  };
+  cashDifferenceAmount: number; // المبلغ النقدي التعويضي
+  cashPayerUserId?: string; // من يدفع الفارق
+  deliveryMethod: string;
+  termsAndConditions: string[];
+  issuedAt: string;
+  qrCodeSeed: string;
+  status: 'نشط وموثق' | 'ملغى' | 'مكتمل التسليم';
+}
+
+export interface FeatureBox {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+}
+
+export interface PlatformSettings {
+  siteName: string;
+  siteDescription: string;
+  
+  // Master Toggles
+  showHeader: boolean;
+  showFooter: boolean;
+
+  // Theme & Appearance
+  themeColor: 'brown' | 'indigo' | 'emerald' | 'blue' | 'slate' | 'amber' | 'rose' | 'dark';
+  
+  // Homepage Display Limits
+  homeItemsLimit: number; // 0 = unlimited/all, 4, 6, 8, 12, 16, etc.
+  
+  // Header Granular Controls
+  showHeaderTopNotice: boolean;
+  headerNotice: string;
+  showHeaderLogo: boolean;
+  showHeaderDescription: boolean;
+  showHeaderSearch: boolean;
+  showHeaderCityFilter: boolean;
+  showHeaderAddItemBtn: boolean;
+  showHeaderContractsBtn: boolean;
+  showHeaderOffersBtn: boolean;
+  showHeaderUserSwitcher: boolean;
+  showHeaderAdminBtn: boolean;
+  
+  // Hero Banner Controls
+  showHeroBanner: boolean;
+  heroBadgeText: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  showHeroSteps: boolean;
+  showHeroImage: boolean;
+  heroImageUrl: string;
+
+  // Modern Feature Boxes
+  showFeatureBoxes: boolean;
+  featureBoxes: FeatureBox[];
+
+  // Product Grid Display Controls
+  expandProductGridWidth: boolean;
+  productGridCols: '3' | '4' | '5' | '6';
+  
+  // Footer Granular Controls & Styling
+  showFooterLogo?: boolean;
+  footerText?: string;
+  footerDescription?: string;
+  showFooterContacts?: boolean;
+  contactEmail?: string;
+  contactPhone?: string;
+  contactWhatsapp?: string;
+  contactAddress?: string;
+  showFooterQuickLinks?: boolean;
+  showFooterRights?: boolean;
+  footerCopyrightText?: string;
+  footerBgTheme?: 'light' | 'dark' | 'brown' | 'slate';
+  
+  // Social Media Links
   showFooterSocialLinks?: boolean;
-  footerWhatsapp?: string;
-  footerEmail?: string;
-  footerPhone?: string;
-  footerTwitter?: string;
-  footerInstagram?: string;
-  showFooterPagesLinks?: boolean;
-  showFooterAccentBar?: boolean;
+  twitterUrl?: string;
+  instagramUrl?: string;
+  whatsappUrl?: string;
+  telegramUrl?: string;
+  youtubeUrl?: string;
+
+  // Legal & Policy Pages
+  showFooterPolicyLinks?: boolean;
+  showTermsLink?: boolean;
+  termsTitle?: string;
+  termsContent?: string;
+
+  showPrivacyLink?: boolean;
+  privacyTitle?: string;
+  privacyContent?: string;
+
+  showCommissionLink?: boolean;
+  commissionTitle?: string;
+  commissionContent?: string;
+  
+  // Theme Accent
+  primaryColor: 'indigo' | 'emerald' | 'blue' | 'slate' | 'amber';
+  
+  // E-Contract Field-by-Field Controls & Texts
+  showContractPreamble: boolean;
+  contractPreamble: string;
+  
+  showContractInspectionClause: boolean;
+  contractInspectionClause: string;
+  
+  showContractCashClause: boolean;
+  contractCashClause: string;
+  
+  showContractIdentityClause: boolean;
+  contractIdentityClause: string;
+  
+  showContractPenaltyClause: boolean;
+  contractPenaltyClause: string;
+  
+  showContractDisputeClause: boolean;
+  contractDisputeClause: string;
+  
+  customContractTerms: string[];
+  
+  // Item Submission Form Field Settings (إعدادات نموذج إضافة السلع)
+  addItemShowTitle?: boolean;
+  addItemTitleLabel?: string;
+  addItemTitlePlaceholder?: string;
+  addItemTitleRequired?: boolean;
+
+  addItemShowCategory?: boolean;
+  addItemCategoryLabel?: string;
+  addItemCategoryRequired?: boolean;
+
+  addItemShowCondition?: boolean;
+  addItemConditionLabel?: string;
+  addItemConditionRequired?: boolean;
+  addItemConditionOptions?: string[];
+
+  addItemShowEstimatedValue?: boolean;
+  addItemEstimatedValueLabel?: string;
+  addItemEstimatedValueRequired?: boolean;
+
+  addItemShowDescription?: boolean;
+  addItemDescriptionLabel?: string;
+  addItemDescriptionPlaceholder?: string;
+  addItemDescriptionRequired?: boolean;
+
+  addItemShowLocation?: boolean;
+  addItemLocationLabel?: string;
+  addItemLocationRequired?: boolean;
+
+  addItemShowDeliveryPref?: boolean;
+  addItemDeliveryPrefLabel?: string;
+  addItemDeliveryPrefRequired?: boolean;
+  addItemDeliveryOptions?: string[];
+
+  addItemShowDesiredItem?: boolean;
+  addItemDesiredItemLabel?: string;
+  addItemDesiredItemPlaceholder?: string;
+  addItemDesiredItemRequired?: boolean;
+
+  addItemShowCashDiffOption?: boolean;
+  addItemCashDiffLabel?: string;
+
+  addItemShowImageUpload?: boolean;
+  addItemImageUploadLabel?: string;
+  addItemImageUploadRequired?: boolean;
+
+  // Platform Rules
+  enableCashDifference: boolean;
+  maxCashDifferenceLimit: number;
+  enableInspectionGuarantee: boolean;
+  inspectionDays: number;
+  enableIdentityVerificationRequired: boolean;
+  enableDirectShipping: boolean;
+  barterCommissionRate: number;
+  maintenanceMode: boolean;
 }
 
-
-
+export interface CategoryItem {
+  id: string;
+  name: CategoryName;
+  icon: string;
+  itemCount: number;
+  description: string;
+}
