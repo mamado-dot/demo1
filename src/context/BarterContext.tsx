@@ -133,10 +133,9 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [reviews, setReviews] = useState<UserReview[]>(() => getStored('reviews', INITIAL_REVIEWS));
   const [settings, setSettings] = useState<PlatformSettings>(() => {
     const loaded = getStored<PlatformSettings>('settings', INITIAL_SETTINGS);
-    if (loaded && (loaded.heroImageUrl === 'https://images.unsplash.com/photo-1556742049-0a670fc0a727?auto=format&fit=crop&q=80&w=800' || loaded.heroImageUrl?.includes('unsplash'))) {
-      loaded.heroImageUrl = '';
-    }
-    return { ...INITIAL_SETTINGS, ...loaded, heroImageUrl: loaded?.heroImageUrl?.includes('unsplash') ? '' : (loaded?.heroImageUrl ?? '') };
+    const heroUrl = loaded?.heroImageUrl;
+    const isUnsplash = !heroUrl || heroUrl.includes('unsplash') || heroUrl.includes('556742049');
+    return { ...INITIAL_SETTINGS, ...loaded, heroImageUrl: isUnsplash ? '' : heroUrl };
   });
   const [categories, setCategories] = useState<CategoryItem[]>(() => getStored('categories', INITIAL_CATEGORIES));
   const [favorites, setFavorites] = useState<string[]>(() => getStored('favorites', ['item_1', 'item_3']));
@@ -156,7 +155,14 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         });
       } else {
         const fetched = snapshot.docs.map((d) => d.data() as BarterItem);
-        setItems(fetched);
+        setItems((prev) => {
+          const itemMap = new Map<string, BarterItem>();
+          prev.forEach((it) => itemMap.set(it.id, it));
+          fetched.forEach((it) => itemMap.set(it.id, it));
+          const list = Array.from(itemMap.values());
+          list.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+          return list;
+        });
       }
     }, (err) => console.error('Firestore items listener error:', err));
 
@@ -168,8 +174,12 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         });
       } else {
         const fetched = snapshot.docs.map((d) => d.data() as User);
-        setUsers(fetched);
-        // keep currentUser up-to-date
+        setUsers((prev) => {
+          const userMap = new Map<string, User>();
+          prev.forEach((u) => userMap.set(u.id, u));
+          fetched.forEach((u) => userMap.set(u.id, u));
+          return Array.from(userMap.values());
+        });
         if (currentUser) {
           const updatedCurrent = fetched.find((u) => u.id === currentUser.id);
           if (updatedCurrent) setCurrentUser(updatedCurrent);
@@ -180,14 +190,14 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // 3. Settings
     const unsubSettings = onSnapshot(doc(db, 'settings', 'global_settings'), (docSnap) => {
       if (!docSnap.exists()) {
-        setDoc(doc(db, 'settings', 'global_settings'), INITIAL_SETTINGS).catch(console.error);
+        setDoc(doc(db, 'settings', 'global_settings'), { ...INITIAL_SETTINGS, heroImageUrl: '' }).catch(console.error);
       } else {
         const data = docSnap.data() as PlatformSettings;
-        if (data.heroImageUrl && (data.heroImageUrl === 'https://images.unsplash.com/photo-1556742049-0a670fc0a727?auto=format&fit=crop&q=80&w=800' || data.heroImageUrl.includes('unsplash'))) {
+        if (data.heroImageUrl && (data.heroImageUrl.includes('unsplash') || data.heroImageUrl.includes('556742049'))) {
           data.heroImageUrl = '';
           updateDoc(doc(db, 'settings', 'global_settings'), { heroImageUrl: '' }).catch(console.error);
         }
-        const cleanedSettings = { ...INITIAL_SETTINGS, ...data };
+        const cleanedSettings = { ...INITIAL_SETTINGS, ...data, heroImageUrl: data.heroImageUrl?.includes('unsplash') ? '' : (data.heroImageUrl ?? '') };
         localStorage.setItem(LOCAL_STORAGE_PREFIX + 'settings', JSON.stringify(cleanedSettings));
         setSettings(cleanedSettings);
       }
@@ -315,12 +325,20 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       id: 'item_' + Date.now(),
       ownerId: currentUser.id,
       status: 'active',
-      createdAt: new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString(),
       views: 1,
       likes: 0,
     };
 
-    setItems((prev) => [newItem, ...prev]);
+    setItems((prev) => [newItem, ...prev.filter((i) => i.id !== newItem.id)]);
+
+    try {
+      const stored = getStored<BarterItem[]>('items', INITIAL_ITEMS);
+      localStorage.setItem(LOCAL_STORAGE_PREFIX + 'items', JSON.stringify([newItem, ...stored.filter((i) => i.id !== newItem.id)]));
+    } catch (e) {
+      // ignore local storage quota error if any
+    }
+
     setDoc(doc(db, 'items', newItem.id), newItem).catch(console.error);
 
     // Update category item count

@@ -75,6 +75,9 @@ function BarterAppMain() {
     const hash = window.location.hash.toLowerCase();
     const search = window.location.search.toLowerCase();
 
+    if (path.startsWith('/item/') || hash.includes('item_') || search.includes('item=')) {
+      return 'item_detail';
+    }
     if (path === '/admin' || path.startsWith('/admin/') || hash === '#admin' || search.includes('view=admin')) {
       return 'admin';
     }
@@ -123,13 +126,14 @@ function BarterAppMain() {
   const [selectedUserIdForProfile, setSelectedUserIdForProfile] = useState<string | null>(null);
 
   // Navigate and update URL
-  const navigateToView = (view: ActiveViewType) => {
+  const navigateToView = (view: ActiveViewType, targetItem?: BarterItem | null) => {
     if (view !== 'admin') {
       setIsAdminMode(false);
     } else {
       setIsAdminMode(true);
     }
     setActiveView(view);
+    window.scrollTo({ top: 0, behavior: 'instant' });
 
     let newPath = '/';
     if (view === 'admin') newPath = '/admin';
@@ -143,6 +147,10 @@ function BarterAppMain() {
     else if (view === 'my_offers') newPath = '/offers';
     else if (view === 'user_profile') newPath = '/profile';
     else if (view === 'auth') newPath = '/auth';
+    else if (view === 'item_detail') {
+      const itemToUse = targetItem || selectedDetailItem;
+      newPath = itemToUse ? `/item/${itemToUse.id}` : '/items';
+    }
 
     if (window.location.pathname !== newPath) {
       try {
@@ -153,6 +161,32 @@ function BarterAppMain() {
       }
     }
   };
+
+  // Resolve item from URL when navigating directly or on reload
+  useEffect(() => {
+    if (items.length === 0) return;
+    const path = window.location.pathname;
+    const hash = window.location.hash;
+    const search = window.location.search;
+
+    let targetId: string | null = null;
+    if (path.startsWith('/item/')) {
+      targetId = path.replace('/item/', '').trim();
+    } else if (search.includes('item=')) {
+      const match = search.match(/item=([^&]+)/);
+      if (match) targetId = match[1];
+    } else if (hash.includes('item=')) {
+      const match = hash.match(/item=([^&]+)/);
+      if (match) targetId = match[1];
+    }
+
+    if (targetId) {
+      const found = items.find((i) => i.id === targetId);
+      if (found) {
+        setSelectedDetailItem(found);
+      }
+    }
+  }, [items]);
 
   // Sync initial URL and popstate
   useEffect(() => {
@@ -211,7 +245,7 @@ function BarterAppMain() {
 
   const handleSelectItem = (item: BarterItem) => {
     setSelectedDetailItem(item);
-    navigateToView('item_detail');
+    navigateToView('item_detail', item);
   };
 
   const handleOpenTrade = (targetItem: BarterItem) => {
@@ -312,17 +346,30 @@ function BarterAppMain() {
         )}
 
         {/* VIEW 2: PRODUCT DETAIL FULL PAGE */}
-        {effectiveView === 'item_detail' && selectedDetailItem && (
-          <ItemDetailModal
-            item={selectedDetailItem}
-            onClose={() => navigateToView('all_items')}
-            onOpenTradeModal={(targetItem) => {
-              setSelectedTradeTargetItem(targetItem);
-              navigateToView('submit_offer');
-            }}
-            onViewUserProfile={handleViewUserProfile}
-            onNavigateAuth={() => navigateToView('auth')}
-          />
+        {effectiveView === 'item_detail' && (
+          selectedDetailItem ? (
+            <ItemDetailModal
+              item={selectedDetailItem}
+              onClose={() => navigateToView('all_items')}
+              onOpenTradeModal={(targetItem) => {
+                setSelectedTradeTargetItem(targetItem);
+                navigateToView('submit_offer');
+              }}
+              onViewUserProfile={handleViewUserProfile}
+              onNavigateAuth={() => navigateToView('auth')}
+            />
+          ) : (
+            <div className="bg-white rounded-3xl p-12 text-center space-y-4 border border-[#e6d8c7] max-w-lg mx-auto dir-rtl my-8">
+              <div className="w-8 h-8 border-3 border-[#8c5332] border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-xs font-bold text-slate-700">جاري تحميل تفاصيل السلعة...</p>
+              <button
+                onClick={() => navigateToView('all_items')}
+                className="text-xs text-[#8c5332] underline font-bold cursor-pointer"
+              >
+                أو العودة لكافة السلع
+              </button>
+            </div>
+          )
         )}
 
         {/* VIEW 3: ADD ITEM FULL PAGE */}
@@ -332,7 +379,7 @@ function BarterAppMain() {
             onSuccess={(createdItem) => {
               if (createdItem) {
                 setSelectedDetailItem(createdItem);
-                navigateToView('item_detail');
+                navigateToView('item_detail', createdItem);
               } else {
                 navigateToView('all_items');
               }
