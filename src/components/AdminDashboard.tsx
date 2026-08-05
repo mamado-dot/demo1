@@ -146,7 +146,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
   const [heroSubtitle, setHeroSubtitle] = useState(settings.heroSubtitle || 'تبادل آمن ومباشر للمقتنيات والأجهزة مع فترة معاينة وفحص');
   const [showHeroSteps, setShowHeroSteps] = useState(settings.showHeroSteps ?? true);
   const [showHeroImage, setShowHeroImage] = useState(settings.showHeroImage ?? true);
-  const [heroImageUrl, setHeroImageUrl] = useState(settings.heroImageUrl || 'https://images.unsplash.com/photo-1556742049-0a670fc0a727?auto=format&fit=crop&q=80&w=800');
+  const [heroImageUrl, setHeroImageUrl] = useState(settings.heroImageUrl || '');
 
   // --- Product Grid Display Settings ---
   const [expandProductGridWidth, setExpandProductGridWidth] = useState(settings.expandProductGridWidth ?? false);

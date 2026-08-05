@@ -219,9 +219,10 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ item, onClose,
                   )}
                 </div>
 
-                {item.allowCashDifference && item.maxCashDifference && (
-                  <p className="text-[11px] text-slate-400 font-medium">
-                    * أقصى فارق سعر مسموح بالتفاوض حوله: <strong className="text-amber-300">{item.maxCashDifference} ريال</strong>.
+                {item.allowCashDifference && (
+                  <p className="text-[11px] text-[#d9a885] font-medium flex items-center gap-1.5">
+                    <Banknote className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>* صاحب السلعة يرحب بإضافة فارق سعر نقدي أو طلب زيادة من صاحب العرض عند التقديم.</span>
                   </p>
                 )}
               </div>

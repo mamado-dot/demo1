@@ -171,6 +171,8 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
   const [deliveryPreference, setDeliveryPreference] = useState<'استلام يدوي' | 'شحن بريدي' | 'كلاهما يفي بالغرض'>('استلام يدوي');
 
   const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleMultipleFilesUpload = (filesList: FileList | File[]) => {
     const files = Array.from(filesList);
@@ -274,6 +276,8 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting || successMsg) return;
+
     if ((settings.addItemShowTitle ?? true) && (settings.addItemTitleRequired ?? true) && !title.trim()) {
       setErrorMsg('يرجى إدخال عنوان واضح للسلعة المعروضة');
       return;
@@ -293,24 +297,39 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
       return;
     }
 
-    addItem({
-      title: title.trim() || 'سلعة بدون عنوان',
-      category,
-      condition,
-      estimatedValue: Number(estimatedValue) || 0,
-      description: description.trim() || 'لا يوجد وصف تفصيلي',
-      location: location.trim() || 'الرياض',
-      images: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&q=80&w=800'],
-      desiredCategory: 'أي فئة مناسبة',
-      desiredDescription: desiredDescription.trim() || 'المقايضة مقابل أي عرض مناسب',
-      desiredImage: desiredImageUrl.trim() || undefined,
-      allowCashDifference,
-      maxCashDifference: allowCashDifference ? (Number(maxCashDifference) || 0) : undefined,
-      deliveryPreference,
-    });
+    setIsSubmitting(true);
+    setErrorMsg('');
 
-    if (onSuccess) onSuccess();
-    onClose();
+    try {
+      addItem({
+        title: title.trim() || 'سلعة بدون عنوان',
+        category,
+        condition,
+        estimatedValue: Number(estimatedValue) || 0,
+        description: description.trim() || 'لا يوجد وصف تفصيلي',
+        location: location.trim() || 'الرياض',
+        images: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&q=80&w=800'],
+        desiredCategory: 'أي فئة مناسبة',
+        desiredDescription: desiredDescription.trim() || 'المقايضة مقابل أي عرض مناسب',
+        desiredImage: desiredImageUrl.trim() || undefined,
+        allowCashDifference,
+        maxCashDifference: allowCashDifference ? (Number(maxCashDifference) || 0) : undefined,
+        deliveryPreference,
+      });
+
+      setSuccessMsg('تم نشر السلعة بنجاح وبدء إتاحتها للمقايضة! جاري تحويلك لمعرض السلع...');
+
+      setTimeout(() => {
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          onClose();
+        }
+      }, 1500);
+    } catch (err) {
+      setErrorMsg('حدث خطأ أثناء إضافة السلعة، يرجى المحاولة مرة أخرى');
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -336,6 +355,13 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white max-w-4xl mx-auto rounded-3xl shadow-sm border border-slate-200 p-6 sm:p-8 space-y-6">
+
+          {successMsg && (
+            <div className="p-4 bg-[#f5eee6] text-[#734123] border border-[#e6d8c7] rounded-2xl text-xs font-bold flex items-center gap-2 animate-in fade-in duration-300">
+              <CheckCircle2 className="w-5 h-5 text-[#8c5332] shrink-0" />
+              <span>{successMsg}</span>
+            </div>
+          )}
 
           {errorMsg && (
             <div className="p-3 bg-rose-50 text-rose-800 border border-rose-200 rounded-xl text-xs font-bold">
@@ -598,7 +624,7 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
 
                 {/* Cash Difference Toggle */}
                 {settings.enableCashDifference && (settings.addItemShowCashDiffOption ?? true) && (
-                  <div className="pt-2 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="pt-2 border-t border-slate-200 space-y-2">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
@@ -608,20 +634,14 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
                       />
                       <span className="text-xs font-bold text-slate-900 flex items-center gap-1">
                         <Banknote className="w-4 h-4 text-[#8c5332]" />
-                        {settings.addItemCashDiffLabel || 'أقبل دفع فارق / استلام فارق سعري'}
+                        {settings.addItemCashDiffLabel || 'أقبل زيادة نقدية / فارق سعري مع المقايضة'}
                       </span>
                     </label>
 
                     {allowCashDifference && (
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          value={maxCashDifference}
-                          onChange={(e) => setMaxCashDifference(e.target.value ? Number(e.target.value) : '')}
-                          className="w-24 text-xs font-bold bg-white text-slate-900 px-2 py-1.5 rounded-lg border border-slate-300"
-                          placeholder="0"
-                        />
-                        <span className="text-xs font-bold text-slate-700">ريال</span>
+                      <div className="p-3 bg-[#f5eee6]/60 rounded-xl border border-[#e6d8c7] text-[11px] text-[#734123] font-medium flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-[#8c5332] shrink-0" />
+                        <span>مُفعّل: سيتم السماح للطرف الثاني (صاحب العرض) بكتابة واقتراح المبلغ النقدي المناسب عند تقديم طلب المقايضة.</span>
                       </div>
                     )}
                   </div>
@@ -727,10 +747,20 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-[#8c5332] hover:bg-[#734123] active:scale-98 text-white text-xs font-bold shadow-md shadow-[#8c5332]/20 transition-all flex items-center gap-1.5 cursor-pointer"
+              disabled={isSubmitting || !!successMsg}
+              className="px-6 py-2.5 rounded-xl bg-[#8c5332] hover:bg-[#734123] active:scale-98 text-white text-xs font-bold shadow-md shadow-[#8c5332]/20 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>نشر السلعة والبدء بالمقايضة</span>
+              {isSubmitting || successMsg ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>جاري نشر السلعة...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>نشر السلعة والبدء بالمقايضة</span>
+                </>
+              )}
             </button>
           </div>
 

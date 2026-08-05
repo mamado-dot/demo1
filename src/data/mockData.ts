@@ -106,7 +106,7 @@ export const INITIAL_SETTINGS: PlatformSettings = {
   heroSubtitle: 'تبادل آمن ومباشر للمقتنيات والأجهزة: أضف سلعتك، استقبل عروض المقايضة، وعند الموافقة يتم توليد عقد إلكتروني موثق يحمي طرفي الاتفاق مع فترة معاينة وفحص.',
   showHeroSteps: true,
   showHeroImage: true,
-  heroImageUrl: 'https://images.unsplash.com/photo-1556742049-0a670fc0a727?auto=format&fit=crop&q=80&w=800',
+  heroImageUrl: '',
 
   // Modern Feature Boxes
   showFeatureBoxes: true,

@@ -176,7 +176,12 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (!docSnap.exists()) {
         setDoc(doc(db, 'settings', 'global_settings'), INITIAL_SETTINGS).catch(console.error);
       } else {
-        setSettings({ ...INITIAL_SETTINGS, ...docSnap.data() } as PlatformSettings);
+        const data = docSnap.data() as PlatformSettings;
+        if (data.heroImageUrl === 'https://images.unsplash.com/photo-1556742049-0a670fc0a727?auto=format&fit=crop&q=80&w=800') {
+          data.heroImageUrl = '';
+          updateDoc(doc(db, 'settings', 'global_settings'), { heroImageUrl: '' }).catch(console.error);
+        }
+        setSettings({ ...INITIAL_SETTINGS, ...data });
       }
     }, (err) => console.error('Firestore settings listener error:', err));
 
@@ -265,10 +270,30 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
   }, []);
 
-  // Local Storage Backups
+  // Local Storage Backups for instant rendering on page refresh
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_PREFIX + 'currentUser', JSON.stringify(currentUser));
   }, [currentUser]);
+
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'settings', JSON.stringify(settings));
+  }, [settings]);
+
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'items', JSON.stringify(items));
+  }, [items]);
+
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'categories', JSON.stringify(categories));
+  }, [categories]);
+
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'offers', JSON.stringify(offers));
+  }, [offers]);
+
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'contracts', JSON.stringify(contracts));
+  }, [contracts]);
 
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_PREFIX + 'favorites', JSON.stringify(favorites));

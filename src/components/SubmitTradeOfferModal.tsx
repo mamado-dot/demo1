@@ -45,16 +45,20 @@ export const SubmitTradeOfferModal: React.FC<SubmitTradeOfferModalProps> = ({
   const [deliveryMethod, setDeliveryMethod] = useState<'استلام يدوي' | 'شحن بريدي'>('استلام يدوي');
 
   const [feedback, setFeedback] = useState<{ success?: boolean; message?: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const selectedOfferedItem = items.find((i) => i.id === selectedOfferedItemId);
 
   const handleSubmitOffer = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting || feedback.success) return;
 
     if (!selectedOfferedItemId) {
       setFeedback({ success: false, message: 'يرجى اختيار سلعة من سلعك المضافة لمقايضتها' });
       return;
     }
+
+    setIsSubmitting(true);
 
     let finalCashDiff = 0;
     if (cashDirection === 'pay') {
@@ -77,6 +81,8 @@ export const SubmitTradeOfferModal: React.FC<SubmitTradeOfferModalProps> = ({
       setTimeout(() => {
         onClose();
       }, 1500);
+    } else {
+      setIsSubmitting(false);
     }
   };
 
@@ -197,54 +203,68 @@ export const SubmitTradeOfferModal: React.FC<SubmitTradeOfferModalProps> = ({
               </div>
 
               {/* CASH DIFFERENCE SETTLEMENT */}
-              {settings.enableCashDifference && targetItem.allowCashDifference && (
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-                  <label className="block text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                    <Banknote className="w-4 h-4 text-[#8c5332]" />
-                    هل ترغب باقتراح فارق سعر نقدي لتكافؤ الصفقة؟
-                  </label>
+              {settings.enableCashDifference && (targetItem.allowCashDifference ?? true) && (
+                <div className="p-4 bg-[#f5eee6]/40 rounded-2xl border border-[#e6d8c7] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-extrabold text-[#734123] flex items-center gap-1.5">
+                      <Banknote className="w-4 h-4 text-[#8c5332]" />
+                      إضافة زيادة نقدية / فارق سعري (اختياري)
+                    </label>
+                    <span className="text-[10px] font-bold bg-[#8c5332] text-white px-2 py-0.5 rounded-full">
+                      متاح للمقايِض الثاني
+                    </span>
+                  </div>
 
-                  <div className="grid grid-cols-3 gap-2">
+                  <p className="text-[11px] text-slate-600 font-medium">
+                    يمكنك (بصفتك الطرف الثاني) كتابة وتحديد أي زيادة نقدية ترغب بإضافتها أو طلبها لضمان تكافؤ العرض.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <button
                       type="button"
                       onClick={() => { setCashDirection('none'); setCashAmountInput(0); }}
                       className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                        cashDirection === 'none' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 border-slate-200'
+                        cashDirection === 'none' ? 'bg-slate-900 text-white border-slate-900 shadow-xs' : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
                       }`}
                     >
-                      تبادل راس براس (بدون فارق)
+                      تبادل رأس برأس (بدون فارق)
                     </button>
                     <button
                       type="button"
                       onClick={() => setCashDirection('pay')}
                       className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                        cashDirection === 'pay' ? 'bg-[#8c5332] text-white border-[#8c5332]' : 'bg-white text-slate-700 border-slate-200'
+                        cashDirection === 'pay' ? 'bg-[#8c5332] text-white border-[#8c5332] shadow-xs' : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
                       }`}
                     >
-                      أنا أدفع فارق لصاحب السلعة
+                      أنا سأدفع زيادة نقدية
                     </button>
                     <button
                       type="button"
                       onClick={() => setCashDirection('receive')}
                       className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                        cashDirection === 'receive' ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-200'
+                        cashDirection === 'receive' ? 'bg-slate-800 text-white border-slate-800 shadow-xs' : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
                       }`}
                     >
-                      أطلب فارق نقدي من صاحب السلعة
+                      أطلب فارق نقدي لصالحي
                     </button>
                   </div>
 
                   {cashDirection !== 'none' && (
-                    <div className="flex items-center gap-2 pt-2">
-                      <span className="text-xs font-bold text-slate-700">مبلغ الفارق النقدي:</span>
-                      <input
-                        type="number"
-                        placeholder="500"
-                        value={cashAmountInput}
-                        onChange={(e) => setCashAmountInput(e.target.value ? Number(e.target.value) : '')}
-                        className="w-32 bg-white font-extrabold text-sm text-slate-900 rounded-xl px-3 py-1.5 border border-slate-300"
-                      />
-                      <span className="text-xs font-bold text-slate-800">ريال سعودي</span>
+                    <div className="p-3 bg-white rounded-xl border border-[#e6d8c7] flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
+                      <span className="text-xs font-bold text-slate-800">
+                        {cashDirection === 'pay' ? 'المبلغ النقدي الذي تتعهد بدفعه زيادةً مع السلعة:' : 'المبلغ النقدي الذي تطلبه كفارق لصالحك:'}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          placeholder="مثلاً: 200"
+                          value={cashAmountInput}
+                          onChange={(e) => setCashAmountInput(e.target.value ? Number(e.target.value) : '')}
+                          className="w-32 bg-slate-50 font-extrabold text-sm text-slate-900 rounded-xl px-3 py-1.5 border border-slate-300 focus:border-[#8c5332] outline-hidden"
+                          min="0"
+                        />
+                        <span className="text-xs font-bold text-[#8c5332]">ريال سعودي</span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -286,10 +306,20 @@ export const SubmitTradeOfferModal: React.FC<SubmitTradeOfferModalProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-[#8c5332] hover:bg-[#734123] text-white text-xs font-bold shadow-md shadow-[#8c5332]/20 transition-all flex items-center gap-1.5 cursor-pointer"
+                  disabled={isSubmitting || feedback.success}
+                  className="px-6 py-2.5 rounded-xl bg-[#8c5332] hover:bg-[#734123] text-white text-xs font-bold shadow-md shadow-[#8c5332]/20 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>إرسال عرض المقايضة</span>
+                  {isSubmitting || feedback.success ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>جاري إرسال عرض المقايضة...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>إرسال عرض المقايضة</span>
+                    </>
+                  )}
                 </button>
               </div>
 
