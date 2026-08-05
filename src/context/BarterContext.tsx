@@ -115,7 +115,16 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     try {
       const stored = localStorage.getItem(LOCAL_STORAGE_PREFIX + key);
       if (!stored) return fallback;
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      if (key === 'settings' && parsed && typeof parsed === 'object') {
+        if (parsed.heroImageUrl && (parsed.heroImageUrl.includes('unsplash') || parsed.heroImageUrl.includes('556742049'))) {
+          parsed.heroImageUrl = '';
+          try {
+            localStorage.setItem(LOCAL_STORAGE_PREFIX + 'settings', JSON.stringify(parsed));
+          } catch {}
+        }
+      }
+      return parsed;
     } catch {
       return fallback;
     }
@@ -193,11 +202,12 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setDoc(doc(db, 'settings', 'global_settings'), { ...INITIAL_SETTINGS, heroImageUrl: '' }).catch(console.error);
       } else {
         const data = docSnap.data() as PlatformSettings;
-        if (data.heroImageUrl && (data.heroImageUrl.includes('unsplash') || data.heroImageUrl.includes('556742049'))) {
+        const isUnsplash = Boolean(data.heroImageUrl && (data.heroImageUrl.includes('unsplash') || data.heroImageUrl.includes('556742049')));
+        if (isUnsplash) {
           data.heroImageUrl = '';
-          updateDoc(doc(db, 'settings', 'global_settings'), { heroImageUrl: '' }).catch(console.error);
+          setDoc(doc(db, 'settings', 'global_settings'), { ...data, heroImageUrl: '' }).catch(console.error);
         }
-        const cleanedSettings = { ...INITIAL_SETTINGS, ...data, heroImageUrl: data.heroImageUrl?.includes('unsplash') ? '' : (data.heroImageUrl ?? '') };
+        const cleanedSettings = { ...INITIAL_SETTINGS, ...data, heroImageUrl: isUnsplash ? '' : (data.heroImageUrl ?? '') };
         localStorage.setItem(LOCAL_STORAGE_PREFIX + 'settings', JSON.stringify(cleanedSettings));
         setSettings(cleanedSettings);
       }

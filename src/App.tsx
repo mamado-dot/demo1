@@ -531,7 +531,7 @@ function BarterAppMain() {
                     <div className="lg:col-span-5 flex justify-center lg:justify-end">
                       <div className="w-full max-w-md lg:max-w-none aspect-[4/3] rounded-3xl overflow-hidden flex items-center justify-center bg-slate-100 border border-[#e6d8c7]/50">
                         <img
-                          src={(settings.heroImageUrl && !settings.heroImageUrl.includes('unsplash')) ? settings.heroImageUrl : heroIllustrationImage}
+                          src={(settings.heroImageUrl && !settings.heroImageUrl.includes('unsplash') && !settings.heroImageUrl.includes('556742049')) ? settings.heroImageUrl : heroIllustrationImage}
                           alt="منصة مقايضة"
                           className="w-full h-full object-cover rounded-3xl shadow-xs"
                         />
