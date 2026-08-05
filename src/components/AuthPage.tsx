@@ -30,7 +30,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
       const autoActivate = settings?.autoActivateNewUsers ?? true;
       user = {
         id: 'usr_' + Date.now(),
-        name: isOwner ? 'أحمد العتيبي (مالك المنصة)' : (name || targetEmail.split('@')[0]),
+        name: isOwner ? 'أحمد العتيبي' : (name || targetEmail.split('@')[0]),
         email: targetEmail,
         avatar: isOwner 
           ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'
@@ -38,7 +38,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
         city: city || 'الرياض',
         phone: '05' + Math.floor(10000000 + Math.random() * 90000000),
         verified: true,
-        rating: isOwner ? 4.9 : 0,
+        rating: 0,
         completedBartersCount: 0,
         isActive: isOwner ? true : autoActivate,
         membershipTier: isOwner ? 'عضو موثق' : 'عضو عادي',
@@ -78,14 +78,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
 
       const isOwner = targetEmail.toLowerCase() === 'crazyretiree@gmail.com';
       if (isOwner && password !== '054422516') {
-        setError('كلمة المرور غير صحيحة لحساب مالك المنصة');
+        setError('كلمة المرور غير صحيحة');
         return;
       }
 
       const autoActivate = settings?.autoActivateNewUsers ?? true;
       const newUser: User = {
         id: isOwner ? 'usr_1' : 'usr_' + Date.now(),
-        name: isOwner ? 'أحمد العتيبي (مالك المنصة)' : name,
+        name: isOwner ? 'أحمد العتيبي' : name,
         email: targetEmail,
         password: password || '054422516',
         isOwner: isOwner,
@@ -96,7 +96,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
         city,
         phone: '05' + Math.floor(10000000 + Math.random() * 90000000),
         verified: true,
-        rating: isOwner ? 4.9 : 0,
+        rating: 0,
         completedBartersCount: isOwner ? 8 : 0,
         isActive: isOwner ? true : autoActivate,
         membershipTier: isOwner ? 'عضو موثق' : 'عضو عادي',
@@ -113,7 +113,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
       const isOwner = targetEmail.toLowerCase() === 'crazyretiree@gmail.com';
       if (isOwner) {
         if (password && password !== '054422516') {
-          setError('كلمة المرور غير صحيحة لحساب مالك المنصة (الرقم السري الصحيح: 054422516)');
+          setError('كلمة المرور غير صحيحة');
           return;
         }
       }
@@ -122,7 +122,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
         if (isOwner) {
           existingUser = {
             id: 'usr_1',
-            name: 'أحمد العتيبي (مالك المنصة)',
+            name: 'أحمد العتيبي',
             email: 'crazyretiree@gmail.com',
             password: '054422516',
             isOwner: true,
@@ -130,7 +130,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
             city: 'الرياض',
             phone: '0501234567',
             verified: true,
-            rating: 4.9,
+            rating: 0,
             completedBartersCount: 8
           };
           adminAddUser(existingUser);
@@ -141,7 +141,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
       }
 
       setCurrentUser(existingUser);
-      setSuccess(`أهلاً بك مجدداً يا ${existingUser.name} (مالك المنصة)`);
+      setSuccess(`أهلاً بك مجدداً يا ${existingUser.name}`);
     }
 
     setTimeout(() => {
@@ -220,7 +220,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
                   <input
                     type="text"
                     required
-                    placeholder="مثال: أحمد العتيبي"
+                    placeholder="مثال: محمد علي"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl pr-10 pl-3 py-3 text-xs font-bold text-slate-900 focus:border-[#8c5332] outline-hidden"

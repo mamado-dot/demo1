@@ -81,7 +81,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
           <ShieldCheck className="w-16 h-16 text-rose-500 mx-auto" />
           <h3 className="text-lg font-black text-white">غير مصرح لك بدخول لوحة التحكم</h3>
           <p className="text-xs text-slate-300">
-            عذراً، لوحة تحكم المنصة مخصصة حصرياً لمالك المنصة (crazyretiree@gmail.com).
+            عذراً، لوحة تحكم المنصة مخصصة حصرياً لإدارة المنصة.
           </p>
           <button
             onClick={onClose}
@@ -527,7 +527,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
       phone: newUserPhone || '0500000000',
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=250',
       verified: newUserVerified,
-      rating: 5.0,
+      rating: 0,
       completedBartersCount: 0,
       isActive: newUserIsActive,
       membershipTier: newUserMembershipTier

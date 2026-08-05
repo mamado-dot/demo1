@@ -247,7 +247,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
             <div className="bg-slate-50 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 space-y-1 min-w-[100px]">
               <div className="text-[10px] font-extrabold text-slate-500 uppercase">التقييم</div>
               <div className="text-lg sm:text-2xl font-black text-amber-500 flex items-center justify-center gap-1">
-                <span>{targetUser.rating ?? 5.0}</span>
+                <span>{targetUser.rating ?? 0}</span>
                 <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
               </div>
               <div className="text-[10px] text-slate-500 font-bold">من 5 نجوم</div>

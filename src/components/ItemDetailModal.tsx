@@ -48,7 +48,7 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ item, onClose,
     verified: true,
     city: item.location,
     phone: '0500000000',
-    rating: 4.8,
+    rating: 0,
   };
 
   const isOwner = currentUser ? currentUser.id === item.ownerId : false;

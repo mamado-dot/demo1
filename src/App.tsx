@@ -320,15 +320,15 @@ function BarterAppMain() {
               <div className="w-16 h-16 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-2xl font-black">
                 🔒
               </div>
-              <h2 className="text-xl font-black text-slate-900">لوحة التحكم مخصصة لمالك المنصة فقط</h2>
+              <h2 className="text-xl font-black text-slate-900">لوحة التحكم مخصصة للإدارة فقط</h2>
               <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                عذراً، هذه الصفحة مخصصة فقط لمالك المنصة (crazyretiree@gmail.com). يرجى تسجيل الدخول بحساب المالك للوصول إلى لوحة التحكم والإعدادات.
+                عذراً، هذه الصفحة مخصصة فقط لإدارة المنصة. يرجى تسجيل الدخول بالحساب المصرح له للوصول إلى لوحة التحكم والإعدادات.
               </p>
               <button
                 onClick={() => navigateToView('auth')}
                 className="px-6 py-2.5 bg-[#8c5332] hover:bg-[#734123] text-white text-xs font-bold rounded-xl shadow-md cursor-pointer transition-all"
               >
-                تسجيل الدخول بحساب مالك المنصة
+                تسجيل الدخول
               </button>
             </div>
           )

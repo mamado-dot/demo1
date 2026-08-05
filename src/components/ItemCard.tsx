@@ -28,7 +28,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onSelectItem, onOpenTr
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=250',
     verified: true,
     city: item.location,
-    rating: 4.8,
+    rating: 0,
   };
 
   const isOwner = currentUser ? currentUser.id === item.ownerId : false;

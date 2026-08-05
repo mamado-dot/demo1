@@ -297,18 +297,6 @@ export const Header: React.FC<HeaderProps> = ({
                           <Heart className="w-4 h-4 text-rose-500 fill-rose-500/20" />
                           <span>المفضلة</span>
                         </button>
-
-                        {/* 3. خيارات (Options: Page Navigation) */}
-                        <button
-                          onClick={() => {
-                            setIsDropdownOpen(false);
-                            if (onNavigate) onNavigate('user_settings');
-                          }}
-                          className="w-full px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-[#f5eee6] hover:text-[#8c5332] flex items-center gap-2.5 transition-colors cursor-pointer"
-                        >
-                          <Settings className="w-4 h-4 text-[#8c5332]" />
-                          <span>خيارات</span>
-                        </button>
                       </div>
 
                       {/* Divider */}

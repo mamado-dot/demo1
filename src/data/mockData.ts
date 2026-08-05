@@ -3,7 +3,7 @@ import { User, BarterItem, TradeOffer, BarterContract, PlatformSettings, Categor
 export const INITIAL_USERS: User[] = [
   {
     id: 'usr_1',
-    name: 'أحمد العتيبي (مالك المنصة)',
+    name: 'أحمد العتيبي',
     email: 'crazyretiree@gmail.com',
     password: '054422516',
     isOwner: true,
@@ -12,7 +12,7 @@ export const INITIAL_USERS: User[] = [
     city: 'الرياض',
     phone: '0501234567',
     verified: true,
-    rating: 4.9,
+    rating: 0,
     completedBartersCount: 8,
     isActive: true,
     membershipTier: 'عضو موثق',
@@ -25,7 +25,7 @@ export const INITIAL_USERS: User[] = [
     city: 'جدة',
     phone: '0559876543',
     verified: true,
-    rating: 4.8,
+    rating: 0,
     completedBartersCount: 5,
     isActive: true,
     membershipTier: 'عضو مشترك',
@@ -39,7 +39,7 @@ export const INITIAL_USERS: User[] = [
     city: 'الدمام',
     phone: '0533334444',
     verified: true,
-    rating: 5.0,
+    rating: 0,
     completedBartersCount: 12,
     isActive: true,
     membershipTier: 'عضو موثق',
@@ -52,7 +52,7 @@ export const INITIAL_USERS: User[] = [
     city: 'المدينة المنورة',
     phone: '0541122334',
     verified: false,
-    rating: 4.6,
+    rating: 0,
     completedBartersCount: 3,
     isActive: true,
     membershipTier: 'عضو عادي',
@@ -573,31 +573,4 @@ export const INITIAL_CONTRACTS: BarterContract[] = [
   }
 ];
 
-export const INITIAL_REVIEWS: UserReview[] = [
-  {
-    id: 'rev_1',
-    offerId: 'off_101',
-    contractId: 'cnt_1001',
-    reviewerId: 'usr_2',
-    reviewerName: 'سارة الشمري',
-    reviewerAvatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=250',
-    targetUserId: 'usr_1',
-    targetUserName: 'أحمد العتيبي (مالك المنصة)',
-    rating: 5,
-    comment: 'تعامل راقي جداً والسلعة مطابقة للمواصفات تماماً، أنصح بالتعامل معه.',
-    createdAt: '2026-07-28 14:30'
-  },
-  {
-    id: 'rev_2',
-    offerId: 'off_102',
-    contractId: 'cnt_1002',
-    reviewerId: 'usr_1',
-    reviewerName: 'أحمد العتيبي (مالك المنصة)',
-    reviewerAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
-    targetUserId: 'usr_3',
-    targetUserName: 'خالد الدوسري',
-    rating: 5,
-    comment: 'سرعة في الاستجابة والتسليم كان حسب الاتفاق، مقايضة ناجحة.',
-    createdAt: '2026-08-01 19:15'
-  }
-];
+export const INITIAL_REVIEWS: UserReview[] = [];
