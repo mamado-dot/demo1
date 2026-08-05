@@ -50,7 +50,7 @@ interface BarterContextType {
   categories: CategoryItem[];
 
   // User Actions
-  addItem: (newItemData: Omit<BarterItem, 'id' | 'ownerId' | 'status' | 'createdAt' | 'views' | 'likes'>) => void;
+  addItem: (newItemData: Omit<BarterItem, 'id' | 'ownerId' | 'status' | 'createdAt' | 'views' | 'likes'>) => BarterItem | undefined;
   updateItem: (id: string, updatedData: Partial<BarterItem>) => void;
   deleteItem: (id: string) => void;
   toggleItemLike: (id: string) => void;
@@ -300,8 +300,8 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [favorites]);
 
   // Actions with Firestore Sync
-  const addItem = (newItemData: Omit<BarterItem, 'id' | 'ownerId' | 'status' | 'createdAt' | 'views' | 'likes'>) => {
-    if (!currentUser) return;
+  const addItem = (newItemData: Omit<BarterItem, 'id' | 'ownerId' | 'status' | 'createdAt' | 'views' | 'likes'>): BarterItem | undefined => {
+    if (!currentUser) return undefined;
     const newItem: BarterItem = {
       ...newItemData,
       id: 'item_' + Date.now(),
@@ -320,6 +320,8 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (updatedCategory) {
       updateCategory(updatedCategory.id, { itemCount: updatedCategory.itemCount + 1 });
     }
+
+    return newItem;
   };
 
   const updateItem = (id: string, updatedData: Partial<BarterItem>) => {

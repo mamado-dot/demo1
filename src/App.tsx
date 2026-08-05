@@ -329,7 +329,14 @@ function BarterAppMain() {
         {effectiveView === 'add_item' && (
           <AddItemModal
             onClose={() => navigateToView('home')}
-            onSuccess={() => navigateToView('all_items')}
+            onSuccess={(createdItem) => {
+              if (createdItem) {
+                setSelectedDetailItem(createdItem);
+                navigateToView('item_detail');
+              } else {
+                navigateToView('all_items');
+              }
+            }}
             onNavigateAuth={() => navigateToView('auth')}
           />
         )}

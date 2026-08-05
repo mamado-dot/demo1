@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useBarter } from '../context/BarterContext';
-import { CategoryName, ItemCondition } from '../types';
+import { BarterItem, CategoryName, ItemCondition } from '../types';
 import { PlusCircle, ArrowLeftRight, ArrowRight, Banknote, Image as ImageIcon, CheckCircle2, Upload, Trash2, Sparkles, Lock, LogIn } from 'lucide-react';
 
 interface AddItemModalProps {
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (createdItem?: BarterItem) => void;
   onNavigateAuth?: () => void;
 }
 
@@ -301,7 +301,7 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
     setErrorMsg('');
 
     try {
-      addItem({
+      const createdItem = addItem({
         title: title.trim() || 'سلعة بدون عنوان',
         category,
         condition,
@@ -317,15 +317,15 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
         deliveryPreference,
       });
 
-      setSuccessMsg('تم نشر السلعة بنجاح وبدء إتاحتها للمقايضة! جاري تحويلك لمعرض السلع...');
+      setSuccessMsg('تم نشر السلعة بنجاح! جاري الانتقال إلى صفحة تفاصيل السلعة المضافة...');
 
       setTimeout(() => {
         if (onSuccess) {
-          onSuccess();
+          onSuccess(createdItem);
         } else {
           onClose();
         }
-      }, 1500);
+      }, 600);
     } catch (err) {
       setErrorMsg('حدث خطأ أثناء إضافة السلعة، يرجى المحاولة مرة أخرى');
       setIsSubmitting(false);
