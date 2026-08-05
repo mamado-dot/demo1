@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useBarter } from '../context/BarterContext';
 import { BarterItem, CategoryName, ItemCondition } from '../types';
 import { PlusCircle, ArrowLeftRight, ArrowRight, Banknote, Image as ImageIcon, CheckCircle2, Upload, Trash2, Sparkles, Lock, LogIn } from 'lucide-react';
@@ -274,9 +274,11 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
     ? settings.addItemDeliveryOptions
     : ['استلام يدوي', 'شحن بريدي', 'كلاهما يفي بالغرض'];
 
+  const isSubmittingRef = useRef(false);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting || successMsg) return;
+    if (isSubmittingRef.current || isSubmitting || successMsg) return;
 
     if ((settings.addItemShowTitle ?? true) && (settings.addItemTitleRequired ?? true) && !title.trim()) {
       setErrorMsg('يرجى إدخال عنوان واضح للسلعة المعروضة');
@@ -297,6 +299,7 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
       return;
     }
 
+    isSubmittingRef.current = true;
     setIsSubmitting(true);
     setErrorMsg('');
 
@@ -317,13 +320,18 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
         deliveryPreference,
       });
 
-      if (onSuccess) {
-        onSuccess(createdItem);
-      } else {
-        onClose();
-      }
+      setSuccessMsg('تم نشر السلعة بنجاح! جاري الانتقال إلى العرض...');
+
+      setTimeout(() => {
+        if (onSuccess) {
+          onSuccess(createdItem);
+        } else {
+          onClose();
+        }
+      }, 200);
     } catch (err) {
       setErrorMsg('حدث خطأ أثناء إضافة السلعة، يرجى المحاولة مرة أخرى');
+      isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
   };

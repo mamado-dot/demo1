@@ -138,6 +138,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
           setError('لم نجد حساباً بهذا البريد الإلكتروني. يمكنك إنشاء حساب جديد مجاناً');
           return;
         }
+      } else if (existingUser.password && password && existingUser.password !== password) {
+        setError('كلمة المرور غير صحيحة');
+        return;
       }
 
       setCurrentUser(existingUser);

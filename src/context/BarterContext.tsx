@@ -187,14 +187,8 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         });
       } else {
         const fetched = snapshot.docs.map((d) => d.data() as BarterItem);
-        setItems((prev) => {
-          const itemMap = new Map<string, BarterItem>();
-          prev.forEach((it) => itemMap.set(it.id, it));
-          fetched.forEach((it) => itemMap.set(it.id, it));
-          const list = Array.from(itemMap.values());
-          list.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
-          return list;
-        });
+        fetched.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+        setItems(fetched);
       }
     }, (err) => console.error('Firestore items listener error:', err));
 

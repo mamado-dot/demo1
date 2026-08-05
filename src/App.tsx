@@ -132,6 +132,9 @@ function BarterAppMain() {
     } else {
       setIsAdminMode(true);
     }
+    if (targetItem !== undefined && targetItem !== null) {
+      setSelectedDetailItem(targetItem);
+    }
     setActiveView(view);
     window.scrollTo({ top: 0, behavior: 'instant' });
 
