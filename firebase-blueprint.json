@@ -1,84 +1,127 @@
 {
+  "schemaVersion": "1.0",
   "entities": {
-    "users": {
-      "title": "Users",
-      "description": "User profile data",
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "avatar": { "type": "string" },
-        "city": { "type": "string" },
-        "rating": { "type": "number" },
-        "completedSwaps": { "type": "number" },
-        "reliabilityLevel": { "type": "string" },
-        "bio": { "type": "string" },
-        "isAdmin": { "type": "boolean" },
-        "isBanned": { "type": "boolean" },
-        "phone": { "type": "string" },
-        "joinedDate": { "type": "string" }
-      },
-      "required": ["name", "city"]
-    },
-    "listings": {
-      "title": "Listings",
-      "description": "Barter items and services",
-      "type": "object",
-      "properties": {
-        "title": { "type": "string" },
-        "type": { "type": "string" },
-        "category": { "type": "string" },
-        "city": { "type": "string" },
-        "description": { "type": "string" },
-        "imageUrl": { "type": "string" },
-        "ownerId": { "type": "string" },
-        "ownerName": { "type": "string" },
-        "ownerRating": { "type": "number" },
-        "ownerReliability": { "type": "string" },
-        "ownerAvatar": { "type": "string" },
-        "wantedInReturn": { "type": "string" },
-        "createdAt": { "type": "string" },
-        "status": { "type": "string" }
-      },
-      "required": ["title", "ownerId", "city"]
-    },
-    "chats": {
-      "title": "Chats",
-      "description": "Barter discussions and offers between users",
-      "type": "object",
-      "properties": {
-        "listingId": { "type": "string" },
-        "participants": { "type": "array", "items": { "type": "string" } },
-        "listingTitle": { "type": "string" },
-        "listingImageUrl": { "type": "string" },
-        "offerStatus": { "type": "string" }
+    "item": {
+      "path": "items/{itemId}",
+      "fields": {
+        "title": { "type": "string", "description": "Title of barter item" },
+        "category": { "type": "string", "description": "Category name" },
+        "city": { "type": "string", "description": "City location" },
+        "ownerName": { "type": "string", "description": "Owner name" },
+        "ownerPhone": { "type": "string", "description": "Owner phone" },
+        "ownerId": { "type": "string", "description": "Owner user ID" },
+        "description": { "type": "string", "description": "Item description" },
+        "desiredTrade": { "type": "string", "description": "What owner wants in exchange" },
+        "estimatedValue": { "type": "number", "description": "Estimated value in SAR" },
+        "images": { "type": "array", "items": { "type": "string" }, "description": "Array of image URLs" },
+        "status": { "type": "string", "description": "available, in_negotiation, traded, archived" },
+        "createdAt": { "type": "string", "description": "ISO creation date" },
+        "viewsCount": { "type": "number", "description": "Number of views" },
+        "likesCount": { "type": "number", "description": "Number of likes" }
       }
     },
-    "questions": {
-      "title": "Questions",
-      "description": "Q&A on listings",
-      "type": "object",
-      "properties": {
-        "listingId": { "type": "string" },
-        "questionText": { "type": "string" },
-        "replyText": { "type": "string" }
+    "user": {
+      "path": "users/{userId}",
+      "fields": {
+        "name": { "type": "string", "description": "User full name" },
+        "phone": { "type": "string", "description": "Phone number" },
+        "email": { "type": "string", "description": "Email address" },
+        "city": { "type": "string", "description": "User city" },
+        "avatar": { "type": "string", "description": "Avatar image URL" },
+        "rating": { "type": "number", "description": "User rating score" },
+        "completedTradesCount": { "type": "number", "description": "Completed trades count" },
+        "idVerified": { "type": "boolean", "description": "Nafath ID verification status" },
+        "role": { "type": "string", "description": "user or admin" },
+        "joinedDate": { "type": "string", "description": "Joined date ISO string" }
       }
     },
-    "settings": {
-      "title": "Settings",
-      "description": "Platform settings and configurations",
-      "type": "object",
-      "properties": {
-        "siteSettings": { "type": "object" },
-        "brandConfig": { "type": "object" },
-        "barterOptions": { "type": "object" }
+    "offer": {
+      "path": "offers/{offerId}",
+      "fields": {
+        "targetItemId": { "type": "string", "description": "Target item ID" },
+        "offeredItemId": { "type": "string", "description": "Offered item ID" },
+        "offeredByUserId": { "type": "string", "description": "User ID making offer" },
+        "offeredByUserName": { "type": "string", "description": "User name making offer" },
+        "offeredByUserPhone": { "type": "string", "description": "User phone making offer" },
+        "cashDifference": { "type": "number", "description": "Cash difference amount" },
+        "cashDifferenceDirection": { "type": "string", "description": "pay or receive or none" },
+        "notes": { "type": "string", "description": "Offer notes" },
+        "status": { "type": "string", "description": "pending, accepted, rejected, cancelled, completed" },
+        "createdAt": { "type": "string", "description": "ISO creation date" }
+      }
+    },
+    "question": {
+      "path": "questions/{questionId}",
+      "fields": {
+        "itemId": { "type": "string", "description": "Target item ID" },
+        "userName": { "type": "string", "description": "Questioner name" },
+        "userPhone": { "type": "string", "description": "Questioner phone" },
+        "userId": { "type": "string", "description": "Questioner user ID" },
+        "question": { "type": "string", "description": "Question text" },
+        "answer": { "type": "string", "description": "Owner answer text" },
+        "createdAt": { "type": "string", "description": "ISO creation date" },
+        "answeredAt": { "type": "string", "description": "ISO answered date" }
+      }
+    },
+    "negotiationMessage": {
+      "path": "negotiationMessages/{messageId}",
+      "fields": {
+        "offerId": { "type": "string", "description": "Trade offer ID" },
+        "senderId": { "type": "string", "description": "Sender user ID" },
+        "senderName": { "type": "string", "description": "Sender user name" },
+        "content": { "type": "string", "description": "Message content" },
+        "type": { "type": "string", "description": "text, cash_proposal, location_proposal, system" },
+        "proposalValue": { "type": "number", "description": "Proposed cash value" },
+        "createdAt": { "type": "string", "description": "ISO creation date" }
+      }
+    },
+    "contract": {
+      "path": "contracts/{contractId}",
+      "fields": {
+        "contractNumber": { "type": "string", "description": "Official contract number" },
+        "offerId": { "type": "string", "description": "Trade offer ID" },
+        "partyA": { "type": "object", "description": "Party A details" },
+        "partyB": { "type": "object", "description": "Party B details" },
+        "itemA": { "type": "object", "description": "Item A details" },
+        "itemB": { "type": "object", "description": "Item B details" },
+        "cashDifference": { "type": "number", "description": "Cash diff" },
+        "cashPayer": { "type": "string", "description": "Party paying cash" },
+        "partyASigned": { "type": "boolean", "description": "Party A signature status" },
+        "partyBSigned": { "type": "boolean", "description": "Party B signature status" },
+        "status": { "type": "string", "description": "draft, signed, active, completed" },
+        "createdAt": { "type": "string", "description": "ISO creation date" }
+      }
+    },
+    "review": {
+      "path": "reviews/{reviewId}",
+      "fields": {
+        "reviewerName": { "type": "string", "description": "Reviewer name" },
+        "reviewerAvatar": { "type": "string", "description": "Reviewer avatar" },
+        "targetUserId": { "type": "string", "description": "Target user ID being reviewed" },
+        "rating": { "type": "number", "description": "Rating score 1-5" },
+        "comment": { "type": "string", "description": "Review text" },
+        "createdAt": { "type": "string", "description": "ISO creation date" }
+      }
+    },
+    "setting": {
+      "path": "settings/{settingId}",
+      "fields": {
+        "siteName": { "type": "string", "description": "Site title" },
+        "siteSubtitle": { "type": "string", "description": "Site slogan" },
+        "heroTitle": { "type": "string", "description": "Hero section title" },
+        "heroSubtitle": { "type": "string", "description": "Hero section subtitle" },
+        "maxHomeItems": { "type": "number", "description": "Max items on homepage" },
+        "showHeroImage": { "type": "boolean", "description": "Show hero image toggle" },
+        "heroImage": { "type": "string", "description": "Hero image URL" }
+      }
+    },
+    "category": {
+      "path": "categories/{categoryId}",
+      "fields": {
+        "name": { "type": "string", "description": "Category name" },
+        "icon": { "type": "string", "description": "Icon identifier" },
+        "itemCount": { "type": "number", "description": "Number of items in category" }
       }
     }
-  },
-  "firestore": {
-    "/users/{userId}": { "schema": "users", "description": "User profiles" },
-    "/listings/{listingId}": { "schema": "listings", "description": "Listings collection" },
-    "/chats/{chatId}": { "schema": "chats", "description": "Chats collection" },
-    "/questions/{questionId}": { "schema": "questions", "description": "Questions collection" },
-    "/settings/{settingId}": { "schema": "settings", "description": "Platform settings" }
   }
 }

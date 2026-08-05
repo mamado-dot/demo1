@@ -7,9 +7,6 @@ import {
   PlatformSettings, 
   CategoryItem, 
   ItemQuestion,
-  CategoryName,
-  ItemCondition,
-  OfferStatus,
   TradeNegotiationMessage,
   UserReview
 } from '../types';
@@ -24,6 +21,15 @@ import {
   INITIAL_NEGOTIATIONS,
   INITIAL_REVIEWS
 } from '../data/mockData';
+import { db } from '../lib/firebase';
+import { 
+  collection, 
+  doc, 
+  onSnapshot, 
+  setDoc, 
+  updateDoc, 
+  deleteDoc 
+} from 'firebase/firestore';
 
 interface BarterContextType {
   // Auth / Active View State
@@ -104,21 +110,12 @@ const BarterContext = createContext<BarterContextType | undefined>(undefined);
 const LOCAL_STORAGE_PREFIX = 'moqayada_v1_';
 
 export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Helper to read from local storage or fallback
+  // Local storage helper fallback
   const getStored = <T,>(key: string, fallback: T): T => {
     try {
       const stored = localStorage.getItem(LOCAL_STORAGE_PREFIX + key);
       if (!stored) return fallback;
-      const parsed = JSON.parse(stored);
-      if (key === 'settings') {
-        const mergedSettings = { ...INITIAL_SETTINGS, ...parsed };
-        if (!localStorage.getItem(LOCAL_STORAGE_PREFIX + 'top_notice_v2_synced')) {
-          mergedSettings.showHeaderTopNotice = false;
-          localStorage.setItem(LOCAL_STORAGE_PREFIX + 'top_notice_v2_synced', 'true');
-        }
-        return mergedSettings;
-      }
-      return parsed;
+      return JSON.parse(stored);
     } catch {
       return fallback;
     }
@@ -143,54 +140,141 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCityFilter, setSelectedCityFilter] = useState<string>('الكل');
 
-  // Persistence side effects
+  // Real-time Firestore Sync
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'reviews', JSON.stringify(reviews));
-  }, [reviews]);
+    // 1. Items
+    const unsubItems = onSnapshot(collection(db, 'items'), (snapshot) => {
+      if (snapshot.empty) {
+        INITIAL_ITEMS.forEach((it) => {
+          setDoc(doc(db, 'items', it.id), it).catch(console.error);
+        });
+      } else {
+        const fetched = snapshot.docs.map((d) => d.data() as BarterItem);
+        setItems(fetched);
+      }
+    }, (err) => console.error('Firestore items listener error:', err));
 
-  // Persistence side effects
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'favorites', JSON.stringify(favorites));
-  }, [favorites]);
+    // 2. Users
+    const unsubUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
+      if (snapshot.empty) {
+        INITIAL_USERS.forEach((u) => {
+          setDoc(doc(db, 'users', u.id), u).catch(console.error);
+        });
+      } else {
+        const fetched = snapshot.docs.map((d) => d.data() as User);
+        setUsers(fetched);
+        // keep currentUser up-to-date
+        if (currentUser) {
+          const updatedCurrent = fetched.find((u) => u.id === currentUser.id);
+          if (updatedCurrent) setCurrentUser(updatedCurrent);
+        }
+      }
+    }, (err) => console.error('Firestore users listener error:', err));
 
-  // Persistence side effects
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'users', JSON.stringify(users));
-  }, [users]);
+    // 3. Settings
+    const unsubSettings = onSnapshot(doc(db, 'settings', 'global_settings'), (docSnap) => {
+      if (!docSnap.exists()) {
+        setDoc(doc(db, 'settings', 'global_settings'), INITIAL_SETTINGS).catch(console.error);
+      } else {
+        setSettings({ ...INITIAL_SETTINGS, ...docSnap.data() } as PlatformSettings);
+      }
+    }, (err) => console.error('Firestore settings listener error:', err));
 
+    // 4. Categories
+    const unsubCategories = onSnapshot(collection(db, 'categories'), (snapshot) => {
+      if (snapshot.empty) {
+        INITIAL_CATEGORIES.forEach((c) => {
+          setDoc(doc(db, 'categories', c.id), c).catch(console.error);
+        });
+      } else {
+        const fetched = snapshot.docs.map((d) => d.data() as CategoryItem);
+        setCategories(fetched);
+      }
+    }, (err) => console.error('Firestore categories listener error:', err));
+
+    // 5. Questions
+    const unsubQuestions = onSnapshot(collection(db, 'questions'), (snapshot) => {
+      if (snapshot.empty) {
+        INITIAL_QUESTIONS.forEach((q) => {
+          setDoc(doc(db, 'questions', q.id), q).catch(console.error);
+        });
+      } else {
+        const fetched = snapshot.docs.map((d) => d.data() as ItemQuestion);
+        setQuestions(fetched);
+      }
+    }, (err) => console.error('Firestore questions listener error:', err));
+
+    // 6. Offers
+    const unsubOffers = onSnapshot(collection(db, 'offers'), (snapshot) => {
+      if (snapshot.empty) {
+        INITIAL_OFFERS.forEach((o) => {
+          setDoc(doc(db, 'offers', o.id), o).catch(console.error);
+        });
+      } else {
+        const fetched = snapshot.docs.map((d) => d.data() as TradeOffer);
+        setOffers(fetched);
+      }
+    }, (err) => console.error('Firestore offers listener error:', err));
+
+    // 7. Negotiation Messages
+    const unsubNegotiations = onSnapshot(collection(db, 'negotiationMessages'), (snapshot) => {
+      if (snapshot.empty) {
+        INITIAL_NEGOTIATIONS.forEach((m) => {
+          setDoc(doc(db, 'negotiationMessages', m.id), m).catch(console.error);
+        });
+      } else {
+        const fetched = snapshot.docs.map((d) => d.data() as TradeNegotiationMessage);
+        setNegotiationMessages(fetched);
+      }
+    }, (err) => console.error('Firestore negotiations listener error:', err));
+
+    // 8. Contracts
+    const unsubContracts = onSnapshot(collection(db, 'contracts'), (snapshot) => {
+      if (snapshot.empty) {
+        INITIAL_CONTRACTS.forEach((c) => {
+          setDoc(doc(db, 'contracts', c.id), c).catch(console.error);
+        });
+      } else {
+        const fetched = snapshot.docs.map((d) => d.data() as BarterContract);
+        setContracts(fetched);
+      }
+    }, (err) => console.error('Firestore contracts listener error:', err));
+
+    // 9. Reviews
+    const unsubReviews = onSnapshot(collection(db, 'reviews'), (snapshot) => {
+      if (snapshot.empty) {
+        INITIAL_REVIEWS.forEach((r) => {
+          setDoc(doc(db, 'reviews', r.id), r).catch(console.error);
+        });
+      } else {
+        const fetched = snapshot.docs.map((d) => d.data() as UserReview);
+        setReviews(fetched);
+      }
+    }, (err) => console.error('Firestore reviews listener error:', err));
+
+    return () => {
+      unsubItems();
+      unsubUsers();
+      unsubSettings();
+      unsubCategories();
+      unsubQuestions();
+      unsubOffers();
+      unsubNegotiations();
+      unsubContracts();
+      unsubReviews();
+    };
+  }, []);
+
+  // Local Storage Backups
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_PREFIX + 'currentUser', JSON.stringify(currentUser));
   }, [currentUser]);
 
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'items', JSON.stringify(items));
-  }, [items]);
+    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'favorites', JSON.stringify(favorites));
+  }, [favorites]);
 
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'questions', JSON.stringify(questions));
-  }, [questions]);
-
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'offers', JSON.stringify(offers));
-  }, [offers]);
-
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'negotiationMessages', JSON.stringify(negotiationMessages));
-  }, [negotiationMessages]);
-
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'contracts', JSON.stringify(contracts));
-  }, [contracts]);
-
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'settings', JSON.stringify(settings));
-  }, [settings]);
-
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'categories', JSON.stringify(categories));
-  }, [categories]);
-
-  // Actions
+  // Actions with Firestore Sync
   const addItem = (newItemData: Omit<BarterItem, 'id' | 'ownerId' | 'status' | 'createdAt' | 'views' | 'likes'>) => {
     if (!currentUser) return;
     const newItem: BarterItem = {
@@ -204,19 +288,23 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     setItems((prev) => [newItem, ...prev]);
+    setDoc(doc(db, 'items', newItem.id), newItem).catch(console.error);
 
     // Update category item count
-    setCategories((prev) =>
-      prev.map((c) => (c.name === newItemData.category ? { ...c, itemCount: c.itemCount + 1 } : c))
-    );
+    const updatedCategory = categories.find((c) => c.name === newItemData.category);
+    if (updatedCategory) {
+      updateCategory(updatedCategory.id, { itemCount: updatedCategory.itemCount + 1 });
+    }
   };
 
   const updateItem = (id: string, updatedData: Partial<BarterItem>) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...updatedData } : item)));
+    updateDoc(doc(db, 'items', id), updatedData).catch(console.error);
   };
 
   const deleteItem = (id: string) => {
     setItems((prev) => prev.filter((item) => item.id !== id));
+    deleteDoc(doc(db, 'items', id)).catch(console.error);
   };
 
   const toggleFavorite = (itemId: string) => {
@@ -224,12 +312,26 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const isFav = prev.includes(itemId);
       if (isFav) {
         setItems((itemsPrev) =>
-          itemsPrev.map((item) => (item.id === itemId ? { ...item, likes: Math.max(0, item.likes - 1) } : item))
+          itemsPrev.map((item) => {
+            if (item.id === itemId) {
+              const newLikes = Math.max(0, item.likes - 1);
+              updateDoc(doc(db, 'items', itemId), { likes: newLikes }).catch(console.error);
+              return { ...item, likes: newLikes };
+            }
+            return item;
+          })
         );
         return prev.filter((id) => id !== itemId);
       } else {
         setItems((itemsPrev) =>
-          itemsPrev.map((item) => (item.id === itemId ? { ...item, likes: item.likes + 1 } : item))
+          itemsPrev.map((item) => {
+            if (item.id === itemId) {
+              const newLikes = item.likes + 1;
+              updateDoc(doc(db, 'items', itemId), { likes: newLikes }).catch(console.error);
+              return { ...item, likes: newLikes };
+            }
+            return item;
+          })
         );
         return [...prev, itemId];
       }
@@ -256,20 +358,26 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       createdAt: new Date().toLocaleString('ar-SA', { dateStyle: 'short', timeStyle: 'short' }),
     };
     setQuestions((prev) => [newQ, ...prev]);
+    setDoc(doc(db, 'questions', newQ.id), newQ).catch(console.error);
   };
 
   const answerQuestion = (questionId: string, answerText: string) => {
+    const answeredAt = new Date().toLocaleString('ar-SA', { dateStyle: 'short', timeStyle: 'short' });
     setQuestions((prev) =>
       prev.map((q) =>
         q.id === questionId
           ? {
               ...q,
               answer: answerText,
-              answeredAt: new Date().toLocaleString('ar-SA', { dateStyle: 'short', timeStyle: 'short' }),
+              answeredAt,
             }
           : q
       )
     );
+    updateDoc(doc(db, 'questions', questionId), {
+      answer: answerText,
+      answeredAt
+    }).catch(console.error);
   };
 
   const addNegotiationMessage = (offerId: string, text: string) => {
@@ -284,6 +392,7 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       createdAt: new Date().toLocaleString('ar-SA', { dateStyle: 'short', timeStyle: 'short' }),
     };
     setNegotiationMessages((prev) => [...prev, newMsg]);
+    setDoc(doc(db, 'negotiationMessages', newMsg.id), newMsg).catch(console.error);
   };
 
   const createTradeOffer = (offerData: {
@@ -311,7 +420,6 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return { success: false, message: 'لا يمكنك تقديم عرض مقايضة على سلعتك الخاصة' };
     }
 
-    // Check existing active offer
     const existing = offers.find(
       (o) =>
         o.targetItemId === offerData.targetItemId &&
@@ -337,8 +445,8 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     setOffers((prev) => [newOffer, ...prev]);
+    setDoc(doc(db, 'offers', newOffer.id), newOffer).catch(console.error);
 
-    // Create initial negotiation message automatically
     const initialText = offerData.note && offerData.note.trim() !== '' 
       ? offerData.note 
       : `أهلاً بك! لقد أرسلت لك عرض مقايضة لـ (${offeredItem.title}) مقابل (${targetItem.title}). يسرني النقاش والتنسيق معك هنا.`;
@@ -354,6 +462,7 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     setNegotiationMessages((prev) => [...prev, initialMsg]);
+    setDoc(doc(db, 'negotiationMessages', initialMsg.id), initialMsg).catch(console.error);
 
     return { success: true, message: 'تم إرسال عرض المقايضة بنجاح وبدء محادثة المفاوضة!' };
   };
@@ -362,16 +471,16 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setOffers((prev) =>
       prev.map((o) => {
         if (o.id !== offerId) return o;
+        let updateObj: Partial<TradeOffer> = {};
         if (action === 'accept') {
-          return { ...o, status: 'accepted', targetOwnerSigned: true };
+          updateObj = { status: 'accepted', targetOwnerSigned: true };
+        } else if (action === 'reject') {
+          updateObj = { status: 'rejected' };
+        } else if (action === 'cancel') {
+          updateObj = { status: 'cancelled' };
         }
-        if (action === 'reject') {
-          return { ...o, status: 'rejected' };
-        }
-        if (action === 'cancel') {
-          return { ...o, status: 'cancelled' };
-        }
-        return o;
+        updateDoc(doc(db, 'offers', offerId), updateObj).catch(console.error);
+        return { ...o, ...updateObj };
       })
     );
   };
@@ -398,7 +507,6 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const partyAUser = users.find((u) => u.id === offer.offeredByUserId) || currentUser;
     const partyBUser = users.find((u) => u.id === offer.targetOwnerUserId) || currentUser;
 
-    // If both signed (or if one party signs after accept)
     const bothSigned = updatedOffer.offeredBySigned && updatedOffer.targetOwnerSigned;
 
     if (bothSigned || (updatedOffer.status === 'accepted' && (isPartyA || isPartyB))) {
@@ -406,11 +514,9 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       updatedOffer.targetOwnerSigned = true;
       updatedOffer.status = 'completed';
 
-      // Generate E-Contract
       const contractNumber = `BARTER-2026-${Math.floor(10000 + Math.random() * 90000)}`;
       const nowStr = new Date().toLocaleString('ar-SA', { dateStyle: 'long', timeStyle: 'short' });
 
-      // Calculate cash payer
       let cashPayerId: string | undefined = undefined;
       if (offer.cashDifference > 0) {
         cashPayerId = offer.offeredByUserId;
@@ -459,16 +565,16 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       updatedOffer.contractId = newContract.id;
 
-      // Update offer in state
       setOffers((prev) => prev.map((o) => (o.id === offerId ? updatedOffer : o)));
+      updateDoc(doc(db, 'offers', offerId), updatedOffer).catch(console.error);
 
-      // Add Contract
       setContracts((prev) => [newContract, ...prev]);
+      setDoc(doc(db, 'contracts', newContract.id), newContract).catch(console.error);
 
-      // Update Items status to bartered
       setItems((prev) =>
         prev.map((i) => {
           if (i.id === targetItem?.id || i.id === offeredItem?.id) {
+            updateDoc(doc(db, 'items', i.id), { status: 'bartered' }).catch(console.error);
             return { ...i, status: 'bartered' };
           }
           return i;
@@ -478,11 +584,11 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return { contract: newContract, completed: true };
     } else {
       setOffers((prev) => prev.map((o) => (o.id === offerId ? updatedOffer : o)));
+      updateDoc(doc(db, 'offers', offerId), updatedOffer).catch(console.error);
       return { contract: null, completed: false };
     }
   };
 
-  // Review Actions
   const addReview = (reviewData: Omit<UserReview, 'id' | 'createdAt'>) => {
     const newReview: UserReview = {
       ...reviewData,
@@ -492,17 +598,18 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     
     setReviews((prev) => {
       const nextReviews = [newReview, ...prev];
-      // Recalculate target user rating
       const userRevList = nextReviews.filter(r => r.targetUserId === reviewData.targetUserId);
       const sum = userRevList.reduce((acc, r) => acc + r.rating, 0);
       const newRating = userRevList.length > 0 ? Math.round((sum / userRevList.length) * 10) / 10 : 0;
       
-      // Update target user's rating
       setUsers((prevUsers) =>
         prevUsers.map((u) => (u.id === reviewData.targetUserId ? { ...u, rating: newRating } : u))
       );
+      updateDoc(doc(db, 'users', reviewData.targetUserId), { rating: newRating }).catch(console.error);
       return nextReviews;
     });
+
+    setDoc(doc(db, 'reviews', newReview.id), newReview).catch(console.error);
   };
 
   const adminDeleteReview = (reviewId: string) => {
@@ -516,9 +623,11 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setUsers((prevUsers) =>
           prevUsers.map((u) => (u.id === targetReview.targetUserId ? { ...u, rating: newRating } : u))
         );
+        updateDoc(doc(db, 'users', targetReview.targetUserId), { rating: newRating }).catch(console.error);
       }
       return nextReviews;
     });
+    deleteDoc(doc(db, 'reviews', reviewId)).catch(console.error);
   };
 
   const adminUpdateReview = (reviewId: string, updatedData: Partial<UserReview>) => {
@@ -532,20 +641,17 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setUsers((prevUsers) =>
           prevUsers.map((u) => (u.id === targetReview.targetUserId ? { ...u, rating: newRating } : u))
         );
+        updateDoc(doc(db, 'users', targetReview.targetUserId), { rating: newRating }).catch(console.error);
       }
       return nextReviews;
     });
+    updateDoc(doc(db, 'reviews', reviewId), updatedData).catch(console.error);
   };
 
-  // Admin Actions
   const updateSettings = (newSettings: Partial<PlatformSettings>) => {
     setSettings((prev) => {
       const updated = { ...prev, ...newSettings };
-      try {
-        localStorage.setItem(LOCAL_STORAGE_PREFIX + 'settings', JSON.stringify(updated));
-      } catch (e) {
-        console.error('Failed to save settings', e);
-      }
+      setDoc(doc(db, 'settings', 'global_settings'), updated, { merge: true }).catch(console.error);
       return updated;
     });
   };
@@ -557,24 +663,29 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       itemCount: 0,
     };
     setCategories((prev) => [...prev, newCat]);
+    setDoc(doc(db, 'categories', newCat.id), newCat).catch(console.error);
   };
 
   const updateCategory = (id: string, updatedCat: Partial<CategoryItem>) => {
     setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, ...updatedCat } : c)));
+    updateDoc(doc(db, 'categories', id), updatedCat).catch(console.error);
   };
 
   const deleteCategory = (id: string) => {
     setCategories((prev) => prev.filter((c) => c.id !== id));
+    deleteDoc(doc(db, 'categories', id)).catch(console.error);
   };
 
   const adminDeleteContract = (id: string) => {
     setContracts((prev) => prev.filter((c) => c.id !== id));
+    deleteDoc(doc(db, 'contracts', id)).catch(console.error);
   };
 
   const adminUpdateContract = (contractId: string, updatedData: Partial<BarterContract>) => {
     setContracts((prev) =>
       prev.map((c) => (c.id === contractId ? { ...c, ...updatedData } : c))
     );
+    updateDoc(doc(db, 'contracts', contractId), updatedData).catch(console.error);
   };
 
   const adminUpdateUser = (userId: string, updatedData: Partial<User>) => {
@@ -590,10 +701,12 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return u;
       })
     );
+    updateDoc(doc(db, 'users', userId), updatedData).catch(console.error);
   };
 
   const adminDeleteUser = (userId: string) => {
     setUsers((prev) => prev.filter((u) => u.id !== userId));
+    deleteDoc(doc(db, 'users', userId)).catch(console.error);
   };
 
   const adminAddUser = (userData: Omit<User, 'id'>) => {
@@ -604,16 +717,15 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       id: 'usr_' + Date.now(),
     };
     setUsers((prev) => [...prev, newUser]);
+    setDoc(doc(db, 'users', newUser.id), newUser).catch(console.error);
   };
 
   const updateUserProfile = (updatedData: Partial<User>) => {
     if (!currentUser) return;
-    setCurrentUser((prev) => {
-      if (!prev) return null;
-      const updated = { ...prev, ...updatedData };
-      setUsers((all) => all.map((u) => (u.id === prev.id ? updated : u)));
-      return updated;
-    });
+    const updated = { ...currentUser, ...updatedData };
+    setCurrentUser(updated);
+    setUsers((all) => all.map((u) => (u.id === currentUser.id ? updated : u)));
+    updateDoc(doc(db, 'users', currentUser.id), updatedData).catch(console.error);
   };
 
   return (
