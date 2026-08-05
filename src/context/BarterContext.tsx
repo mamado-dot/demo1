@@ -131,7 +131,13 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [negotiationMessages, setNegotiationMessages] = useState<TradeNegotiationMessage[]>(() => getStored('negotiationMessages', INITIAL_NEGOTIATIONS));
   const [contracts, setContracts] = useState<BarterContract[]>(() => getStored('contracts', INITIAL_CONTRACTS));
   const [reviews, setReviews] = useState<UserReview[]>(() => getStored('reviews', INITIAL_REVIEWS));
-  const [settings, setSettings] = useState<PlatformSettings>(() => getStored('settings', INITIAL_SETTINGS));
+  const [settings, setSettings] = useState<PlatformSettings>(() => {
+    const loaded = getStored<PlatformSettings>('settings', INITIAL_SETTINGS);
+    if (loaded && (loaded.heroImageUrl === 'https://images.unsplash.com/photo-1556742049-0a670fc0a727?auto=format&fit=crop&q=80&w=800' || loaded.heroImageUrl?.includes('unsplash'))) {
+      loaded.heroImageUrl = '';
+    }
+    return { ...INITIAL_SETTINGS, ...loaded, heroImageUrl: loaded?.heroImageUrl?.includes('unsplash') ? '' : (loaded?.heroImageUrl ?? '') };
+  });
   const [categories, setCategories] = useState<CategoryItem[]>(() => getStored('categories', INITIAL_CATEGORIES));
   const [favorites, setFavorites] = useState<string[]>(() => getStored('favorites', ['item_1', 'item_3']));
 
@@ -177,11 +183,13 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setDoc(doc(db, 'settings', 'global_settings'), INITIAL_SETTINGS).catch(console.error);
       } else {
         const data = docSnap.data() as PlatformSettings;
-        if (data.heroImageUrl === 'https://images.unsplash.com/photo-1556742049-0a670fc0a727?auto=format&fit=crop&q=80&w=800') {
+        if (data.heroImageUrl && (data.heroImageUrl === 'https://images.unsplash.com/photo-1556742049-0a670fc0a727?auto=format&fit=crop&q=80&w=800' || data.heroImageUrl.includes('unsplash'))) {
           data.heroImageUrl = '';
           updateDoc(doc(db, 'settings', 'global_settings'), { heroImageUrl: '' }).catch(console.error);
         }
-        setSettings({ ...INITIAL_SETTINGS, ...data });
+        const cleanedSettings = { ...INITIAL_SETTINGS, ...data };
+        localStorage.setItem(LOCAL_STORAGE_PREFIX + 'settings', JSON.stringify(cleanedSettings));
+        setSettings(cleanedSettings);
       }
     }, (err) => console.error('Firestore settings listener error:', err));
 

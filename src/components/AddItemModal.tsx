@@ -317,15 +317,11 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
         deliveryPreference,
       });
 
-      setSuccessMsg('تم نشر السلعة بنجاح! جاري الانتقال إلى صفحة تفاصيل السلعة المضافة...');
-
-      setTimeout(() => {
-        if (onSuccess) {
-          onSuccess(createdItem);
-        } else {
-          onClose();
-        }
-      }, 600);
+      if (onSuccess) {
+        onSuccess(createdItem);
+      } else {
+        onClose();
+      }
     } catch (err) {
       setErrorMsg('حدث خطأ أثناء إضافة السلعة، يرجى المحاولة مرة أخرى');
       setIsSubmitting(false);
