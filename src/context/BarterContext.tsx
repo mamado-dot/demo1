@@ -109,6 +109,16 @@ const BarterContext = createContext<BarterContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_PREFIX = 'moqayada_v1_';
 
+function sanitizeForFirestore<T extends Record<string, any>>(obj: T): T {
+  const cleaned: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      cleaned[key] = value;
+    }
+  }
+  return cleaned as T;
+}
+
 export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Local storage helper fallback
   const getStored = <T,>(key: string, fallback: T): T => {
@@ -173,7 +183,7 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const unsubItems = onSnapshot(collection(db, 'items'), (snapshot) => {
       if (snapshot.empty) {
         INITIAL_ITEMS.forEach((it) => {
-          setDoc(doc(db, 'items', it.id), it).catch(console.error);
+          setDoc(doc(db, 'items', it.id), sanitizeForFirestore(it)).catch(console.error);
         });
       } else {
         const fetched = snapshot.docs.map((d) => d.data() as BarterItem);
@@ -372,7 +382,7 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       // ignore local storage quota error if any
     }
 
-    setDoc(doc(db, 'items', newItem.id), newItem).catch(console.error);
+    setDoc(doc(db, 'items', newItem.id), sanitizeForFirestore(newItem)).catch(console.error);
 
     // Update category item count
     const updatedCategory = categories.find((c) => c.name === newItemData.category);
@@ -385,7 +395,7 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const updateItem = (id: string, updatedData: Partial<BarterItem>) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...updatedData } : item)));
-    updateDoc(doc(db, 'items', id), updatedData).catch(console.error);
+    updateDoc(doc(db, 'items', id), sanitizeForFirestore(updatedData)).catch(console.error);
   };
 
   const deleteItem = (id: string) => {
