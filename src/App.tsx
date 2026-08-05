@@ -511,14 +511,14 @@ function BarterAppMain() {
                     {/* Action Buttons */}
                     <div className="pt-2 flex flex-wrap items-center gap-3">
                       <button
-                        onClick={() => setActiveView('add_item')}
+                        onClick={() => navigateToView('add_item')}
                         className="bg-[#8c5332] hover:bg-[#734123] active:scale-98 text-white font-bold text-sm px-7 py-3.5 rounded-2xl shadow-md shadow-[#8c5332]/20 transition-all flex items-center gap-2 cursor-pointer"
                       >
                         <span>أضف منتجك</span>
                       </button>
                       
                       <button
-                        onClick={() => setActiveView('all_items')}
+                        onClick={() => navigateToView('all_items')}
                         className="bg-white hover:bg-[#f5eee6] active:scale-98 text-[#4a3a2e] font-bold text-sm px-7 py-3.5 rounded-2xl transition-all border border-[#e5d8c8] shadow-xs cursor-pointer"
                       >
                         <span>تصفح المنتجات</span>
@@ -580,7 +580,7 @@ function BarterAppMain() {
               <div className="space-y-4">
                 <div className="flex items-center justify-end">
                   <button
-                    onClick={() => setActiveView('all_items')}
+                    onClick={() => navigateToView('all_items')}
                     className="text-xs font-bold text-[#8c5332] hover:underline cursor-pointer flex items-center gap-1"
                   >
                     <span>عرض الكل في المعرض ({filteredItems.length})</span>
@@ -608,7 +608,7 @@ function BarterAppMain() {
                 {filteredItems.length > homepageItems.length && (
                   <div className="pt-4 flex flex-col items-center justify-center">
                     <button
-                      onClick={() => setActiveView('all_items')}
+                      onClick={() => navigateToView('all_items')}
                       className="px-8 py-3 bg-[#8c5332] hover:bg-[#734123] text-white text-sm font-extrabold rounded-2xl shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center gap-2 group"
                     >
                       <span>المزيد من منتجات المقايضة</span>
@@ -629,12 +629,10 @@ function BarterAppMain() {
         <Footer
           isOwner={isOwner}
           onOpenAdmin={() => {
-            setIsAdminMode(true);
-            setActiveView('admin');
+            navigateToView('admin');
           }}
           onNavigateView={(view) => {
-            setIsAdminMode(false);
-            setActiveView(view as any);
+            navigateToView(view as any);
           }}
         />
       )}

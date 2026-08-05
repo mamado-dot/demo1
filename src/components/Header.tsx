@@ -150,8 +150,8 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             )}
 
-            {/* Add Item Primary Brown Button */}
-            {settings.showHeaderAddItemBtn && (
+            {/* Add Item Primary Brown Button (Visible only for logged-in users) */}
+            {currentUser && settings.showHeaderAddItemBtn && (
               <button
                 onClick={onOpenAddItem}
                 className="bg-[#8c5332] hover:bg-[#734123] active:scale-98 text-white text-xs sm:text-sm font-bold px-4 py-2 sm:px-5 sm:py-2.5 rounded-full shadow-md shadow-[#8c5332]/20 transition-all flex items-center gap-1.5 cursor-pointer shrink-0"

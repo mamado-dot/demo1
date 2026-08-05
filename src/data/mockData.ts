@@ -101,9 +101,9 @@ export const INITIAL_SETTINGS: PlatformSettings = {
   
   // Hero Banner Granular Controls
   showHeroBanner: true,
-  heroBadgeText: 'منصة المقايضة الأولى بالعقود الإلكترونية الموثقة',
-  heroTitle: 'اعرض سلعتك.. واطلب البديل واستخرج عقداً إلكترونياً معتمداً',
-  heroSubtitle: 'تبادل آمن ومباشر للمقتنيات والأجهزة: أضف سلعتك، استقبل عروض المقايضة، وعند الموافقة يتم توليد عقد إلكتروني موثق يحمي طرفي الاتفاق مع فترة معاينة وفحص.',
+  heroBadgeText: 'منصة مقايضة كاملة',
+  heroTitle: 'قايض وفاوض بما تحتاجه',
+  heroSubtitle: 'منصة تتيح لك عرض منتجاتك او مهارتك ومقايضتها بما تحتاجه مباشرة مع الآخرين – بكل بساطة وأمان.',
   showHeroSteps: true,
   showHeroImage: true,
   heroImageUrl: '',

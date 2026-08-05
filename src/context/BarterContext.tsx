@@ -117,12 +117,17 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (!stored) return fallback;
       const parsed = JSON.parse(stored);
       if (key === 'settings' && parsed && typeof parsed === 'object') {
+        if (parsed.heroTitle === 'اعرض سلعتك.. واطلب البديل واستخرج عقداً إلكترونياً معتمداً') {
+          parsed.heroTitle = 'قايض وفاوض بما تحتاجه';
+          parsed.heroBadgeText = 'منصة مقايضة كاملة';
+          parsed.heroSubtitle = 'منصة تتيح لك عرض منتجاتك او مهارتك ومقايضتها بما تحتاجه مباشرة مع الآخرين – بكل بساطة وأمان.';
+        }
         if (parsed.heroImageUrl && (parsed.heroImageUrl.includes('unsplash') || parsed.heroImageUrl.includes('556742049'))) {
           parsed.heroImageUrl = '';
-          try {
-            localStorage.setItem(LOCAL_STORAGE_PREFIX + 'settings', JSON.stringify(parsed));
-          } catch {}
         }
+        try {
+          localStorage.setItem(LOCAL_STORAGE_PREFIX + 'settings', JSON.stringify(parsed));
+        } catch {}
       }
       return parsed;
     } catch {
@@ -143,8 +148,16 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [settings, setSettings] = useState<PlatformSettings>(() => {
     const loaded = getStored<PlatformSettings>('settings', INITIAL_SETTINGS);
     const heroUrl = loaded?.heroImageUrl;
-    const isUnsplash = !heroUrl || heroUrl.includes('unsplash') || heroUrl.includes('556742049');
-    return { ...INITIAL_SETTINGS, ...loaded, heroImageUrl: isUnsplash ? '' : heroUrl };
+    const isUnsplash = Boolean(heroUrl && (heroUrl.includes('unsplash') || heroUrl.includes('556742049')));
+    const isOldTitle = loaded?.heroTitle === 'اعرض سلعتك.. واطلب البديل واستخرج عقداً إلكترونياً معتمداً';
+    return {
+      ...INITIAL_SETTINGS,
+      ...loaded,
+      heroTitle: isOldTitle ? INITIAL_SETTINGS.heroTitle : (loaded?.heroTitle || INITIAL_SETTINGS.heroTitle),
+      heroBadgeText: isOldTitle ? INITIAL_SETTINGS.heroBadgeText : (loaded?.heroBadgeText || INITIAL_SETTINGS.heroBadgeText),
+      heroSubtitle: isOldTitle ? INITIAL_SETTINGS.heroSubtitle : (loaded?.heroSubtitle || INITIAL_SETTINGS.heroSubtitle),
+      heroImageUrl: isUnsplash ? '' : (heroUrl ?? '')
+    };
   });
   const [categories, setCategories] = useState<CategoryItem[]>(() => getStored('categories', INITIAL_CATEGORIES));
   const [favorites, setFavorites] = useState<string[]>(() => getStored('favorites', ['item_1', 'item_3']));
@@ -202,10 +215,20 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setDoc(doc(db, 'settings', 'global_settings'), { ...INITIAL_SETTINGS, heroImageUrl: '' }).catch(console.error);
       } else {
         const data = docSnap.data() as PlatformSettings;
+        let needsUpdate = false;
         const isUnsplash = Boolean(data.heroImageUrl && (data.heroImageUrl.includes('unsplash') || data.heroImageUrl.includes('556742049')));
         if (isUnsplash) {
           data.heroImageUrl = '';
-          setDoc(doc(db, 'settings', 'global_settings'), { ...data, heroImageUrl: '' }).catch(console.error);
+          needsUpdate = true;
+        }
+        if (data.heroTitle === 'اعرض سلعتك.. واطلب البديل واستخرج عقداً إلكترونياً معتمداً') {
+          data.heroTitle = 'قايض وفاوض بما تحتاجه';
+          data.heroBadgeText = 'منصة مقايضة كاملة';
+          data.heroSubtitle = 'منصة تتيح لك عرض منتجاتك او مهارتك ومقايضتها بما تحتاجه مباشرة مع الآخرين – بكل بساطة وأمان.';
+          needsUpdate = true;
+        }
+        if (needsUpdate) {
+          setDoc(doc(db, 'settings', 'global_settings'), { ...data }).catch(console.error);
         }
         const cleanedSettings = { ...INITIAL_SETTINGS, ...data, heroImageUrl: isUnsplash ? '' : (data.heroImageUrl ?? '') };
         localStorage.setItem(LOCAL_STORAGE_PREFIX + 'settings', JSON.stringify(cleanedSettings));

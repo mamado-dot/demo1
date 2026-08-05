@@ -90,17 +90,13 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onSelectItem, onOpenTr
             </div>
           </div>
 
-          {/* Bottom row: 3. المدينة مع تاريخ النشر & 4. اسم المعلن (بدون صورة) */}
+          {/* Bottom row: 3. المدينة & 4. اسم المعلن (بدون صورة) */}
           <div className="flex items-center justify-between text-[11px] pt-1.5 border-t border-slate-100/80 gap-2">
-            {/* المدينة وتاريخ النشر */}
+            {/* المدينة */}
             <div className="flex items-center gap-1 font-bold text-slate-500 shrink-0">
               <MapPin className="w-3 h-3 text-slate-400" />
-              <span className="truncate max-w-[70px]">
+              <span className="truncate max-w-[100px]">
                 {item.location ? item.location.split('-')[0].split('،')[0].split(',')[0].trim() : ''}
-              </span>
-              <span className="text-slate-300 font-normal">•</span>
-              <span className="text-slate-400 font-normal text-[10px]">
-                {item.createdAt}
               </span>
             </div>
 
