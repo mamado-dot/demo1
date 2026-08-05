@@ -9,7 +9,8 @@ import {
   Heart, 
   Sparkles, 
   Banknote, 
-  Tag 
+  Tag,
+  Calendar
 } from 'lucide-react';
 
 interface ItemCardProps {
@@ -89,13 +90,17 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onSelectItem, onOpenTr
             </div>
           </div>
 
-          {/* Bottom row: 3. المدينة (بدون الحي) & 4. اسم المعلن (بدون صورة) */}
+          {/* Bottom row: 3. المدينة مع تاريخ النشر & 4. اسم المعلن (بدون صورة) */}
           <div className="flex items-center justify-between text-[11px] pt-1.5 border-t border-slate-100/80 gap-2">
-            {/* المدينة فقط */}
+            {/* المدينة وتاريخ النشر */}
             <div className="flex items-center gap-1 font-bold text-slate-500 shrink-0">
               <MapPin className="w-3 h-3 text-slate-400" />
-              <span className="truncate max-w-[90px]">
+              <span className="truncate max-w-[70px]">
                 {item.location ? item.location.split('-')[0].split('،')[0].split(',')[0].trim() : ''}
+              </span>
+              <span className="text-slate-300 font-normal">•</span>
+              <span className="text-slate-400 font-normal text-[10px]">
+                {item.createdAt}
               </span>
             </div>
 
@@ -107,7 +112,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onSelectItem, onOpenTr
               }}
               className="flex items-center shrink-0 hover:opacity-80 transition-opacity"
             >
-              <span className="font-extrabold text-slate-800 text-[11px] truncate max-w-[110px]">
+              <span className="font-extrabold text-slate-800 text-[11px] truncate max-w-[90px]">
                 {owner.name}
               </span>
             </div>
@@ -150,14 +155,6 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onSelectItem, onOpenTr
           >
             <Heart className={`w-4 h-4 ${isFavorite(item.id) ? 'fill-white text-white' : 'fill-rose-500/10 text-slate-600 hover:fill-rose-500 hover:text-rose-500'}`} />
           </button>
-
-          {/* Estimated Value Tag on Desktop/Tablet */}
-          <div className="absolute bottom-2.5 right-2.5 text-white z-10 bg-slate-900/80 backdrop-blur-md px-2.5 py-1 rounded-xl border border-white/10">
-            <div className="text-[9px] font-bold text-slate-300">القيمة التقديرية</div>
-            <div className="text-sm font-black text-white leading-none">
-              {item.estimatedValue.toLocaleString('ar-SA')} <span className="text-[10px] font-normal">ريال</span>
-            </div>
-          </div>
         </div>
 
         {/* Card Content Body */}
@@ -172,11 +169,6 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onSelectItem, onOpenTr
               </h3>
             </div>
 
-            {/* Category Subtitle */}
-            <p className="text-xs text-slate-400 font-medium">
-              {item.category}
-            </p>
-
             {/* BARTER TARGET LINE (المطلوب للمقايضة) */}
             <div className="flex items-center gap-1.5 text-slate-700 text-xs font-semibold pt-1">
               <ArrowLeftRight className="w-3.5 h-3.5 text-slate-500 shrink-0" />
@@ -185,10 +177,16 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onSelectItem, onOpenTr
               </span>
             </div>
 
-            {/* LOCATION LINE */}
-            <div className="flex items-center gap-1 text-slate-400 text-xs font-medium">
-              <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-              <span className="line-clamp-1">{item.location}</span>
+            {/* LOCATION & PUBLICATION DATE */}
+            <div className="flex items-center justify-between text-slate-400 text-xs font-medium pt-0.5 gap-2">
+              <div className="flex items-center gap-1 min-w-0">
+                <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                <span className="truncate">{item.location}</span>
+              </div>
+              <div className="flex items-center gap-1 text-[11px] text-slate-400 shrink-0">
+                <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
+                <span>{item.createdAt}</span>
+              </div>
             </div>
 
           </div>

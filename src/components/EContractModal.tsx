@@ -31,18 +31,46 @@ export const EContractModal: React.FC<EContractModalProps> = ({ contract, onClos
     window.print();
   };
 
+  // Determine cash payer & receiver details
+  let payerName = contract.partyA.name;
+  let payerRole = 'الطرف الأول';
+  let receiverName = contract.partyB.name;
+  let receiverRole = 'الطرف الثاني';
+
+  if (contract.cashPayerUserId === contract.partyB.userId) {
+    payerName = contract.partyB.name;
+    payerRole = 'الطرف الثاني';
+    receiverName = contract.partyA.name;
+    receiverRole = 'الطرف الأول';
+  } else if (contract.cashPayerUserId === contract.partyA.userId) {
+    payerName = contract.partyA.name;
+    payerRole = 'الطرف الأول';
+    receiverName = contract.partyB.name;
+    receiverRole = 'الطرف الثاني';
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       
       {/* Top Control Bar (Non-Printable) */}
-      <div className="bg-slate-900 text-white p-4 sm:p-5 rounded-3xl border border-slate-800 shadow-md flex items-center justify-between">
-        <button
-          onClick={onClose}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition-all cursor-pointer"
-        >
-          <ArrowRight className="w-4 h-4" />
-          <span>العودة لصفحة العقود والصفقات</span>
-        </button>
+      <div className="bg-slate-900 text-white p-4 sm:p-5 rounded-3xl border border-slate-800 shadow-md flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onClose}
+            title="العودة"
+            aria-label="العودة"
+            className="w-10 h-10 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all cursor-pointer flex items-center justify-center shadow-xs shrink-0"
+          >
+            <ArrowRight className="w-5 h-5" />
+          </button>
+          <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-600/30">
+            <FileText className="w-5 h-5 stroke-[2.2]" />
+          </div>
+          <div>
+            <h1 className="text-base sm:text-lg font-black text-white">العقد الإلكتروني الموثق</h1>
+            <p className="text-xs text-slate-400 font-medium">وثيقة وتعهد رسمي موثق بين الطرفين</p>
+          </div>
+        </div>
 
         <div className="flex items-center gap-3">
           <button
@@ -142,16 +170,16 @@ export const EContractModal: React.FC<EContractModalProps> = ({ contract, onClos
 
           {/* CASH DIFFERENCE SETTLEMENT DETAILS */}
           {contract.cashDifferenceAmount > 0 && (
-            <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            <div className="p-4 bg-emerald-50/90 rounded-2xl border border-emerald-200/90 space-y-2">
+              <div className="flex items-center gap-2 border-b border-emerald-200/60 pb-2">
                 <Banknote className="w-5 h-5 text-emerald-600 shrink-0" />
-                <div className="text-xs">
-                  <span className="font-bold text-slate-900">التصفية المالية التعويضية: </span>
-                  <span className="text-slate-700 font-semibold">
-                    تم الاتفاق على دفع فارق نقدي بمبلغ <strong className="text-emerald-800 font-extrabold">{contract.cashDifferenceAmount} ريال سعودي</strong> لتوازن تكافؤ الصفقة.
-                  </span>
-                </div>
+                <h4 className="font-extrabold text-xs text-emerald-950">
+                  التصفية المالية التعويضية (فارق السعر النقدي):
+                </h4>
               </div>
+              <p className="text-xs font-semibold text-slate-800 leading-relaxed">
+                وتعهد <strong className="text-emerald-900 font-black">{payerRole} ({payerName})</strong> بدفع مبلغ <strong className="text-emerald-900 font-black px-1.5 py-0.5 rounded bg-white border border-emerald-300 shadow-2xs">{contract.cashDifferenceAmount} ريال سعودي</strong> لطرف <strong className="text-teal-900 font-black">{receiverRole} ({receiverName})</strong> لتوازن تكافؤ هذه المقايضة والوفاء بالتزامات العقد.
+              </p>
             </div>
           )}
 

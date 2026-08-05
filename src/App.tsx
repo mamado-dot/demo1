@@ -114,7 +114,7 @@ function BarterAppMain() {
   // Navigation View State
   const [activeView, setActiveView] = useState<ActiveViewType>(getViewFromURL());
   const [userProfileTab, setUserProfileTab] = useState<'profile' | 'items' | 'offers' | 'contracts'>('profile');
-  const [profileInitialTab, setProfileInitialTab] = useState<'items' | 'negotiations'>('items');
+  const [profileInitialTab, setProfileInitialTab] = useState<'profile' | 'items' | 'negotiations'>('items');
 
   // Selected State
   const [selectedDetailItem, setSelectedDetailItem] = useState<BarterItem | null>(null);
@@ -252,7 +252,7 @@ function BarterAppMain() {
         onOpenContracts={() => { navigateToView('my_offers'); }}
         onOpenProfile={(tab) => {
           setSelectedUserIdForProfile(currentUser?.id || 'usr_1');
-          setProfileInitialTab(tab === 'negotiations' ? 'negotiations' : 'items');
+          setProfileInitialTab(tab === 'profile' ? 'profile' : tab === 'negotiations' ? 'negotiations' : 'items');
           navigateToView('user_profile');
         }}
         onOpenAdmin={() => {
@@ -275,6 +275,10 @@ function BarterAppMain() {
               onViewContract={(cnt) => {
                 setSelectedContractForView(cnt);
                 navigateToView('view_contract');
+              }}
+              onViewUserProfile={(userId) => {
+                setSelectedUserIdForProfile(userId);
+                navigateToView('user_profile');
               }}
             />
           ) : (
@@ -303,6 +307,7 @@ function BarterAppMain() {
             onOpenTradeModal={handleOpenTrade}
             onOpenAddItem={() => { navigateToView('add_item'); }}
             onViewUserProfile={handleViewUserProfile}
+            onNavigateHome={() => navigateToView('home')}
           />
         )}
 
@@ -427,7 +432,7 @@ function BarterAppMain() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                   
                   {/* Right Column (Text Details Area in RTL: Arabic text on the right) */}
-                  <div className="lg:col-span-7 space-y-5 text-right">
+                  <div className={`${settings.showHeroImage !== false ? 'lg:col-span-7' : 'lg:col-span-12'} space-y-5 text-right`}>
                     
                     {/* Top Badge */}
                     <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold bg-[#f5eee6] text-[#8c5332] border border-[#e6d8c7]">
@@ -468,15 +473,17 @@ function BarterAppMain() {
                   </div>
 
                   {/* Left Column (Illustration Area: Frameless Image) */}
-                  <div className="lg:col-span-5 flex justify-center lg:justify-end">
-                    <div className="w-full max-w-md lg:max-w-none aspect-[4/3] rounded-3xl overflow-hidden flex items-center justify-center">
-                      <img
-                        src={settings.heroImageUrl || heroIllustrationImage}
-                        alt="منصة مقايضة"
-                        className="w-full h-full object-cover rounded-3xl shadow-xs"
-                      />
+                  {settings.showHeroImage !== false && (
+                    <div className="lg:col-span-5 flex justify-center lg:justify-end">
+                      <div className="w-full max-w-md lg:max-w-none aspect-[4/3] rounded-3xl overflow-hidden flex items-center justify-center bg-slate-100 border border-[#e6d8c7]/50">
+                        <img
+                          src={settings.heroImageUrl || heroIllustrationImage}
+                          alt="منصة مقايضة"
+                          className="w-full h-full object-cover rounded-3xl shadow-xs"
+                        />
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                 </div>
               </div>
@@ -517,11 +524,7 @@ function BarterAppMain() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-extrabold text-slate-800">
-                    أحدث أجهزة وسلع المقايضة المضافة
-                    {settings.homeItemsLimit > 0 && ` (معروض ${homepageItems.length} من أصل ${filteredItems.length})`}:
-                  </h3>
+                <div className="flex items-center justify-end">
                   <button
                     onClick={() => setActiveView('all_items')}
                     className="text-xs font-bold text-[#8c5332] hover:underline cursor-pointer flex items-center gap-1"
@@ -549,17 +552,14 @@ function BarterAppMain() {
 
                 {/* SHOW MORE / 'المزيد' BUTTON TO GO TO ALL ITEMS */}
                 {filteredItems.length > homepageItems.length && (
-                  <div className="pt-4 flex flex-col items-center justify-center space-y-2">
+                  <div className="pt-4 flex flex-col items-center justify-center">
                     <button
                       onClick={() => setActiveView('all_items')}
                       className="px-8 py-3 bg-[#8c5332] hover:bg-[#734123] text-white text-sm font-extrabold rounded-2xl shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center gap-2 group"
                     >
-                      <span>المزيد من منتجات المقايضة ({filteredItems.length - homepageItems.length} منتج إضافي)</span>
+                      <span>المزيد من منتجات المقايضة</span>
                       <ArrowRight className="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" />
                     </button>
-                    <p className="text-xs text-slate-500 font-medium">
-                      يتم عرض {homepageItems.length} منتجاً بالواجهة حسب إعدادات لوحة التحكم. اضغط لمشاهدة جميع المنتجات ({filteredItems.length}).
-                    </p>
                   </div>
                 )}
               </div>

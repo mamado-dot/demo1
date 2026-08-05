@@ -14,7 +14,8 @@ import {
   Sparkles,
   ArrowUpDown,
   Grid,
-  Layers
+  Layers,
+  ArrowRight
 } from 'lucide-react';
 
 interface AllItemsPageProps {
@@ -22,13 +23,15 @@ interface AllItemsPageProps {
   onOpenTradeModal: (targetItem: BarterItem) => void;
   onOpenAddItem: () => void;
   onViewUserProfile?: (userId: string) => void;
+  onNavigateHome?: () => void;
 }
 
 export const AllItemsPage: React.FC<AllItemsPageProps> = ({
   onSelectItem,
   onOpenTradeModal,
   onOpenAddItem,
-  onViewUserProfile
+  onViewUserProfile,
+  onNavigateHome
 }) => {
   const { 
     items, 
@@ -88,21 +91,34 @@ export const AllItemsPage: React.FC<AllItemsPageProps> = ({
     <div className="space-y-6 animate-in fade-in duration-200">
       
       {/* TOP HEADER TITLE */}
-      <div className="flex items-center justify-between gap-4 pb-2 border-b border-slate-200">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            جميع السلع المعروضة للمقايضة
-          </h1>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">
-            تصفح واستكشف كل المنتجات والمقتنيات المتاحة للتبادل
-          </p>
+      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onNavigateHome || (() => window.history.back())}
+            title="العودة للرئيسية"
+            aria-label="العودة للرئيسية"
+            className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-all cursor-pointer flex items-center justify-center shadow-xs shrink-0"
+          >
+            <ArrowRight className="w-5 h-5" />
+          </button>
+          <div className="w-10 h-10 rounded-2xl bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-teal-600/20">
+            <Package className="w-5 h-5 stroke-[2.2]" />
+          </div>
+          <div>
+            <h1 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+              جميع السلع المعروضة للمقايضة
+            </h1>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              تصفح واستكشف كل المنتجات والمقتنيات المتاحة للتبادل
+            </p>
+          </div>
         </div>
         <button
           onClick={onOpenAddItem}
           className="bg-[#8c5332] hover:bg-[#734123] active:scale-98 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-2xl shadow-xs transition-all flex items-center gap-2 cursor-pointer shrink-0"
         >
           <PlusCircle className="w-4 h-4" />
-          <span>إضافة سلعة جديدة +</span>
+          <span>إضافة سلعة جديدة</span>
         </button>
       </div>
 

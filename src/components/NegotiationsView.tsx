@@ -81,19 +81,24 @@ export const NegotiationsView: React.FC<NegotiationsViewProps> = ({
   return (
     <div className="space-y-4 animate-in fade-in duration-200 dir-rtl font-['Cairo',sans-serif]">
       {/* Top Header Navigation */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={onClose}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-all cursor-pointer"
-        >
-          <ArrowRight className="w-4 h-4" />
-          <span>العودة</span>
-        </button>
-
-        <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
-          <MessageSquare className="w-5 h-5 text-[#8c5332]" />
-          <span>المفاوضات والمحادثات</span>
-        </h2>
+      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onClose}
+            title="العودة"
+            aria-label="العودة"
+            className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-all cursor-pointer flex items-center justify-center shadow-xs shrink-0"
+          >
+            <ArrowRight className="w-5 h-5" />
+          </button>
+          <div className="w-10 h-10 rounded-2xl bg-[#8c5332] text-white flex items-center justify-center shrink-0 shadow-md shadow-[#8c5332]/20">
+            <MessageSquare className="w-5 h-5 stroke-[2.2]" />
+          </div>
+          <div>
+            <h1 className="text-base sm:text-lg font-black text-slate-900">المفاوضات والمحادثات</h1>
+            <p className="text-xs text-slate-500 font-medium">التواصل المباشر والاتفاق على تفاصيل شروط المقايضة</p>
+          </div>
+        </div>
       </div>
 
       {userOffers.length === 0 ? (
@@ -115,7 +120,7 @@ export const NegotiationsView: React.FC<NegotiationsViewProps> = ({
           <div className="lg:col-span-4 border-b lg:border-b-0 lg:border-l border-slate-200/80 bg-slate-50/50 flex flex-col">
             <div className="p-4 border-b border-slate-200/80 bg-white">
               <h2 className="text-xs font-black text-slate-800 flex items-center justify-between">
-                <span>المفاوضات ({userOffers.length})</span>
+                <span>المفاوضات</span>
               </h2>
             </div>
 

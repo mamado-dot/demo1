@@ -84,20 +84,23 @@ export const SubmitTradeOfferModal: React.FC<SubmitTradeOfferModalProps> = ({
     <div className="space-y-6 animate-in fade-in duration-200">
       
       {/* Top Navigation Bar */}
-      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between">
-        <button
-          onClick={onClose}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-all cursor-pointer"
-        >
-          <ArrowRight className="w-4 h-4" />
-          <span>إلغاء والعودة لصفحة السلعة</span>
-        </button>
-
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-[#8c5332] text-white flex items-center justify-center font-bold">
-            <ArrowLeftRight className="w-4 h-4" />
+      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onClose}
+            title="العودة"
+            aria-label="العودة"
+            className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-all cursor-pointer flex items-center justify-center shadow-xs shrink-0"
+          >
+            <ArrowRight className="w-5 h-5" />
+          </button>
+          <div className="w-10 h-10 rounded-2xl bg-[#8c5332] text-white flex items-center justify-center shrink-0 shadow-md shadow-[#8c5332]/20">
+            <ArrowLeftRight className="w-5 h-5 stroke-[2.2]" />
           </div>
-          <span className="text-xs font-black text-slate-900">تقديم عرض مقايضة جديد</span>
+          <div>
+            <h1 className="text-base sm:text-lg font-black text-slate-900"> تقديم عرض مقايضة جديد</h1>
+            <p className="text-xs text-slate-500 font-medium">اختر من مقتنياتك لطلب المبادلة والتوافق مع هذا العرض</p>
+          </div>
         </div>
       </div>
 

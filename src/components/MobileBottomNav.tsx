@@ -47,11 +47,6 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         >
           <div className="relative">
             <Heart className={`w-5 h-5 ${activeView === 'favorites' ? 'fill-[#8c5332]/20 stroke-[2.5]' : 'stroke-2'}`} />
-            {favorites.length > 0 && (
-              <span className="absolute -top-1.5 -right-2 bg-rose-500 text-white text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center border border-white shadow-xs">
-                {favorites.length}
-              </span>
-            )}
           </div>
           <span className="text-[10px] mt-1 tracking-tight">المفضلة</span>
         </button>
@@ -88,11 +83,6 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         >
           <div className="relative">
             <MessageSquare className={`w-5 h-5 ${activeView === 'user_profile' ? 'stroke-[2.5]' : 'stroke-2'}`} />
-            {userNegotiationsCount > 0 && (
-              <span className="absolute -top-1.5 -right-2 bg-amber-500 text-white text-[9px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center border border-white shadow-xs">
-                {userNegotiationsCount}
-              </span>
-            )}
           </div>
           <span className="text-[10px] mt-1 tracking-tight">مفاوضات</span>
         </button>

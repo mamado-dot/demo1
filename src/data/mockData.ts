@@ -1,4 +1,4 @@
-import { User, BarterItem, TradeOffer, BarterContract, PlatformSettings, CategoryItem, ItemQuestion, TradeNegotiationMessage } from '../types';
+import { User, BarterItem, TradeOffer, BarterContract, PlatformSettings, CategoryItem, ItemQuestion, TradeNegotiationMessage, UserReview } from '../types';
 
 export const INITIAL_USERS: User[] = [
   {
@@ -7,6 +7,7 @@ export const INITIAL_USERS: User[] = [
     email: 'crazyretiree@gmail.com',
     password: '054422516',
     isOwner: true,
+    role: 'admin',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
     city: 'الرياض',
     phone: '0501234567',
@@ -28,6 +29,7 @@ export const INITIAL_USERS: User[] = [
     completedBartersCount: 5,
     isActive: true,
     membershipTier: 'عضو مشترك',
+    role: 'moderator',
   },
   {
     id: 'usr_3',
@@ -75,6 +77,9 @@ export const INITIAL_SETTINGS: PlatformSettings = {
   showHeader: true,
   showFooter: true,
 
+  // Registration & User Activation Policy
+  autoActivateNewUsers: true,
+
   // Theme & Appearance
   themeColor: 'brown',
   
@@ -82,7 +87,7 @@ export const INITIAL_SETTINGS: PlatformSettings = {
   homeItemsLimit: 6,
   
   // Header Granular Controls
-  showHeaderTopNotice: true,
+  showHeaderTopNotice: false,
   headerNotice: 'أهلاً بك في منصة مقايضة - جميع التبادلات محمية بعقود إلكترونية رسمية مع فترة فحص ومعاينة',
   showHeaderLogo: true,
   showHeaderDescription: true,
@@ -278,7 +283,7 @@ export const INITIAL_SETTINGS: PlatformSettings = {
   addItemDesiredItemRequired: true,
 
   addItemShowCashDiffOption: true,
-  addItemCashDiffLabel: 'أقبل تفاوض دفع / استلام فارق سعر نقدي',
+  addItemCashDiffLabel: 'أقبل دفع فارق / استلام فارق سعري',
 
   addItemShowImageUpload: true,
   addItemImageUploadLabel: 'رفع صورة السلعة * (إجباري لنشر العرض)',
@@ -565,5 +570,34 @@ export const INITIAL_CONTRACTS: BarterContract[] = [
     issuedAt: '2026-07-27 18:21',
     qrCodeSeed: 'MOQAYADA-VERIFIED-CONTRACT-88192-2026',
     status: 'نشط وموثق'
+  }
+];
+
+export const INITIAL_REVIEWS: UserReview[] = [
+  {
+    id: 'rev_1',
+    offerId: 'off_101',
+    contractId: 'cnt_1001',
+    reviewerId: 'usr_2',
+    reviewerName: 'سارة الشمري',
+    reviewerAvatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=250',
+    targetUserId: 'usr_1',
+    targetUserName: 'أحمد العتيبي (مالك المنصة)',
+    rating: 5,
+    comment: 'تعامل راقي جداً والسلعة مطابقة للمواصفات تماماً، أنصح بالتعامل معه.',
+    createdAt: '2026-07-28 14:30'
+  },
+  {
+    id: 'rev_2',
+    offerId: 'off_102',
+    contractId: 'cnt_1002',
+    reviewerId: 'usr_1',
+    reviewerName: 'أحمد العتيبي (مالك المنصة)',
+    reviewerAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+    targetUserId: 'usr_3',
+    targetUserName: 'خالد الدوسري',
+    rating: 5,
+    comment: 'سرعة في الاستجابة والتسليم كان حسب الاتفاق، مقايضة ناجحة.',
+    createdAt: '2026-08-01 19:15'
   }
 ];

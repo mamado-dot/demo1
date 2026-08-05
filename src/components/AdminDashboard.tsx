@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useBarter } from '../context/BarterContext';
-import { BarterContract, CategoryName, User, FeatureBox, UserMembershipTier } from '../types';
+import { BarterContract, CategoryName, User, FeatureBox, UserMembershipTier, UserReview } from '../types';
 import { 
   LayoutDashboard, 
   Settings, 
@@ -36,15 +36,20 @@ import {
   Upload,
   Code2,
   Terminal,
-  ListPlus
+  ListPlus,
+  Star,
+  Search,
+  Shield,
+  UserCog
 } from 'lucide-react';
 
 interface AdminDashboardProps {
   onClose: () => void;
   onViewContract: (contract: BarterContract) => void;
+  onViewUserProfile?: (userId: string) => void;
 }
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewContract }) => {
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewContract, onViewUserProfile }) => {
   const { 
     currentUser,
     settings, 
@@ -61,7 +66,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
     users,
     adminUpdateUser,
     adminDeleteUser,
-    adminAddUser
+    adminAddUser,
+    reviews,
+    adminDeleteReview,
+    adminUpdateReview
   } = useBarter();
 
   const isOwner = currentUser?.email?.toLowerCase() === 'crazyretiree@gmail.com';
@@ -86,7 +94,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
     );
   }
 
-  const [activeTab, setActiveTab] = useState<'ui_header_footer' | 'add_item_settings' | 'contract_clauses' | 'users' | 'categories' | 'items' | 'contracts'>('ui_header_footer');
+  const [activeTab, setActiveTab] = useState<'ui_header_footer' | 'add_item_settings' | 'contract_clauses' | 'users' | 'reviews' | 'categories' | 'items' | 'contracts'>('ui_header_footer');
+
+  // Search and modal states for Users and Reviews
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [reviewSearchQuery, setReviewSearchQuery] = useState('');
+  const [editingReview, setEditingReview] = useState<UserReview | null>(null);
 
   // Notification Toast
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
@@ -114,8 +127,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
   // --- Header & Basic Site Settings ---
   const [siteName, setSiteName] = useState(settings.siteName || 'مقايضة');
   const [siteDescription, setSiteDescription] = useState(settings.siteDescription || '');
-  const [showHeaderTopNotice, setShowHeaderTopNotice] = useState(settings.showHeaderTopNotice ?? true);
-  const [headerNotice, setHeaderNotice] = useState(settings.headerNotice || '');
+  const [showHeaderTopNotice, setShowHeaderTopNotice] = useState(settings.showHeaderTopNotice ?? false);
+  const [headerNotice, setHeaderNotice] = useState(settings.headerNotice || 'أهلاً بك في منصة مقايضة - جميع التبادلات محمية بعقود إلكترونية رسمية مع فترة فحص ومعاينة');
   const [showHeaderLogo, setShowHeaderLogo] = useState(settings.showHeaderLogo ?? true);
   const [showHeaderDescription, setShowHeaderDescription] = useState(settings.showHeaderDescription ?? true);
   const [showHeaderSearch, setShowHeaderSearch] = useState(settings.showHeaderSearch ?? true);
@@ -231,6 +244,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
   const [newTermInput, setNewTermInput] = useState('');
 
   // Rules & Options
+  const [autoActivateNewUsers, setAutoActivateNewUsers] = useState<boolean>(settings.autoActivateNewUsers ?? true);
   const [enableCashDifference, setEnableCashDifference] = useState(settings.enableCashDifference ?? true);
   const [maxCashDifferenceLimit, setMaxCashDifferenceLimit] = useState(settings.maxCashDifferenceLimit || 10000);
   const [enableInspectionGuarantee, setEnableInspectionGuarantee] = useState(settings.enableInspectionGuarantee ?? true);
@@ -286,10 +300,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
   const [addItemDesiredItemRequired, setAddItemDesiredItemRequired] = useState(settings.addItemDesiredItemRequired ?? true);
 
   const [addItemShowCashDiffOption, setAddItemShowCashDiffOption] = useState(settings.addItemShowCashDiffOption ?? true);
-  const [addItemCashDiffLabel, setAddItemCashDiffLabel] = useState(settings.addItemCashDiffLabel || 'أقبل تفاوض دفع / استلام فارق سعر نقدي');
+  const [addItemCashDiffLabel, setAddItemCashDiffLabel] = useState(settings.addItemCashDiffLabel || 'أقبل دفع فارق / استلام فارق سعري');
 
   const [addItemShowImageUpload, setAddItemShowImageUpload] = useState(settings.addItemShowImageUpload ?? true);
-  const [addItemImageUploadLabel, setAddItemImageUploadLabel] = useState(settings.addItemImageUploadLabel || 'رفع صورة السلعة * (إجباري لنشر العرض)');
+  const [addItemImageUploadLabel, setAddItemImageUploadLabel] = useState(settings.addItemImageUploadLabel || 'رفع صور السلعة * (إجباري 3 صور على الأقل - بحد أقصى 5 صور)');
   const [addItemImageUploadRequired, setAddItemImageUploadRequired] = useState(settings.addItemImageUploadRequired ?? true);
 
   // --- 3. Categories State ---
@@ -309,6 +323,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
 
   // --- 5. Contract Edit State ---
   const [editingContract, setEditingContract] = useState<BarterContract | null>(null);
+
+  // Sync settings whenever settings context changes
+  useEffect(() => {
+    if (settings) {
+      setShowHeader(settings.showHeader ?? true);
+      setShowFooter(settings.showFooter ?? true);
+      setThemeColor(settings.themeColor || 'brown');
+      setHomeItemsLimit(settings.homeItemsLimit || 12);
+      setSiteName(settings.siteName || 'مقايضة');
+      setSiteDescription(settings.siteDescription || 'منصة المقايضة والتبادل التجاري بالمملكة');
+      setShowHeaderTopNotice(settings.showHeaderTopNotice ?? true);
+      setHeaderNotice(settings.headerNotice || '');
+      setShowHeaderLogo(settings.showHeaderLogo ?? true);
+      setShowHeaderDescription(settings.showHeaderDescription ?? true);
+      setShowHeaderSearch(settings.showHeaderSearch ?? true);
+      setShowHeaderCityFilter(settings.showHeaderCityFilter ?? true);
+      setShowHeaderAddItemBtn(settings.showHeaderAddItemBtn ?? true);
+      setShowHeaderContractsBtn(settings.showHeaderContractsBtn ?? true);
+      setShowHeaderOffersBtn(settings.showHeaderOffersBtn ?? true);
+      setShowHeaderUserSwitcher(settings.showHeaderUserSwitcher ?? true);
+      setShowHeaderAdminBtn(settings.showHeaderAdminBtn ?? true);
+      setAutoActivateNewUsers(settings.autoActivateNewUsers ?? true);
+    }
+  }, [settings]);
 
   // Save Settings Function
   const handleSaveAllSettings = (e?: React.FormEvent) => {
@@ -397,6 +435,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
 
       customContractTerms: customTerms,
 
+      autoActivateNewUsers,
       enableCashDifference,
       maxCashDifferenceLimit,
       enableInspectionGuarantee,
@@ -523,11 +562,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
               </div>
               <button
                 onClick={onClose}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all cursor-pointer border border-slate-200 shadow-2xs shrink-0"
                 title="العودة للرئيسية"
+                aria-label="العودة للرئيسية"
+                className="w-9 h-9 rounded-xl bg-white hover:bg-slate-200 text-slate-700 transition-all cursor-pointer border border-slate-200 shadow-2xs shrink-0 flex items-center justify-center"
               >
-                <ArrowRight className="w-3.5 h-3.5 text-[#8c5332]" />
-                <span>الرئيسية</span>
+                <ArrowRight className="w-4 h-4 text-[#8c5332]" />
               </button>
             </div>
 
@@ -592,6 +631,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
                   activeTab === 'users' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
                 }`}>
                   {users.length}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('reviews')}
+                className={`w-full px-3.5 py-3 rounded-2xl text-xs font-black transition-all flex items-center justify-between cursor-pointer ${
+                  activeTab === 'reviews'
+                    ? 'bg-[#8c5332] text-white shadow-md shadow-[#8c5332]/20'
+                    : 'bg-white text-slate-700 hover:bg-slate-200/70 border border-slate-200/80'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Star className={`w-4 h-4 ${activeTab === 'reviews' ? 'text-white' : 'text-[#8c5332]'}`} />
+                  <span>إدارة التقييمات والمراجعات</span>
+                </div>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                  activeTab === 'reviews' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                }`}>
+                  {reviews.length}
                 </span>
               </button>
 
@@ -665,6 +723,43 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
           {activeTab === 'ui_header_footer' && (
             <div className="space-y-6 max-w-4xl mx-auto">
 
+              {/* 0. WELCOME / ANNOUNCEMENT BANNER ABOVE HEADER */}
+              <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-amber-500" />
+                    <div>
+                      <h3 className="text-sm font-extrabold text-slate-900">الرسالة الترحيبية والتنبيه العلوي أعلى الهيدر (Top Notice Bar)</h3>
+                      <p className="text-xs text-slate-500 font-medium">التحكم المباشر في إخفاء أو إظهار شريط الإعلان والترحيب أعلى الصفحة وتعديل نص الرسالة</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowHeaderTopNotice(!showHeaderTopNotice)}
+                    className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                      showHeaderTopNotice ? 'bg-[#8c5332] text-white' : 'bg-slate-200 text-slate-600'
+                    }`}
+                  >
+                    {showHeaderTopNotice ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                    <span>{showHeaderTopNotice ? 'مُفعل (ظاهر)' : 'مُعطل (مخفي)'}</span>
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-700 block">نص الرسالة الترحيبية والإعلانية أعلى الهيدر:</label>
+                  <input
+                    type="text"
+                    value={headerNotice}
+                    onChange={(e) => setHeaderNotice(e.target.value)}
+                    placeholder="اكتب الرسالة الترحيبية أو التنبيه الإعلاني هنا..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 focus:border-[#8c5332] outline-hidden"
+                  />
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    عند التفعيل، ستظهر هذه الرسالة في شريط مميز أعلى الهيدر في كافة صفحات الموقع. وعند التعطيل تختفي تماماً.
+                  </p>
+                </div>
+              </div>
+
               {/* 1. MASTER TOGGLES: SEARCH & FOOTER */}
               <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
                 <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
@@ -709,44 +804,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
                       <span>{showFooter ? 'مُفعل' : 'مُعطل'}</span>
                     </button>
                   </div>
-                </div>
-              </div>
-
-              {/* 2. THEME COLOR SELECTION */}
-              <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-                <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                  <Palette className="w-5 h-5 text-[#8c5332]" />
-                  <div>
-                    <h3 className="text-sm font-extrabold text-slate-900">اختيار لون المنصة وطابع التصميم</h3>
-                    <p className="text-xs text-slate-500 font-medium">حدد اللون الرئيسي الذي ينعكس على الواجهة والأزرار والعناصر التفاعلية</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {[
-                    { id: 'brown', label: 'بني دافئ (الأصلي)', bg: 'bg-[#8c5332]' },
-                    { id: 'indigo', label: 'نيلي فخم', bg: 'bg-indigo-600' },
-                    { id: 'emerald', label: 'أخضر زمردي', bg: 'bg-emerald-600' },
-                    { id: 'blue', label: 'أزرق ملكي', bg: 'bg-blue-600' },
-                    { id: 'slate', label: 'رمادي داكن', bg: 'bg-slate-700' },
-                    { id: 'amber', label: 'عنبري ذهبي', bg: 'bg-amber-600' },
-                    { id: 'rose', label: 'وردي فاخر', bg: 'bg-rose-600' },
-                    { id: 'dark', label: 'داكن ليلي', bg: 'bg-slate-900' }
-                  ].map((color) => (
-                    <button
-                      type="button"
-                      key={color.id}
-                      onClick={() => setThemeColor(color.id as any)}
-                      className={`p-3 rounded-xl border text-right transition-all cursor-pointer flex items-center gap-2.5 ${
-                        themeColor === color.id
-                          ? 'border-[#8c5332] bg-[#f5eee6] ring-2 ring-[#8c5332]/20 shadow-xs'
-                          : 'border-slate-200 hover:border-slate-300 bg-slate-50'
-                      }`}
-                    >
-                      <span className={`w-4 h-4 rounded-full ${color.bg} shrink-0 ring-1 ring-white`} />
-                      <span className="text-xs font-bold text-slate-800">{color.label}</span>
-                    </button>
-                  ))}
                 </div>
               </div>
 
@@ -871,76 +928,88 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
                       />
                     </div>
 
-                    {/* HERO IMAGE FILE UPLOAD & PRESETS */}
-                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-                      <label className="text-xs font-bold text-slate-800 block">صورة الرسالة التعريفية (رفع ملف أو استخدام رابط):</label>
-                      
-                      <div className="flex flex-col sm:flex-row items-center gap-3">
-                        <label className="w-full sm:w-auto px-4 py-2.5 bg-white border border-[#8c5332] text-[#8c5332] hover:bg-[#f5eee6] font-bold text-xs rounded-xl cursor-pointer transition-all flex items-center justify-center gap-2 shadow-xs">
-                          <Upload className="w-4 h-4" />
-                          <span>رفع صورة جديدة من جهازك</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                  if (typeof reader.result === 'string') {
-                                    setHeroImageUrl(reader.result);
-                                  }
-                                };
-                                reader.readAsDataURL(file);
-                              }
-                            }}
-                            className="hidden"
-                          />
-                        </label>
-
-                        <div className="flex-1 w-full flex items-center gap-2">
-                          <input
-                            type="text"
-                            value={heroImageUrl}
-                            onChange={(e) => setHeroImageUrl(e.target.value)}
-                            placeholder="أو ضع رابط الصورة هنا..."
-                            className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 font-mono focus:border-[#8c5332] outline-hidden"
-                          />
-                          {heroImageUrl && (
-                            <img
-                              src={heroImageUrl}
-                              alt="معاينة الصورة"
-                              className="w-12 h-10 object-cover rounded-lg border border-slate-300 shrink-0"
-                            />
-                          )}
+                    {/* HERO IMAGE FILE UPLOAD */}
+                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <label className="text-xs font-bold text-slate-800 block">صورة الرسالة التعريفية (رفع صورة من جهازك):</label>
                         </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowHeroImage(!showHeroImage)}
+                          className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                            showHeroImage ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
+                          }`}
+                        >
+                          {showHeroImage ? <ToggleRight className="w-3.5 h-3.5" /> : <ToggleLeft className="w-3.5 h-3.5" />}
+                          <span>{showHeroImage ? 'إظهار الصورة' : 'إخفاء الصورة'}</span>
+                        </button>
                       </div>
+                      
+                      {showHeroImage && (
+                        <div className="space-y-3">
+                          <div className="flex flex-col sm:flex-row items-center gap-4">
+                            <label className="w-full sm:w-auto px-5 py-3 bg-[#8c5332] hover:bg-[#734123] text-white font-bold text-xs rounded-xl cursor-pointer transition-all flex items-center justify-center gap-2 shadow-sm shrink-0">
+                              <Upload className="w-4 h-4" />
+                              <span>اختيار ورفع صورة من جهازك</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => {
+                                      if (typeof reader.result === 'string') {
+                                        setHeroImageUrl(reader.result);
+                                      }
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                                className="hidden"
+                              />
+                            </label>
 
-                      {/* Presets */}
-                      <div className="pt-2 border-t border-slate-200/60">
-                        <span className="text-[11px] font-bold text-slate-600 block mb-1.5">اختر صورة جاهزة بضغطة زر:</span>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                          {[
-                            { label: 'تجارة ومقايضة', url: 'https://images.unsplash.com/photo-1556742049-0a670fc0a727?auto=format&fit=crop&q=80&w=800' },
-                            { label: 'مصافحة واتفاق', url: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&q=80&w=800' },
-                            { label: 'أجهزة ومقتنيات', url: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80&w=800' },
-                            { label: 'عقود وضمانات', url: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&q=80&w=800' }
-                          ].map((preset, idx) => (
-                            <button
-                              type="button"
-                              key={idx}
-                              onClick={() => setHeroImageUrl(preset.url)}
-                              className={`p-1.5 rounded-lg border text-right transition-all cursor-pointer flex items-center gap-2 ${
-                                heroImageUrl === preset.url
-                                  ? 'border-[#8c5332] bg-[#f5eee6] ring-2 ring-[#8c5332]/20'
-                                  : 'border-slate-200 hover:border-slate-300 bg-white'
-                              }`}
-                            >
-                              <img src={preset.url} className="w-8 h-7 object-cover rounded-md shrink-0" />
-                              <span className="text-[10px] font-bold text-slate-700 truncate">{preset.label}</span>
-                            </button>
-                          ))}
+                            {heroImageUrl ? (
+                              <div className="flex items-center gap-3 bg-white p-2.5 rounded-xl border border-slate-200 w-full sm:w-auto flex-1">
+                                <img
+                                  src={heroImageUrl}
+                                  alt="معاينة الصورة"
+                                  className="w-20 h-16 object-cover rounded-lg border border-slate-200 shrink-0 shadow-2xs"
+                                />
+                                <div className="space-y-1 text-right flex-1">
+                                  <span className="text-xs font-extrabold text-slate-800 block">معاينة الصورة المحملة</span>
+                                  <span className="text-[10px] text-emerald-600 font-bold block">جاهزة للحفظ والتطبيق بالصفحة الرئيسية</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setHeroImageUrl('')}
+                                    className="text-[11px] text-rose-600 hover:text-rose-700 font-bold cursor-pointer underline"
+                                  >
+                                    إزالة الصورة
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-xs text-slate-500 font-medium italic">
+                                لم يتم اختيار صورة بعد (اضغط زر الرفع أعلاه لاختيار صورة من جهازك)
+                              </div>
+                            )}
+                          </div>
                         </div>
+                      )}
+
+                      {/* Direct Save Button inside Hero Section */}
+                      <div className="pt-3 border-t border-slate-200/80 flex items-center justify-between gap-3">
+                        <span className="text-[11px] text-slate-500 font-medium">اضغط حفظ لتطبيق تغييرات النص والصورة فوراً بالواجهة</span>
+                        <button
+                          type="button"
+                          onClick={() => handleSaveAllSettings()}
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer shrink-0"
+                        >
+                          <Save className="w-4 h-4" />
+                          <span>حفظ وتطبيق صورة ورسالة الترحيب الآن</span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -2378,18 +2447,108 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
           {activeTab === 'users' && (
             <div className="space-y-4 max-w-5xl mx-auto">
               
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h3 className="text-sm font-extrabold text-slate-900">إدارة مستخدمي وأعضاء المنصة</h3>
-                  <p className="text-xs text-slate-500">تعديل التراخيص، حالة التوثيق، اسم المستخدم والبيانات الشخصية</p>
+                  <p className="text-xs text-slate-500">البحث، تعديل البيانات، تغيير الرتبة والإشراف، وتصنيفات العضوية</p>
                 </div>
                 <button
                   onClick={() => setShowAddUserModal(true)}
-                  className="bg-[#8c5332] hover:bg-[#734123] text-white font-bold text-xs px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="bg-[#8c5332] hover:bg-[#734123] text-white font-bold text-xs px-3.5 py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                 >
                   <Plus className="w-4 h-4" />
                   <span>إضافة عضو جديد +</span>
                 </button>
+              </div>
+
+              {/* Registration & Activation Policy Control Box */}
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50/60 p-4 rounded-2xl border border-amber-200/80 shadow-xs space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2.5 bg-[#8c5332] text-white rounded-xl shadow-xs shrink-0 mt-0.5">
+                      <UserCog className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900 flex items-center gap-2">
+                        سياسة التسجيل وتفعيل الأعضاء الجدد
+                        {autoActivateNewUsers ? (
+                          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[10px] font-bold">التسجيل مباشر (تفعيل تلقائي)</span>
+                        ) : (
+                          <span className="px-2 py-0.5 bg-amber-100 text-amber-900 rounded-full text-[10px] font-bold">تفعيل يدوي (بانتظار موافقة الإدارة)</span>
+                        )}
+                      </h4>
+                      <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">
+                        {autoActivateNewUsers
+                          ? 'التسجيل المباشر مُفَعّل: يتم تفعيل حساب العضو الجديد تلقائياً فور التسجيل ويمكنه استخدام المنصة وإضافة السلع مباشرة دون انتظار الموافقة.'
+                          : 'التسجيل معلق (تفعيل يدوي): تنشأ حسابات الأعضاء الجدد بحالة معلقة (بانتظار التفعيل) وتتطلب موافقة وتفعيل من إدارة المنصة أولاً.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2.5 self-start sm:self-center shrink-0 bg-white/80 px-3 py-1.5 rounded-xl border border-amber-200/80">
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={autoActivateNewUsers}
+                        onChange={(e) => {
+                          const val = e.target.checked;
+                          setAutoActivateNewUsers(val);
+                          updateSettings({ ...settings, autoActivateNewUsers: val });
+                          setSaveSuccessMsg(
+                            val
+                              ? 'تم تفعيل سياسة التسجيل المباشر وتفعيل الأعضاء الجدد تلقائياً ✓'
+                              : 'تم تفعيل سياسة التفعيل اليدوي والموافقة المسبقة للحسابات الجديدة ✓'
+                          );
+                          setTimeout(() => setSaveSuccessMsg(''), 3000);
+                        }}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-300 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                    <span className="text-xs font-extrabold text-slate-800">
+                      {autoActivateNewUsers ? 'تسجيل مباشر' : 'تفعيل يدوي'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Batch Action: Activate all pending members with 1 click */}
+                {users.some((u) => !(u.isActive ?? true)) && (
+                  <div className="pt-2.5 border-t border-amber-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                    <span className="text-amber-900 font-bold">
+                      ⚠️ يوجد حالياً ({users.filter((u) => !(u.isActive ?? true)).length}) عضو بحالة معلقة بانتظار التفعيل.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (confirm('هل أنت تأكد من تفعيل كافة حسابات الأعضاء المعلقة دفعة واحدة؟')) {
+                          users.forEach((u) => {
+                            if (!(u.isActive ?? true)) {
+                              adminUpdateUser(u.id, { isActive: true });
+                            }
+                          });
+                          setSaveSuccessMsg('تم تفعيل كافة حسابات الأعضاء المعلقة بنجاح!');
+                          setTimeout(() => setSaveSuccessMsg(''), 3000);
+                        }
+                      }}
+                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-[11px] transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>تفعيل جميع الأعضاء المعلقين الآن</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Search Bar for Users */}
+              <div className="relative">
+                <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-3" />
+                <input
+                  type="text"
+                  value={userSearchQuery}
+                  onChange={(e) => setUserSearchQuery(e.target.value)}
+                  placeholder="ابحث عن عضو بالاسم، البريد الإلكتروني، رقم الجوال، المدينة، أو تصنيف العضوية..."
+                  className="w-full pr-10 pl-4 py-2.5 rounded-2xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#8c5332]/20 focus:border-[#8c5332] shadow-xs"
+                />
               </div>
 
               {/* Users Table */}
@@ -2399,50 +2558,71 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
                     <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
                       <tr>
                         <th className="p-3">العضو</th>
-                        <th className="p-3">تفعيل الحساب (السبام)</th>
+                        <th className="p-3">رتبة العضو بالمنصة</th>
                         <th className="p-3">تصنيف العضوية</th>
-                        <th className="p-3">المدينة</th>
-                        <th className="p-3">رقم الجوال</th>
+                        <th className="p-3">المدينة والجوال</th>
+                        <th className="p-3">تفعيل الحساب</th>
                         <th className="p-3">حالة التوثيق</th>
-                        <th className="p-3">المقايضات المكتملة</th>
+                        <th className="p-3">المقايضات</th>
                         <th className="p-3">التقييم</th>
                         <th className="p-3 text-left">الإجراءات</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 font-medium">
-                      {users.map((user) => (
+                      {users
+                        .filter((u) => {
+                          if (!userSearchQuery.trim()) return true;
+                          const q = userSearchQuery.toLowerCase();
+                          return (
+                            u.name.toLowerCase().includes(q) ||
+                            (u.email && u.email.toLowerCase().includes(q)) ||
+                            u.phone.includes(q) ||
+                            u.city.toLowerCase().includes(q) ||
+                            (u.membershipTier && u.membershipTier.toLowerCase().includes(q)) ||
+                            (u.role && u.role.toLowerCase().includes(q))
+                          );
+                        })
+                        .map((user) => (
                         <tr key={user.id} className="hover:bg-slate-50/80 transition-all">
                           <td className="p-3">
                             <div className="flex items-center gap-2.5">
-                              <img src={user.avatar} className="w-8 h-8 rounded-full object-cover border border-slate-200" />
+                              <img src={user.avatar} className="w-9 h-9 rounded-full object-cover border border-slate-200 shrink-0" />
                               <div className="flex flex-col">
                                 <span className="font-bold text-slate-900">{user.name}</span>
-                                {user.isOwner && <span className="text-[10px] text-[#8c5332] font-extrabold">مالك المنصة</span>}
+                                <span className="text-[10px] text-slate-400">{user.email || 'بدون بريد'}</span>
                               </div>
                             </div>
                           </td>
-                          {/* Account Activation Toggle */}
+                          {/* Role Select */}
                           <td className="p-3">
-                            <button
-                              onClick={() => adminUpdateUser(user.id, { isActive: !(user.isActive ?? true) })}
-                              className={`px-2.5 py-1 rounded-full font-bold text-[10px] cursor-pointer flex items-center gap-1 w-fit transition-all ${
-                                (user.isActive ?? true) 
-                                  ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' 
-                                  : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                            <select
+                              value={user.isOwner ? 'admin' : (user.role || 'user')}
+                              onChange={(e) => {
+                                const newRole = e.target.value as 'user' | 'moderator' | 'admin';
+                                adminUpdateUser(user.id, { role: newRole, isOwner: newRole === 'admin' ? true : user.isOwner });
+                              }}
+                              className={`px-2 py-1 rounded-lg text-[11px] font-extrabold border cursor-pointer outline-hidden transition-all ${
+                                user.isOwner || user.role === 'admin'
+                                  ? 'bg-amber-100 text-amber-900 border-amber-300'
+                                  : user.role === 'moderator'
+                                  ? 'bg-indigo-100 text-indigo-900 border-indigo-300'
+                                  : 'bg-slate-100 text-slate-700 border-slate-200'
                               }`}
-                              title="تفعيل/إلغاء تفعيل حساب العضو"
                             >
-                              <CheckCircle2 className={`w-3 h-3 ${(user.isActive ?? true) ? 'text-emerald-600' : 'text-amber-600'}`} />
-                              <span>{(user.isActive ?? true) ? 'مُفعّل' : 'بانتظار التفعيل'}</span>
-                            </button>
+                              <option value="user">عضو عادي</option>
+                              <option value="moderator">مشرف منصة (Moderator)</option>
+                              <option value="admin">مالك/مدير (Admin)</option>
+                            </select>
                           </td>
                           {/* Membership Tier Dropdown */}
                           <td className="p-3">
                             <select
                               value={user.membershipTier || 'عضو عادي'}
                               onChange={(e) => adminUpdateUser(user.id, { membershipTier: e.target.value as UserMembershipTier })}
-                              className={`px-2.5 py-1 rounded-lg text-xs font-bold border cursor-pointer outline-hidden transition-all ${
-                                user.membershipTier === 'عضو مشترك'
+                              className={`px-2 py-1 rounded-lg text-[11px] font-bold border cursor-pointer outline-hidden transition-all ${
+                                user.membershipTier === 'تاجر موثوق' || user.membershipTier === 'عضو مميز'
+                                  ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                  : user.membershipTier === 'عضو مشترك'
                                   ? 'bg-purple-50 text-purple-700 border-purple-200'
                                   : user.membershipTier === 'عضو موثق'
                                   ? 'bg-blue-50 text-blue-700 border-blue-200'
@@ -2452,29 +2632,59 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
                               <option value="عضو عادي">عضو عادي</option>
                               <option value="عضو موثق">عضو موثق</option>
                               <option value="عضو مشترك">عضو مشترك</option>
+                              <option value="تاجر موثوق">تاجر موثوق</option>
+                              <option value="عضو مميز">عضو مميز</option>
                             </select>
                           </td>
-                          <td className="p-3 text-slate-600">{user.city}</td>
-                          <td className="p-3 font-mono text-slate-700">{user.phone}</td>
+                          <td className="p-3">
+                            <div className="text-slate-700 text-[11px] font-bold">{user.city}</div>
+                            <div className="font-mono text-[10px] text-slate-400">{user.phone}</div>
+                          </td>
+                          {/* Account Activation Toggle */}
+                          <td className="p-3">
+                            <button
+                              onClick={() => adminUpdateUser(user.id, { isActive: !(user.isActive ?? true) })}
+                              className={`px-2 py-0.5 rounded-full font-bold text-[10px] cursor-pointer flex items-center gap-1 w-fit transition-all ${
+                                (user.isActive ?? true) 
+                                  ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' 
+                                  : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                              }`}
+                            >
+                              <CheckCircle2 className={`w-3 h-3 ${(user.isActive ?? true) ? 'text-emerald-600' : 'text-amber-600'}`} />
+                              <span>{(user.isActive ?? true) ? 'مُفعّل' : 'معطل'}</span>
+                            </button>
+                          </td>
                           <td className="p-3">
                             <button
                               onClick={() => adminUpdateUser(user.id, { verified: !user.verified })}
-                              className={`px-2.5 py-1 rounded-full font-bold text-[10px] cursor-pointer flex items-center gap-1 w-fit ${
-                                user.verified ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                              className={`px-2 py-0.5 rounded-full font-bold text-[10px] cursor-pointer flex items-center gap-1 w-fit ${
+                                user.verified ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'
                               }`}
                             >
                               <BadgeCheck className="w-3 h-3" />
                               <span>{user.verified ? 'موثق' : 'غير موثق'}</span>
                             </button>
                           </td>
-                          <td className="p-3 font-bold text-slate-800">{user.completedBartersCount} مقايضة</td>
+                          <td className="p-3 font-bold text-slate-800">{user.completedBartersCount}</td>
                           <td className="p-3 font-bold text-amber-600">★ {user.rating}</td>
                           <td className="p-3 text-left">
                             <div className="flex items-center justify-end gap-1">
+                              {onViewUserProfile && (
+                                <button
+                                  onClick={() => {
+                                    onClose();
+                                    onViewUserProfile(user.id);
+                                  }}
+                                  className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 cursor-pointer"
+                                  title="عرض ملف العضو في المنصة"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                </button>
+                              )}
                               <button
                                 onClick={() => setEditingUser(user)}
                                 className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer"
-                                title="تعديل العضو"
+                                title="تعديل تفاصيل العضو"
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
                               </button>
@@ -2493,6 +2703,158 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
                           </td>
                         </tr>
                       ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* TAB 3.5: REVIEWS & RATINGS MANAGEMENT */}
+          {activeTab === 'reviews' && (
+            <div className="space-y-4 max-w-5xl mx-auto">
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-900">إدارة التقييمات وآراء الأعضاء</h3>
+                  <p className="text-xs text-slate-500">استعراض وتعديل كافة التقييمات المنشورة وتأثيرها على معدل ثقة المستخدمين</p>
+                </div>
+              </div>
+
+              {/* Stats Bar */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                    <Star className="w-5 h-5 fill-amber-500" />
+                  </div>
+                  <div>
+                    <span className="text-xs text-slate-500 font-bold block">إجمالي التقييمات</span>
+                    <strong className="text-base font-black text-slate-900">{reviews.length} تقييم</strong>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-black">
+                    ★
+                  </div>
+                  <div>
+                    <span className="text-xs text-slate-500 font-bold block">متوسط تقييم المنصة</span>
+                    <strong className="text-base font-black text-slate-900">
+                      {reviews.length > 0
+                        ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+                        : '0.0'}{' '}
+                      / 5.0
+                    </strong>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                    <BadgeCheck className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <span className="text-xs text-slate-500 font-bold block">التقييمات الممتازة (5 نجوم)</span>
+                    <strong className="text-base font-black text-slate-900">
+                      {reviews.filter((r) => r.rating === 5).length} تقييم ممتاز
+                    </strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Search Bar for Reviews */}
+              <div className="relative">
+                <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-3" />
+                <input
+                  type="text"
+                  value={reviewSearchQuery}
+                  onChange={(e) => setReviewSearchQuery(e.target.value)}
+                  placeholder="ابحث باسم المُقَيِّـم، العضو المُقَيَّـم، أو نص التعليق والملاحظات..."
+                  className="w-full pr-10 pl-4 py-2.5 rounded-2xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#8c5332]/20 focus:border-[#8c5332] shadow-xs"
+                />
+              </div>
+
+              {/* Reviews Table */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-right text-xs">
+                    <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+                      <tr>
+                        <th className="p-3">المُقَيِّـم (كاتب التقييم)</th>
+                        <th className="p-3">العضو المُقَيَّـم</th>
+                        <th className="p-3">درجة التقييم</th>
+                        <th className="p-3">التعليق والملاحظات</th>
+                        <th className="p-3">تاريخ التقييم</th>
+                        <th className="p-3 text-left">الإجراءات</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 font-medium">
+                      {reviews.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="p-8 text-center text-slate-400 font-bold">
+                            لا توجد تقييمات مسجلة حالياً في المنصة.
+                          </td>
+                        </tr>
+                      ) : (
+                        reviews
+                          .filter((r) => {
+                            if (!reviewSearchQuery.trim()) return true;
+                            const q = reviewSearchQuery.toLowerCase();
+                            return (
+                              r.reviewerName.toLowerCase().includes(q) ||
+                              r.targetUserName.toLowerCase().includes(q) ||
+                              r.comment.toLowerCase().includes(q)
+                            );
+                          })
+                          .map((rev) => (
+                            <tr key={rev.id} className="hover:bg-slate-50/80 transition-all">
+                              <td className="p-3">
+                                <div className="flex items-center gap-2">
+                                  <img
+                                    src={rev.reviewerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=250'}
+                                    className="w-7 h-7 rounded-full object-cover border border-slate-200"
+                                  />
+                                  <span className="font-bold text-slate-900">{rev.reviewerName}</span>
+                                </div>
+                              </td>
+                              <td className="p-3">
+                                <span className="font-bold text-[#8c5332]">{rev.targetUserName}</span>
+                              </td>
+                              <td className="p-3">
+                                <div className="flex items-center gap-1 font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 w-fit">
+                                  <Star className="w-3.5 h-3.5 fill-amber-400" />
+                                  <span>{rev.rating} / 5</span>
+                                </div>
+                              </td>
+                              <td className="p-3 text-slate-700 max-w-xs truncate">
+                                {rev.comment || <span className="text-slate-400 italic">بدون تعليق نصي</span>}
+                              </td>
+                              <td className="p-3 text-slate-400 font-mono text-[11px]">{rev.createdAt}</td>
+                              <td className="p-3 text-left">
+                                <div className="flex items-center justify-end gap-1">
+                                  <button
+                                    onClick={() => setEditingReview(rev)}
+                                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer"
+                                    title="تعديل التقييم والتعليق"
+                                  >
+                                    <Edit3 className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      if (confirm(`هل أنت تأكد من حذف هذا التقييم؟ سيتم إعادة حساب معدل العضو تلقائياً.`)) {
+                                        adminDeleteReview(rev.id);
+                                      }
+                                    }}
+                                    className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 cursor-pointer"
+                                    title="حذف التقييم"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -2840,8 +3202,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
       {/* MODAL: EDIT USER */}
       {editingUser && (
         <div className="fixed inset-0 z-60 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-200">
-            <h3 className="text-base font-extrabold text-slate-900">تعديل بيانات العضو: {editingUser.name}</h3>
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-extrabold text-slate-900">تعديل الملف الشخصي للعضو: {editingUser.name}</h3>
+              <button onClick={() => setEditingUser(null)} className="p-1 rounded-lg text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
             
             <form
               onSubmit={(e) => {
@@ -2858,6 +3225,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
                   value={editingUser.name}
                   onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold outline-hidden"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">البريد الإلكتروني:</label>
+                <input
+                  type="email"
+                  value={editingUser.email || ''}
+                  onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                  placeholder="name@example.com"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono outline-hidden"
                 />
               </div>
 
@@ -2884,7 +3262,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">تصنيف العضوية (صلاحية المالك حصراً):</label>
+                <label className="font-bold text-slate-700 block mb-1">رتبة العضو في المنصة (الإشراف والإدارة):</label>
+                <select
+                  value={editingUser.isOwner ? 'admin' : (editingUser.role || 'user')}
+                  onChange={(e) => {
+                    const newRole = e.target.value as 'user' | 'moderator' | 'admin';
+                    setEditingUser({
+                      ...editingUser,
+                      role: newRole,
+                      isOwner: newRole === 'admin' ? true : editingUser.isOwner
+                    });
+                  }}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-extrabold outline-hidden"
+                >
+                  <option value="user">عضو عادي (User)</option>
+                  <option value="moderator">مشرف منصة (Moderator)</option>
+                  <option value="admin">مالك ومدير منصة (Admin)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">تصنيف العضوية:</label>
                 <select
                   value={editingUser.membershipTier || 'عضو عادي'}
                   onChange={(e) => setEditingUser({ ...editingUser, membershipTier: e.target.value as UserMembershipTier })}
@@ -2893,10 +3291,48 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
                   <option value="عضو عادي">عضو عادي</option>
                   <option value="عضو موثق">عضو موثق</option>
                   <option value="عضو مشترك">عضو مشترك</option>
+                  <option value="تاجر موثوق">تاجر موثوق</option>
+                  <option value="عضو مميز">عضو مميز</option>
                 </select>
               </div>
 
-              <div className="space-y-2 pt-1">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">درجة التقييم الحالي (0.0 - 5.0):</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="5"
+                    value={editingUser.rating}
+                    onChange={(e) => setEditingUser({ ...editingUser, rating: parseFloat(e.target.value) || 0 })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold outline-hidden"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">عدد المقايضات المكتملة:</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={editingUser.completedBartersCount}
+                    onChange={(e) => setEditingUser({ ...editingUser, completedBartersCount: parseInt(e.target.value) || 0 })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold outline-hidden"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">رابط صورة الحساب (Avatar):</label>
+                <input
+                  type="text"
+                  value={editingUser.avatar}
+                  onChange={(e) => setEditingUser({ ...editingUser, avatar: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono outline-hidden text-[11px]"
+                />
+              </div>
+
+              <div className="space-y-2 pt-1 border-t border-slate-100">
                 <label className="flex items-center gap-2 font-bold text-slate-700 cursor-pointer">
                   <input
                     type="checkbox"
@@ -2921,13 +3357,87 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose, onViewC
               <div className="flex gap-2 pt-2">
                 <button
                   type="submit"
-                  className="flex-1 bg-[#8c5332] text-white font-bold py-2.5 rounded-xl hover:bg-[#734123] cursor-pointer"
+                  className="flex-1 bg-[#8c5332] text-white font-bold py-2.5 rounded-xl hover:bg-[#734123] cursor-pointer shadow-xs"
                 >
                   حفظ التعديلات
                 </button>
                 <button
                   type="button"
                   onClick={() => setEditingUser(null)}
+                  className="px-4 bg-slate-100 text-slate-600 font-bold py-2.5 rounded-xl hover:bg-slate-200 cursor-pointer"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: EDIT REVIEW */}
+      {editingReview && (
+        <div className="fixed inset-0 z-60 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-200">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-extrabold text-slate-900">تعديل تقييم العضو: {editingReview.targetUserName}</h3>
+              <button onClick={() => setEditingReview(null)} className="p-1 rounded-lg text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                adminUpdateReview(editingReview.id, {
+                  rating: editingReview.rating,
+                  comment: editingReview.comment
+                });
+                setEditingReview(null);
+              }}
+              className="space-y-4 text-xs"
+            >
+              <div>
+                <label className="font-bold text-slate-700 block mb-2">عدد النجوم (1 إلى 5):</label>
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setEditingReview({ ...editingReview, rating: star })}
+                      className="p-1 cursor-pointer transition-transform hover:scale-110"
+                    >
+                      <Star
+                        className={`w-7 h-7 ${
+                          star <= editingReview.rating ? 'fill-amber-400 text-amber-500' : 'text-slate-300'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                  <span className="font-extrabold text-amber-600 mr-2 text-sm">{editingReview.rating} من 5</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">نص الملاحظات والتعليق:</label>
+                <textarea
+                  rows={3}
+                  value={editingReview.comment}
+                  onChange={(e) => setEditingReview({ ...editingReview, comment: e.target.value })}
+                  placeholder="اكتب ملاحظات التقييم..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium outline-hidden"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="submit"
+                  className="flex-1 bg-[#8c5332] text-white font-bold py-2.5 rounded-xl hover:bg-[#734123] cursor-pointer shadow-xs"
+                >
+                  تحديث التقييم
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingReview(null)}
                   className="px-4 bg-slate-100 text-slate-600 font-bold py-2.5 rounded-xl hover:bg-slate-200 cursor-pointer"
                 >
                   إلغاء

@@ -10,7 +10,8 @@ import {
   CategoryName,
   ItemCondition,
   OfferStatus,
-  TradeNegotiationMessage
+  TradeNegotiationMessage,
+  UserReview
 } from '../types';
 import { 
   INITIAL_USERS, 
@@ -20,7 +21,8 @@ import {
   INITIAL_SETTINGS, 
   INITIAL_CATEGORIES, 
   INITIAL_QUESTIONS,
-  INITIAL_NEGOTIATIONS
+  INITIAL_NEGOTIATIONS,
+  INITIAL_REVIEWS
 } from '../data/mockData';
 
 interface BarterContextType {
@@ -37,6 +39,7 @@ interface BarterContextType {
   offers: TradeOffer[];
   negotiationMessages: TradeNegotiationMessage[];
   contracts: BarterContract[];
+  reviews: UserReview[];
   settings: PlatformSettings;
   categories: CategoryItem[];
 
@@ -64,6 +67,11 @@ interface BarterContextType {
   
   respondToOffer: (offerId: string, action: 'accept' | 'reject' | 'cancel') => void;
   signContractAndFinalize: (offerId: string) => { contract: BarterContract | null; completed: boolean };
+
+  // Review Actions
+  addReview: (reviewData: Omit<UserReview, 'id' | 'createdAt'>) => void;
+  adminDeleteReview: (reviewId: string) => void;
+  adminUpdateReview: (reviewId: string, updatedData: Partial<UserReview>) => void;
 
   // Admin Actions
   updateSettings: (newSettings: Partial<PlatformSettings>) => void;
@@ -103,7 +111,12 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (!stored) return fallback;
       const parsed = JSON.parse(stored);
       if (key === 'settings') {
-        return { ...INITIAL_SETTINGS, ...parsed };
+        const mergedSettings = { ...INITIAL_SETTINGS, ...parsed };
+        if (!localStorage.getItem(LOCAL_STORAGE_PREFIX + 'top_notice_v2_synced')) {
+          mergedSettings.showHeaderTopNotice = false;
+          localStorage.setItem(LOCAL_STORAGE_PREFIX + 'top_notice_v2_synced', 'true');
+        }
+        return mergedSettings;
       }
       return parsed;
     } catch {
@@ -120,6 +133,7 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [offers, setOffers] = useState<TradeOffer[]>(() => getStored('offers', INITIAL_OFFERS));
   const [negotiationMessages, setNegotiationMessages] = useState<TradeNegotiationMessage[]>(() => getStored('negotiationMessages', INITIAL_NEGOTIATIONS));
   const [contracts, setContracts] = useState<BarterContract[]>(() => getStored('contracts', INITIAL_CONTRACTS));
+  const [reviews, setReviews] = useState<UserReview[]>(() => getStored('reviews', INITIAL_REVIEWS));
   const [settings, setSettings] = useState<PlatformSettings>(() => getStored('settings', INITIAL_SETTINGS));
   const [categories, setCategories] = useState<CategoryItem[]>(() => getStored('categories', INITIAL_CATEGORIES));
   const [favorites, setFavorites] = useState<string[]>(() => getStored('favorites', ['item_1', 'item_3']));
@@ -128,6 +142,11 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('الكل');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCityFilter, setSelectedCityFilter] = useState<string>('الكل');
+
+  // Persistence side effects
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_PREFIX + 'reviews', JSON.stringify(reviews));
+  }, [reviews]);
 
   // Persistence side effects
   useEffect(() => {
@@ -463,9 +482,72 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
+  // Review Actions
+  const addReview = (reviewData: Omit<UserReview, 'id' | 'createdAt'>) => {
+    const newReview: UserReview = {
+      ...reviewData,
+      id: 'rev_' + Date.now(),
+      createdAt: new Date().toISOString().replace('T', ' ').substring(0, 16)
+    };
+    
+    setReviews((prev) => {
+      const nextReviews = [newReview, ...prev];
+      // Recalculate target user rating
+      const userRevList = nextReviews.filter(r => r.targetUserId === reviewData.targetUserId);
+      const sum = userRevList.reduce((acc, r) => acc + r.rating, 0);
+      const newRating = userRevList.length > 0 ? Math.round((sum / userRevList.length) * 10) / 10 : 0;
+      
+      // Update target user's rating
+      setUsers((prevUsers) =>
+        prevUsers.map((u) => (u.id === reviewData.targetUserId ? { ...u, rating: newRating } : u))
+      );
+      return nextReviews;
+    });
+  };
+
+  const adminDeleteReview = (reviewId: string) => {
+    setReviews((prev) => {
+      const targetReview = prev.find(r => r.id === reviewId);
+      const nextReviews = prev.filter((r) => r.id !== reviewId);
+      if (targetReview) {
+        const userRevList = nextReviews.filter(r => r.targetUserId === targetReview.targetUserId);
+        const sum = userRevList.reduce((acc, r) => acc + r.rating, 0);
+        const newRating = userRevList.length > 0 ? Math.round((sum / userRevList.length) * 10) / 10 : 0;
+        setUsers((prevUsers) =>
+          prevUsers.map((u) => (u.id === targetReview.targetUserId ? { ...u, rating: newRating } : u))
+        );
+      }
+      return nextReviews;
+    });
+  };
+
+  const adminUpdateReview = (reviewId: string, updatedData: Partial<UserReview>) => {
+    setReviews((prev) => {
+      const nextReviews = prev.map((r) => (r.id === reviewId ? { ...r, ...updatedData } : r));
+      const targetReview = nextReviews.find(r => r.id === reviewId);
+      if (targetReview) {
+        const userRevList = nextReviews.filter(r => r.targetUserId === targetReview.targetUserId);
+        const sum = userRevList.reduce((acc, r) => acc + r.rating, 0);
+        const newRating = userRevList.length > 0 ? Math.round((sum / userRevList.length) * 10) / 10 : 0;
+        setUsers((prevUsers) =>
+          prevUsers.map((u) => (u.id === targetReview.targetUserId ? { ...u, rating: newRating } : u))
+        );
+      }
+      return nextReviews;
+    });
+  };
+
   // Admin Actions
   const updateSettings = (newSettings: Partial<PlatformSettings>) => {
-    setSettings((prev) => ({ ...prev, ...newSettings }));
+    setSettings((prev) => {
+      const updated = { ...prev, ...newSettings };
+      try {
+        localStorage.setItem(LOCAL_STORAGE_PREFIX + 'settings', JSON.stringify(updated));
+      } catch (e) {
+        console.error('Failed to save settings', e);
+      }
+      return updated;
+    });
   };
 
   const addCategory = (category: Omit<CategoryItem, 'id' | 'itemCount'>) => {
@@ -516,6 +598,8 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const adminAddUser = (userData: Omit<User, 'id'>) => {
     const newUser: User = {
+      rating: 0,
+      completedBartersCount: 0,
       ...userData,
       id: 'usr_' + Date.now(),
     };
@@ -546,6 +630,7 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         offers,
         negotiationMessages,
         contracts,
+        reviews,
         settings,
         categories,
 
@@ -565,6 +650,10 @@ export const BarterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         createTradeOffer,
         respondToOffer,
         signContractAndFinalize,
+
+        addReview,
+        adminDeleteReview,
+        adminUpdateReview,
 
         updateSettings,
         addCategory,

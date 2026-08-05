@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useBarter } from '../context/BarterContext';
-import { TradeOffer, BarterContract } from '../types';
+import { TradeOffer, BarterContract, User } from '../types';
+import { RatingModal } from './RatingModal';
 import { 
   X, 
   ArrowLeftRight, 
@@ -13,7 +14,8 @@ import {
   BadgeCheck, 
   MessageSquare,
   Sparkles,
-  AlertCircle
+  AlertCircle,
+  Star
 } from 'lucide-react';
 
 interface TradeOffersModalProps {
@@ -30,10 +32,13 @@ export const TradeOffersModal: React.FC<TradeOffersModalProps> = ({ onClose, onV
     users, 
     respondToOffer, 
     signContractAndFinalize,
-    contracts 
+    contracts,
+    reviews,
+    addReview
   } = useBarter();
 
   const [activeTab, setActiveTab] = useState<'incoming' | 'outgoing'>('incoming');
+  const [ratingOffer, setRatingOffer] = useState<TradeOffer | null>(null);
 
   // Filter offers
   const incomingOffers = currentUser ? offers.filter((o) => o.targetOwnerUserId === currentUser.id) : [];
@@ -44,6 +49,10 @@ export const TradeOffersModal: React.FC<TradeOffersModalProps> = ({ onClose, onV
   const handleSignContract = (offerId: string) => {
     const result = signContractAndFinalize(offerId);
     if (result.contract) {
+      const targetOffer = offers.find(o => o.id === offerId);
+      if (targetOffer) {
+        setRatingOffer(targetOffer);
+      }
       onViewContract(result.contract);
     }
   };
@@ -55,10 +64,11 @@ export const TradeOffersModal: React.FC<TradeOffersModalProps> = ({ onClose, onV
       <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between">
         <button
           onClick={onClose}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-all cursor-pointer"
+          title="العودة"
+          aria-label="العودة"
+          className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-all cursor-pointer flex items-center justify-center shadow-xs"
         >
-          <ArrowRight className="w-4 h-4" />
-          <span>العودة للرئيسية</span>
+          <ArrowRight className="w-5 h-5" />
         </button>
 
         <div className="flex items-center gap-3">
@@ -266,22 +276,39 @@ export const TradeOffersModal: React.FC<TradeOffersModalProps> = ({ onClose, onV
                     </div>
                   )}
 
-                  {/* View Contract Button if completed */}
-                  {offer.status === 'completed' && associatedContract && (
-                    <div className="flex items-center justify-between p-3 bg-slate-900 text-white rounded-xl border border-slate-800">
+                  {/* View Contract Button & Rating if completed */}
+                  {offer.status === 'completed' && (
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-slate-900 text-white rounded-xl border border-slate-800">
                       <div className="flex items-center gap-2 text-xs">
-                        <BadgeCheck className="w-5 h-5 text-amber-400" />
-                        <span>العقد الإلكتروني رقم <strong className="text-amber-300">{associatedContract.contractNumber}</strong> موثق وساري.</span>
+                        <BadgeCheck className="w-5 h-5 text-amber-400 shrink-0" />
+                        <span>
+                          {associatedContract ? (
+                            <>العقد الإلكتروني رقم <strong className="text-amber-300">{associatedContract.contractNumber}</strong> موثق وساري.</>
+                          ) : (
+                            <>صفقة مقايضة مكتملة وموثقة ✓</>
+                          )}
+                        </span>
                       </div>
-                      <button
-                        onClick={() => {
-                          onClose();
-                          onViewContract(associatedContract);
-                        }}
-                        className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-lg transition-all cursor-pointer"
-                      >
-                        معاينة وطباعة العقد
-                      </button>
+                      <div className="flex items-center gap-2">
+                        {associatedContract && (
+                          <button
+                            onClick={() => {
+                              onClose();
+                              onViewContract(associatedContract);
+                            }}
+                            className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-lg transition-all cursor-pointer"
+                          >
+                            معاينة العقد
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setRatingOffer(offer)}
+                          className="px-3.5 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-lg transition-all cursor-pointer flex items-center gap-1 shadow-sm"
+                        >
+                          <Star className="w-3.5 h-3.5 fill-slate-950" />
+                          <span>تقييم المقايِض الآخر</span>
+                        </button>
+                      </div>
                     </div>
                   )}
 
@@ -292,6 +319,45 @@ export const TradeOffersModal: React.FC<TradeOffersModalProps> = ({ onClose, onV
         </div>
 
       </div>
+
+      {/* Rating Modal */}
+      {ratingOffer && currentUser && (() => {
+        const isPartyA = ratingOffer.offeredByUserId === currentUser.id;
+        const targetUserId = isPartyA ? ratingOffer.targetOwnerUserId : ratingOffer.offeredByUserId;
+        const targetUserObj = users.find(u => u.id === targetUserId) || {
+          id: targetUserId,
+          name: 'طرف المقايضة',
+          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=250',
+          city: 'المنصة',
+          phone: '',
+          verified: true,
+          rating: 0,
+          completedBartersCount: 0
+        };
+
+        return (
+          <RatingModal
+            isOpen={!!ratingOffer}
+            onClose={() => setRatingOffer(null)}
+            targetUser={targetUserObj}
+            offerId={ratingOffer.id}
+            contractId={ratingOffer.contractId}
+            onSubmit={(starRating, comment) => {
+              addReview({
+                offerId: ratingOffer.id,
+                contractId: ratingOffer.contractId,
+                reviewerId: currentUser.id,
+                reviewerName: currentUser.name,
+                reviewerAvatar: currentUser.avatar,
+                targetUserId: targetUserObj.id,
+                targetUserName: targetUserObj.name,
+                rating: starRating,
+                comment,
+              });
+            }}
+          />
+        );
+      })()}
 
     </div>
   );

@@ -220,7 +220,7 @@ export const Header: React.FC<HeaderProps> = ({
                           </button>
                         )}
 
-                        {/* 1. منتجاته (My Products) */}
+                        {/* 1. الملف الشخصي (Profile) */}
                         <button
                           onClick={() => {
                             setIsDropdownOpen(false);
@@ -233,8 +233,26 @@ export const Header: React.FC<HeaderProps> = ({
                           className="w-full px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-[#f5eee6] hover:text-[#8c5332] flex items-center justify-between transition-colors cursor-pointer"
                         >
                           <div className="flex items-center gap-2.5">
+                            <UserIcon className="w-4 h-4 text-[#8c5332]" />
+                            <span>الملف الشخصي</span>
+                          </div>
+                        </button>
+
+                        {/* 2. منتجاتي (My Products) */}
+                        <button
+                          onClick={() => {
+                            setIsDropdownOpen(false);
+                            if (onOpenProfile) {
+                              onOpenProfile('items');
+                            } else if (onNavigate) {
+                              onNavigate('user_profile');
+                            }
+                          }}
+                          className="w-full px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-[#f5eee6] hover:text-[#8c5332] flex items-center justify-between transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2.5">
                             <Package className="w-4 h-4 text-[#8c5332]" />
-                            <span>منتجاته</span>
+                            <span>منتجاتي</span>
                           </div>
                         </button>
 
@@ -254,11 +272,6 @@ export const Header: React.FC<HeaderProps> = ({
                             <MessageSquare className="w-4 h-4 text-[#8c5332]" />
                             <span>مفاوضات</span>
                           </div>
-                          {userNegotiationsCount > 0 && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-[#734123]">
-                              {userNegotiationsCount}
-                            </span>
-                          )}
                         </button>
 
                         {/* 2. مقايضاته (My Barters / Contracts) */}
@@ -325,33 +338,18 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Mobile Search Bar */}
-        {(settings.showHeaderSearch || settings.showHeaderCityFilter) && (
+        {settings.showHeaderSearch && (
           <div className="pb-3 md:hidden flex items-center gap-2">
-            {settings.showHeaderSearch && (
-              <div className="relative flex-1">
-                <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder=""
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#f5eee6] focus:bg-white text-slate-900 text-xs rounded-full pr-9 pl-3 py-2 border border-[#e6d8c7] focus:border-[#8c5332] outline-hidden font-medium"
-                />
-              </div>
-            )}
-            {settings.showHeaderCityFilter && (
-              <select
-                value={selectedCityFilter}
-                onChange={(e) => setSelectedCityFilter(e.target.value)}
-                className="bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl px-2.5 py-2 border border-slate-200 focus:border-[#8c5332] outline-hidden"
-              >
-                <option value="الكل">كل المدن</option>
-                <option value="الرياض">الرياض</option>
-                <option value="جدة">جدة</option>
-                <option value="الدمام">الدمام</option>
-                <option value="المدينة المنورة">المدينة المنورة</option>
-              </select>
-            )}
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                placeholder=""
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-[#f5eee6] focus:bg-white text-slate-900 text-xs rounded-full pr-10 pl-4 py-2 border border-[#e6d8c7] focus:border-[#8c5332] outline-hidden font-medium shadow-2xs"
+              />
+            </div>
           </div>
         )}
 

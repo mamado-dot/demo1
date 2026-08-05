@@ -9,7 +9,7 @@ interface AuthPageProps {
 }
 
 export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
-  const { users, setCurrentUser, adminAddUser } = useBarter();
+  const { users, setCurrentUser, adminAddUser, settings } = useBarter();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,6 +27,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
     if (!user) {
       // Create user via Google
       const isOwner = targetEmail.toLowerCase() === 'crazyretiree@gmail.com';
+      const autoActivate = settings?.autoActivateNewUsers ?? true;
       user = {
         id: 'usr_' + Date.now(),
         name: isOwner ? 'أحمد العتيبي (مالك المنصة)' : (name || targetEmail.split('@')[0]),
@@ -37,9 +38,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
         city: city || 'الرياض',
         phone: '05' + Math.floor(10000000 + Math.random() * 90000000),
         verified: true,
-        rating: 5.0,
+        rating: isOwner ? 4.9 : 0,
         completedBartersCount: 0,
-        isActive: isOwner ? true : false,
+        isActive: isOwner ? true : autoActivate,
         membershipTier: isOwner ? 'عضو موثق' : 'عضو عادي',
       };
       adminAddUser(user);
@@ -81,27 +82,33 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
         return;
       }
 
+      const autoActivate = settings?.autoActivateNewUsers ?? true;
       const newUser: User = {
         id: isOwner ? 'usr_1' : 'usr_' + Date.now(),
         name: isOwner ? 'أحمد العتيبي (مالك المنصة)' : name,
         email: targetEmail,
         password: password || '054422516',
         isOwner: isOwner,
+        role: isOwner ? 'admin' : 'user',
         avatar: isOwner 
           ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250' 
           : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=250',
         city,
         phone: '05' + Math.floor(10000000 + Math.random() * 90000000),
         verified: true,
-        rating: 5.0,
+        rating: isOwner ? 4.9 : 0,
         completedBartersCount: isOwner ? 8 : 0,
-        isActive: isOwner ? true : false,
+        isActive: isOwner ? true : autoActivate,
         membershipTier: isOwner ? 'عضو موثق' : 'عضو عادي',
       };
 
       adminAddUser(newUser);
       setCurrentUser(newUser);
-      setSuccess('تم إنشاء الحساب بنجاح!');
+      if (autoActivate || isOwner) {
+        setSuccess('تم إنشاء الحساب وتفعيله بنجاح! يمكنك البدء بالاستخدام الآن.');
+      } else {
+        setSuccess('تم إنشاء الحساب بنجاح! حسابك حالياً بانتظار تفعيل إدارة المنصة.');
+      }
     } else {
       const isOwner = targetEmail.toLowerCase() === 'crazyretiree@gmail.com';
       if (isOwner) {

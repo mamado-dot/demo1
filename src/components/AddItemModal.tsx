@@ -20,10 +20,11 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
         <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between">
           <button
             onClick={onClose}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-all cursor-pointer"
+            title="إلغاء والعودة للرئيسية"
+            aria-label="إلغاء والعودة للرئيسية"
+            className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-all cursor-pointer flex items-center justify-center shadow-xs"
           >
-            <ArrowRight className="w-4 h-4" />
-            <span>إلغاء والعودة للرئيسية</span>
+            <ArrowRight className="w-5 h-5" />
           </button>
 
           <div className="flex items-center gap-2">
@@ -74,10 +75,11 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
         <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between">
           <button
             onClick={onClose}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-all cursor-pointer"
+            title="العودة للرئيسية"
+            aria-label="العودة للرئيسية"
+            className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-all cursor-pointer flex items-center justify-center shadow-xs"
           >
-            <ArrowRight className="w-4 h-4" />
-            <span>العودة للرئيسية</span>
+            <ArrowRight className="w-5 h-5" />
           </button>
         </div>
 
@@ -116,10 +118,11 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
         <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between">
           <button
             onClick={onClose}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-all cursor-pointer"
+            title="العودة للرئيسية"
+            aria-label="العودة للرئيسية"
+            className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-all cursor-pointer flex items-center justify-center shadow-xs"
           >
-            <ArrowRight className="w-4 h-4" />
-            <span>العودة للرئيسية</span>
+            <ArrowRight className="w-5 h-5" />
           </button>
         </div>
 
@@ -153,19 +156,82 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
   const [location, setLocation] = useState(currentUser?.city || 'الرياض');
   const [description, setDescription] = useState('');
   
-  // File Upload State
-  const [imageUrl, setImageUrl] = useState('');
+  // File Upload State (Offered Item - Min 3, Max 5)
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+
+  // File Upload State (Desired Item - Optional)
+  const [desiredImageUrl, setDesiredImageUrl] = useState('');
+  const [isDraggingDesired, setIsDraggingDesired] = useState(false);
 
   // Barter Target Preferences
   const [desiredDescription, setDesiredDescription] = useState('');
-  const [allowCashDifference, setAllowCashDifference] = useState(true);
-  const [maxCashDifference, setMaxCashDifference] = useState<number | ''>(500);
+  const [allowCashDifference, setAllowCashDifference] = useState(false);
+  const [maxCashDifference, setMaxCashDifference] = useState<number | ''>(0);
   const [deliveryPreference, setDeliveryPreference] = useState<'استلام يدوي' | 'شحن بريدي' | 'كلاهما يفي بالغرض'>('استلام يدوي');
 
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleFileUpload = (file: File) => {
+  const handleMultipleFilesUpload = (filesList: FileList | File[]) => {
+    const files = Array.from(filesList);
+    if (files.length === 0) return;
+
+    if (imageUrls.length >= 5) {
+      setErrorMsg('لقد وصلت للحد الأقصى المسموح به (5 صور كحد أقصى)');
+      return;
+    }
+
+    const availableSlots = 5 - imageUrls.length;
+    const filesToUpload = files.slice(0, availableSlots);
+
+    let hasError = false;
+    const newImages: string[] = [];
+    let processedCount = 0;
+
+    filesToUpload.forEach((file) => {
+      if (!file.type.startsWith('image/')) {
+        setErrorMsg('يرجى اختيار ملفات صور صالحة (JPG, PNG, WEBP)');
+        hasError = true;
+        return;
+      }
+      if (file.size > 8 * 1024 * 1024) {
+        setErrorMsg('حجم إحدى الصور كبير، يرجى اختيار صور بحجم أقل من 8 ميجابايت');
+        hasError = true;
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        newImages.push(reader.result as string);
+        processedCount++;
+        if (processedCount === filesToUpload.length) {
+          setImageUrls((prev) => [...prev, ...newImages].slice(0, 5));
+          if (!hasError) setErrorMsg('');
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      handleMultipleFilesUpload(e.target.files);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files) {
+      handleMultipleFilesUpload(e.dataTransfer.files);
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImageUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDesiredFileUpload = (file: File) => {
     if (!file.type.startsWith('image/')) {
       setErrorMsg('يرجى اختيار ملف صورة صالح (JPG, PNG, WEBP)');
       return;
@@ -176,25 +242,25 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
     }
     const reader = new FileReader();
     reader.onloadend = () => {
-      setImageUrl(reader.result as string);
+      setDesiredImageUrl(reader.result as string);
       if (errorMsg) setErrorMsg('');
     };
     reader.readAsDataURL(file);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDesiredFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      handleFileUpload(file);
+      handleDesiredFileUpload(file);
     }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDesiredDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragging(false);
+    setIsDraggingDesired(false);
     const file = e.dataTransfer.files?.[0];
     if (file) {
-      handleFileUpload(file);
+      handleDesiredFileUpload(file);
     }
   };
 
@@ -212,9 +278,11 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
       setErrorMsg('يرجى إدخال عنوان واضح للسلعة المعروضة');
       return;
     }
-    if ((settings.addItemShowImageUpload ?? true) && (settings.addItemImageUploadRequired ?? true) && !imageUrl.trim()) {
-      setErrorMsg('يرجى رفع صورة للسلعة لنشر العرض بنجاح');
-      return;
+    if ((settings.addItemShowImageUpload ?? true) && (settings.addItemImageUploadRequired ?? true)) {
+      if (imageUrls.length < 3) {
+        setErrorMsg(`إجباري رفع 3 صور على الأقل للسلعة المعروضة (تم رفع ${imageUrls.length} من أصل 3 - بحد أقصى 5 صور)`);
+        return;
+      }
     }
     if ((settings.addItemShowDescription ?? true) && (settings.addItemDescriptionRequired ?? true) && !description.trim()) {
       setErrorMsg('يرجى إدخال وصف وافي لحالة السلعة');
@@ -232,9 +300,10 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
       estimatedValue: Number(estimatedValue) || 0,
       description: description.trim() || 'لا يوجد وصف تفصيلي',
       location: location.trim() || 'الرياض',
-      images: [imageUrl.trim() || 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&q=80&w=800'],
+      images: imageUrls.length > 0 ? imageUrls : ['https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&q=80&w=800'],
       desiredCategory: 'أي فئة مناسبة',
       desiredDescription: desiredDescription.trim() || 'المقايضة مقابل أي عرض مناسب',
+      desiredImage: desiredImageUrl.trim() || undefined,
       allowCashDifference,
       maxCashDifference: allowCashDifference ? (Number(maxCashDifference) || 0) : undefined,
       deliveryPreference,
@@ -249,13 +318,14 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
       
       {/* Top Navigation Bar */}
       <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between">
-        <button
-          onClick={onClose}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-all cursor-pointer"
-        >
-          <ArrowRight className="w-4 h-4" />
-          <span>إلغاء والعودة للرئيسية</span>
-        </button>
+          <button
+            onClick={onClose}
+            title="إلغاء والعودة للرئيسية"
+            aria-label="إلغاء والعودة للرئيسية"
+            className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-all cursor-pointer flex items-center justify-center shadow-xs"
+          >
+            <ArrowRight className="w-5 h-5" />
+          </button>
 
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-[#8c5332] text-white flex items-center justify-center font-bold">
@@ -403,9 +473,104 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
               )}
             </div>
 
+            {/* Offered Item Image Upload */}
+            {(settings.addItemShowImageUpload ?? true) && (
+              <div className="pt-3 border-t border-slate-100 space-y-3">
+                <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4 text-[#8c5332]" />
+                    {settings.addItemImageUploadLabel || 'رفع صور السلعة * (إجباري 3 صور على الأقل - بحد أقصى 5 صور)'}
+                  </span>
+                  {imageUrls.length < 3 ? (
+                    <span className="text-[10px] text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100 flex items-center gap-1">
+                      <span>إجباري 3 صور على الأقل</span>
+                      <span>({imageUrls.length}/3)</span>
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>مكتمل ({imageUrls.length}/5 صور)</span>
+                    </span>
+                  )}
+                </label>
+
+                {/* Uploaded Images List Grid */}
+                {imageUrls.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    {imageUrls.map((url, idx) => (
+                      <div key={idx} className="relative group rounded-2xl overflow-hidden border border-[#e6d8c7] bg-white shadow-xs">
+                        <img
+                          src={url}
+                          alt={`صورة السلعة ${idx + 1}`}
+                          className="w-full h-24 object-cover"
+                        />
+                        <div className="absolute top-1 right-1 bg-black/60 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md backdrop-blur-xs">
+                          {idx + 1}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(idx)}
+                          className="absolute top-1 left-1 w-6 h-6 bg-rose-600 hover:bg-rose-700 text-white rounded-full flex items-center justify-center shadow-xs transition-all cursor-pointer opacity-90 hover:scale-110"
+                          title="حذف هذه الصورة"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Dropzone / Upload Box if less than 5 images */}
+                {imageUrls.length < 5 && (
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={handleDrop}
+                    className={`border-2 border-dashed rounded-2xl p-5 text-center transition-all flex flex-col items-center justify-center gap-2 cursor-pointer ${
+                      isDragging
+                        ? 'border-[#8c5332] bg-[#f5eee6]/80 scale-101'
+                        : 'border-slate-300 hover:border-[#8c5332] bg-slate-50 hover:bg-[#f5eee6]/30'
+                    }`}
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleFileChange}
+                      className="hidden"
+                      id="item-files-input"
+                    />
+                    
+                    <div className="w-12 h-12 rounded-2xl bg-[#e6d8c7] text-[#8c5332] flex items-center justify-center shadow-xs">
+                      <Upload className="w-6 h-6" />
+                    </div>
+
+                    <div>
+                      <p className="text-xs font-bold text-slate-800">
+                        {imageUrls.length === 0
+                          ? 'اضغط هنا لرفع صور السلعة (اختر 3 صور إلى 5 صور)'
+                          : `اضغط لرفع صور إضافية (متبقي ${5 - imageUrls.length} صور)`}
+                      </p>
+                      <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                        يمكنك تحديد عدة صور دفعة واحدة أو سحب وإسقاط الصور هنا (PNG, JPG, WEBP)
+                      </p>
+                    </div>
+
+                    <label
+                      htmlFor="item-files-input"
+                      className="mt-1 inline-flex items-center gap-1.5 bg-[#8c5332] hover:bg-[#734123] text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs transition-all cursor-pointer"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>اختر الصور من جهازك ({imageUrls.length}/5)</span>
+                    </label>
+                  </div>
+                )}
+              </div>
+            )}
+
           </div>
 
-          {/* Section 2: Barter Preferences */}
+          {/* Section 2: Barter Target Preferences */}
           {((settings.addItemShowDesiredItem ?? true) || ((settings.addItemShowCashDiffOption ?? true) && settings.enableCashDifference)) && (
             <div className="space-y-4 pt-4 border-t border-slate-200">
               <h3 className="text-[10px] font-black text-[#8c5332] uppercase tracking-wider flex items-center gap-1.5">
@@ -413,7 +578,7 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
                 2. ما هي السلعة أو الشيء المطلوب بالمقابل؟
               </h3>
 
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-4">
                 {/* Desired Item Field */}
                 {(settings.addItemShowDesiredItem ?? true) && (
                   <div>
@@ -443,19 +608,18 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
                       />
                       <span className="text-xs font-bold text-slate-900 flex items-center gap-1">
                         <Banknote className="w-4 h-4 text-[#8c5332]" />
-                        {settings.addItemCashDiffLabel || 'أقبل تفاوض دفع / استلام فارق سعر نقدي'}
+                        {settings.addItemCashDiffLabel || 'أقبل دفع فارق / استلام فارق سعري'}
                       </span>
                     </label>
 
                     {allowCashDifference && (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-600 font-medium">أقصى فارق مقبول:</span>
                         <input
                           type="number"
                           value={maxCashDifference}
                           onChange={(e) => setMaxCashDifference(e.target.value ? Number(e.target.value) : '')}
                           className="w-24 text-xs font-bold bg-white text-slate-900 px-2 py-1.5 rounded-lg border border-slate-300"
-                          placeholder="500"
+                          placeholder="0"
                         />
                         <span className="text-xs font-bold text-slate-700">ريال</span>
                       </div>
@@ -463,94 +627,92 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({ onClose, onSuccess, 
                   </div>
                 )}
 
+                {/* Optional Desired Item Image Upload */}
+                <div className="pt-3 border-t border-slate-200 space-y-2">
+                  <label className="block text-xs font-bold text-slate-800 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <ImageIcon className="w-4 h-4 text-[#8c5332]" />
+                      <span>صورة السلعة المطلوبة (اختياري)</span>
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                      اختياري
+                    </span>
+                  </label>
+
+                  {!desiredImageUrl ? (
+                    <div
+                      onDragOver={(e) => { e.preventDefault(); setIsDraggingDesired(true); }}
+                      onDragLeave={() => setIsDraggingDesired(false)}
+                      onDrop={handleDesiredDrop}
+                      className={`border-2 border-dashed rounded-2xl p-4 text-center transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
+                        isDraggingDesired
+                          ? 'border-[#8c5332] bg-[#f5eee6]/80 scale-101'
+                          : 'border-slate-300 hover:border-[#8c5332] bg-white hover:bg-[#f5eee6]/30'
+                      }`}
+                    >
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleDesiredFileChange}
+                        className="hidden"
+                        id="desired-item-file-input"
+                      />
+
+                      <div className="w-10 h-10 rounded-xl bg-[#e6d8c7] text-[#8c5332] flex items-center justify-center shadow-xs">
+                        <Upload className="w-5 h-5" />
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-bold text-slate-800">
+                          اضغط لرفع صورة توضيحية للسلعة المطلوبة بالمقابل
+                        </p>
+                        <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+                          (اختياري - تساعد المستبدلين في معرفة ما ترغب به بدقة)
+                        </p>
+                      </div>
+
+                      <label
+                        htmlFor="desired-item-file-input"
+                        className="mt-1 inline-flex items-center gap-1 bg-[#8c5332] hover:bg-[#734123] text-white text-[11px] font-bold px-3.5 py-1.5 rounded-xl shadow-xs transition-all cursor-pointer"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>اختر صورة توضيحية</span>
+                      </label>
+                    </div>
+                  ) : (
+                    /* Desired Image Preview */
+                    <div className="p-3 bg-[#f5eee6]/50 rounded-2xl border border-[#e6d8c7] flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={desiredImageUrl}
+                          alt="معاينة صورة السلعة المطلوبة"
+                          className="w-16 h-16 object-cover rounded-xl border border-white shadow-md shrink-0"
+                        />
+                        <div>
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                            <span>تم إرفاق صورة السلعة المطلوبة!</span>
+                          </div>
+                          <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                            ستظهر صورة توضيحية لما تبحث عنه للمستخدمين
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setDesiredImageUrl('')}
+                        className="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer shrink-0"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>حذف الصورة</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
               </div>
 
-            </div>
-          )}
-
-          {/* Section 3: Image Upload */}
-          {(settings.addItemShowImageUpload ?? true) && (
-            <div className="pt-4 border-t border-slate-200">
-              <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center justify-between">
-                <span className="flex items-center gap-1.5">
-                  <ImageIcon className="w-4 h-4 text-[#8c5332]" />
-                  {settings.addItemImageUploadLabel || 'رفع صورة السلعة * (إجباري لنشر العرض)'}
-                </span>
-                <span className="text-[10px] text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100">
-                  صورة إجبارية
-                </span>
-              </label>
-
-              {!imageUrl ? (
-                <div
-                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                  onDragLeave={() => setIsDragging(false)}
-                  onDrop={handleDrop}
-                  className={`border-2 border-dashed rounded-2xl p-5 text-center transition-all flex flex-col items-center justify-center gap-2 cursor-pointer ${
-                    isDragging
-                      ? 'border-[#8c5332] bg-[#f5eee6]/80 scale-101'
-                      : 'border-slate-300 hover:border-[#8c5332] bg-slate-50 hover:bg-[#f5eee6]/30'
-                  }`}
-                >
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                    id="item-file-input"
-                  />
-                  
-                  <div className="w-12 h-12 rounded-2xl bg-[#e6d8c7] text-[#8c5332] flex items-center justify-center shadow-xs">
-                    <Upload className="w-6 h-6" />
-                  </div>
-
-                  <div>
-                    <p className="text-xs font-bold text-slate-800">
-                      اضغط هنا لرفع صورة السلعة من جهازك
-                    </p>
-                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-                      أو اسحب ملف الصورة وإسقاطه هنا (PNG, JPG, WEBP)
-                    </p>
-                  </div>
-
-                  <label
-                    htmlFor="item-file-input"
-                    className="mt-1 inline-flex items-center gap-1.5 bg-[#8c5332] hover:bg-[#734123] text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs transition-all cursor-pointer"
-                  >
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>اختر صورة من الملفات</span>
-                  </label>
-                </div>
-              ) : (
-                /* Image Preview Container */
-                <div className="p-3 bg-[#f5eee6]/50 rounded-2xl border border-[#e6d8c7] flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={imageUrl}
-                      alt="معاينة الصورة المرفوعة"
-                      className="w-20 h-20 object-cover rounded-xl border border-white shadow-md shrink-0"
-                    />
-                    <div>
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                        <span>تم رفع صورة السلعة بنجاح!</span>
-                      </div>
-                      <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-                        جاهزة للعرض والظهور للمستخدمين في منصة المقايضة
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setImageUrl('')}
-                    className="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer shrink-0"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>تغيير الصورة</span>
-                  </button>
-                </div>
-              )}
             </div>
           )}
 

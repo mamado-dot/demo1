@@ -51,15 +51,25 @@ export const PolicyPage: React.FC<PolicyPageProps> = ({ type, onClose, onNavigat
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-200 pb-16 dir-rtl font-['Cairo',sans-serif]">
       
-      {/* Top Simple Navigation Link */}
-      <div className="flex items-center justify-between px-2">
-        <button
-          onClick={onClose}
-          className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-[#8c5332] hover:text-white hover:border-[#8c5332] transition-all cursor-pointer flex items-center gap-2 text-xs font-bold shadow-2xs"
-        >
-          <ArrowRight className="w-4 h-4" />
-          <span>العودة للرئيسية</span>
-        </button>
+      {/* Top Header Navigation */}
+      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onClose}
+            title="العودة للرئيسية"
+            aria-label="العودة للرئيسية"
+            className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-all cursor-pointer flex items-center justify-center shadow-xs shrink-0"
+          >
+            <ArrowRight className="w-5 h-5" />
+          </button>
+          <div className="w-10 h-10 rounded-2xl bg-[#8c5332] text-white flex items-center justify-center shrink-0 shadow-md shadow-[#8c5332]/20">
+            <ShieldCheck className="w-5 h-5 stroke-[2.2]" />
+          </div>
+          <div>
+            <h1 className="text-base sm:text-lg font-black text-slate-900">{title}</h1>
+            <p className="text-xs text-slate-500 font-medium">الشروط والأحكام وسياسات الأمان والحماية بالمنصة</p>
+          </div>
+        </div>
 
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-[#8c5332]/10 text-[#8c5332] border border-[#8c5332]/20">
           <ShieldCheck className="w-4 h-4" />

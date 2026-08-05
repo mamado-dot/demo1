@@ -109,20 +109,23 @@ export const UserSettingsPage: React.FC<UserSettingsPageProps> = ({ onClose }) =
     <div className="max-w-4xl mx-auto space-y-6 dir-rtl font-['Cairo',sans-serif] animate-in fade-in duration-200">
       
       {/* Top Breadcrumb & Page Title */}
-      <div className="flex items-center justify-between border-b border-[#e8ded2] pb-4">
+      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-[#8c5332] hover:text-white hover:border-[#8c5332] flex items-center justify-center transition-all cursor-pointer shadow-2xs"
             title="العودة"
+            aria-label="العودة"
+            className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-all cursor-pointer flex items-center justify-center shadow-xs shrink-0"
           >
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-5 h-5" />
           </button>
+          <div className="w-10 h-10 rounded-2xl bg-[#8c5332] text-white flex items-center justify-center shrink-0 shadow-md shadow-[#8c5332]/20">
+            <Settings className="w-5 h-5 stroke-[2.2]" />
+          </div>
           <div>
             <div className="flex items-center gap-2">
-              <Settings className="w-5 h-5 text-[#8c5332]" />
-              <h1 className="text-xl font-black text-slate-900">إعدادات وخيارات الحساب</h1>
-              <span className={`mr-2 px-3 py-1 rounded-full text-xs font-black border ${
+              <h1 className="text-base sm:text-lg font-black text-slate-900">إعدادات وخيارات الحساب</h1>
+              <span className={`px-2.5 py-0.5 rounded-full text-xs font-black border ${
                 currentUser.membershipTier === 'عضو مشترك'
                   ? 'bg-purple-50 text-purple-700 border-purple-200'
                   : currentUser.membershipTier === 'عضو موثق'
@@ -132,7 +135,7 @@ export const UserSettingsPage: React.FC<UserSettingsPageProps> = ({ onClose }) =
                 {currentUser.membershipTier || 'عضو عادي'}
               </span>
             </div>
-            <p className="text-xs text-slate-500 font-medium">إدارة ملفك الشخصي، وسائط التواصل، تفضيلات اللغة والإشعارات (تصنيف العضوية يُدار حصرياً عبر لوحة التحكم)</p>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">إدارة البيانات الشخصية وتوثيق الحساب وإعدادات التواصل والتنبيهات</p>
           </div>
         </div>
 
@@ -204,27 +207,7 @@ export const UserSettingsPage: React.FC<UserSettingsPageProps> = ({ onClose }) =
                   />
                 </div>
 
-                {/* Presets */}
-                <div>
-                  <span className="text-[11px] font-bold text-slate-500 block mb-1.5">أو اختر من الرموز الجاهزة:</span>
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    {presetAvatars.map((url, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => {
-                          setAvatar(url);
-                          setCustomAvatarUrl('');
-                        }}
-                        className={`w-9 h-9 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
-                          avatar === url && !customAvatarUrl ? 'border-[#8c5332] ring-2 ring-[#8c5332]/30 scale-105' : 'border-transparent opacity-70 hover:opacity-100'
-                        }`}
-                      >
-                        <img src={url} alt={`avatar-${idx}`} className="w-full h-full object-cover" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
+
 
               </div>
             </div>

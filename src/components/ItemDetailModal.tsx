@@ -20,7 +20,8 @@ import {
   User,
   Lock,
   LogIn,
-  Heart
+  Heart,
+  Package
 } from 'lucide-react';
 
 interface ItemDetailModalProps {
@@ -71,33 +72,30 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ item, onClose,
     <div className="space-y-6 animate-in fade-in duration-200">
       
       {/* Top Navigation Bar */}
-      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between">
-        <button
-          onClick={onClose}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-all cursor-pointer"
-        >
-          <ArrowRight className="w-4 h-4" />
-          <span>العودة لجميع المنتجات والسلع</span>
-        </button>
-
+      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => toggleFavorite(item.id)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
-              isFavorite(item.id)
-                ? 'bg-rose-50 text-rose-600 border-rose-200 shadow-2xs'
-                : 'bg-slate-50 hover:bg-rose-50 text-slate-600 hover:text-rose-600 border-slate-200'
-            }`}
+            onClick={onClose}
+            title="العودة"
+            aria-label="العودة"
+            className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-all cursor-pointer flex items-center justify-center shadow-xs shrink-0"
           >
-            <Heart className={`w-4 h-4 ${isFavorite(item.id) ? 'fill-rose-500 text-rose-500' : ''}`} />
-            <span>{isFavorite(item.id) ? 'في المفضلة' : 'إضافة للمفضلة'}</span>
+            <ArrowRight className="w-5 h-5" />
           </button>
-          <span className="px-3 py-1 rounded-xl text-xs font-bold bg-[#f5eee6] text-[#734123] border border-[#e6d8c7]">
+          <div className="w-10 h-10 rounded-2xl bg-[#8c5332] text-white flex items-center justify-center shrink-0 shadow-md shadow-[#8c5332]/20">
+            <Package className="w-5 h-5 stroke-[2.2]" />
+          </div>
+          <div>
+            <h1 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+              <span>تفاصيل السلعة</span>
+            </h1>
+            <p className="text-xs text-slate-500 font-medium">استعراض مواصفات السلعة ومعلومات المقايضة المتاحة</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#f5eee6] text-[#734123] border border-[#e6d8c7]">
             {item.category}
-          </span>
-          <span className="text-xs font-mono text-slate-400 flex items-center gap-1">
-            <Calendar className="w-3.5 h-3.5" />
-            تم النشر: {item.createdAt}
           </span>
         </div>
       </div>
@@ -116,9 +114,22 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ item, onClose,
                   alt={item.title}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute top-3 right-3 bg-slate-900/85 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-xl">
+                <div className="absolute top-3 right-3 bg-slate-900/85 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-xl z-10">
                   {item.condition}
                 </div>
+
+                {/* Favorite Heart Button Overlay on Image */}
+                <button
+                  onClick={() => toggleFavorite(item.id)}
+                  className={`absolute top-3 left-3 w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center transition-all z-20 cursor-pointer shadow-md border ${
+                    isFavorite(item.id)
+                      ? 'bg-rose-500 text-white border-rose-400 shadow-rose-900/20 scale-105'
+                      : 'bg-white/90 hover:bg-white text-slate-700 hover:text-rose-500 border-white/40'
+                  }`}
+                  title={isFavorite(item.id) ? 'إزالة من المفضلة' : 'إضافة للمفضلة'}
+                >
+                  <Heart className={`w-5 h-5 ${isFavorite(item.id) ? 'fill-white text-white' : 'fill-rose-500/10 text-slate-600 hover:fill-rose-500 hover:text-rose-500'}`} />
+                </button>
               </div>
 
               {/* Thumbnails */}
@@ -162,13 +173,17 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ item, onClose,
               
               <div>
                 <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug">{item.title}</h1>
-                <div className="flex items-center gap-4 mt-3">
+                <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 mt-3">
                   <div className="bg-[#f5eee6] text-[#734123] border border-[#e6d8c7] px-3 py-1.5 rounded-xl font-bold text-xs">
                     القيمة التقديرية: <span className="text-base text-[#8c5332] font-black">{item.estimatedValue.toLocaleString('ar-SA')}</span> ريال
                   </div>
-                  <div className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                  <div className="text-xs font-bold text-slate-600 flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200/80">
                     <MapPin className="w-4 h-4 text-[#8c5332]" />
-                    {item.location}
+                    <span>{item.location}</span>
+                  </div>
+                  <div className="text-xs font-bold text-slate-500 flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200/80">
+                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                    <span>تاريخ النشر: {item.createdAt}</span>
                   </div>
                 </div>
               </div>
@@ -190,8 +205,18 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ item, onClose,
                   )}
                 </div>
 
-                <div className="text-xs font-medium text-slate-200 leading-relaxed bg-white/5 p-3 rounded-2xl border border-white/10">
-                  {item.desiredDescription || `يرغب في مقايضتها مقابل منتج من فئة (${item.desiredCategory}) بحالة ممتازة.`}
+                <div className="text-xs font-medium text-slate-200 leading-relaxed bg-white/5 p-3 rounded-2xl border border-white/10 space-y-2">
+                  <p>{item.desiredDescription || `يرغب في مقايضتها مقابل منتج من فئة (${item.desiredCategory}) بحالة ممتازة.`}</p>
+                  {item.desiredImage && (
+                    <div className="pt-2">
+                      <p className="text-[10px] text-[#d9a885] font-bold mb-1">صورة توضيحية للسلعة المطلوبة:</p>
+                      <img
+                        src={item.desiredImage}
+                        alt="صورة توضيحية للسلعة المطلوبة"
+                        className="w-full max-h-48 object-cover rounded-xl border border-white/20 shadow-md"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {item.allowCashDifference && item.maxCashDifference && (
@@ -268,15 +293,10 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ item, onClose,
           <div className="pt-8 border-t border-slate-200 space-y-6">
             
             <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5 text-[#8c5332]" />
-                  أسئلة واستفسارات السلعة ({itemQuestions.length})
-                </h3>
-                <p className="text-xs text-slate-500 font-medium">
-                  يمكن لأي مستخدم طرح سؤال حول حالة المنتج أو الملحقات والإجابة من صاحب السلعة مباشرة.
-                </p>
-              </div>
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-[#8c5332]" />
+                استفسارات
+              </h3>
             </div>
 
             {/* Ask Question Form / Guest Restriction */}

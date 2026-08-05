@@ -21,7 +21,7 @@ import {
 
 interface UserProfilePageProps {
   userId?: string;
-  initialTab?: 'items' | 'negotiations';
+  initialTab?: 'profile' | 'items' | 'negotiations';
   onClose: () => void;
   onSelectItem: (item: BarterItem) => void;
   onOpenTradeModal: (item: BarterItem) => void;
@@ -54,7 +54,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
   const targetUser: User = (userId ? users.find((u) => u.id === userId) : null) || currentUser || users[0];
   const isOwnProfile = currentUser && currentUser.id === targetUser.id;
 
-  const [activeProfileTab, setActiveProfileTab] = useState<'items' | 'negotiations'>(initialTab);
+  const [activeProfileTab, setActiveProfileTab] = useState<'profile' | 'items' | 'negotiations'>(initialTab);
 
   // Edit State (Only relevant if isOwnProfile)
   const [isEditing, setIsEditing] = useState(false);
@@ -98,24 +98,85 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
     );
   }
 
+  // 1. ITEMS VIEW ("صفحة منتجاتي الخاصة بالعضو" - ONLY PRODUCTS)
+  if (activeProfileTab === 'items') {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-200 max-w-6xl mx-auto pb-12 dir-rtl font-['Cairo',sans-serif]">
+        {/* Top Navigation Bar */}
+        <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onClose}
+              title="العودة"
+              aria-label="العودة"
+              className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-all cursor-pointer flex items-center justify-center shadow-xs shrink-0"
+            >
+              <ArrowRight className="w-5 h-5" />
+            </button>
+            <div className="w-10 h-10 rounded-2xl bg-[#8c5332] text-white flex items-center justify-center shrink-0 shadow-md shadow-[#8c5332]/20">
+              <Package className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <div>
+              <h1 className="text-base sm:text-lg font-black text-slate-900">
+                {isOwnProfile ? 'منتجاتي' : `منتجات العضو: ${targetUser.name}`}
+              </h1>
+              <p className="text-xs text-slate-500 font-medium">
+                عرض المنتجات والسلع المعروضة للمقايضة ({userItems.length})
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ONLY PRODUCTS GRID */}
+        {userItems.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {userItems.map((item) => (
+              <ItemCard
+                key={item.id}
+                item={item}
+                onSelectItem={onSelectItem}
+                onOpenTradeModal={onOpenTradeModal}
+                onViewUserProfile={onViewUserProfile}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center space-y-3">
+            <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+              <Package className="w-6 h-6" />
+            </div>
+            <h4 className="text-sm font-extrabold text-slate-800">لا توجد منتجات حالية</h4>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              لم يتم إضافة أي منتجات أو سلع جديدة للمقايضة في الوقت الحالي.
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // 2. PROFILE VIEW ("الملف الشخصي")
   return (
     <div className="space-y-6 animate-in fade-in duration-200 max-w-6xl mx-auto pb-12 dir-rtl font-['Cairo',sans-serif]">
-      
       {/* Top Header Navigation */}
-      <div className="flex items-center justify-between bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-xs">
+      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
             onClick={onClose}
-            className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-all cursor-pointer flex items-center gap-1.5 text-xs font-bold"
             title="العودة"
+            aria-label="العودة"
+            className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 transition-all cursor-pointer flex items-center justify-center shadow-xs shrink-0"
           >
-            <ArrowRight className="w-4 h-4" />
-            <span>العودة</span>
+            <ArrowRight className="w-5 h-5" />
           </button>
+          <div className="w-10 h-10 rounded-2xl bg-[#8c5332] text-white flex items-center justify-center shrink-0 shadow-md shadow-[#8c5332]/20">
+            <UserIcon className="w-5 h-5 stroke-[2.2]" />
+          </div>
           <div>
             <h1 className="text-base sm:text-lg font-black text-slate-900">
               {isOwnProfile ? 'الملف الشخصي لحسابي' : `الملف الشخصي: ${targetUser.name}`}
             </h1>
+            <p className="text-xs text-slate-500 font-medium">عرض واستعراض المعلومات والتقييمات</p>
           </div>
         </div>
 
@@ -137,7 +198,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
         </div>
       )}
 
-      {/* Clean Profile Card (صورة، المدينة، عدد المقايضات، تقييمه) */}
+      {/* Profile Details Card */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-6">
         <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
           
@@ -172,10 +233,9 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
             </div>
           </div>
 
-          {/* Key Metrics Row (عدد المقايضات، التقييم، عدد المنتجات) */}
+          {/* Key Metrics Row */}
           <div className="grid grid-cols-3 gap-3 w-full md:w-auto text-center">
             
-            {/* Metric 1: Completed Barters (عدد المقايضات) */}
             <div className="bg-slate-50 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 space-y-1 min-w-[100px]">
               <div className="text-[10px] font-extrabold text-slate-500 uppercase">المقايضات</div>
               <div className="text-lg sm:text-2xl font-black text-emerald-600">
@@ -184,7 +244,6 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
               <div className="text-[10px] text-slate-500 font-bold">مقايضة ناجحة</div>
             </div>
 
-            {/* Metric 2: Rating (تقييمه) */}
             <div className="bg-slate-50 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 space-y-1 min-w-[100px]">
               <div className="text-[10px] font-extrabold text-slate-500 uppercase">التقييم</div>
               <div className="text-lg sm:text-2xl font-black text-amber-500 flex items-center justify-center gap-1">
@@ -194,20 +253,22 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
               <div className="text-[10px] text-slate-500 font-bold">من 5 نجوم</div>
             </div>
 
-            {/* Metric 3: Products Count */}
-            <div className="bg-slate-50 p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 space-y-1 min-w-[100px]">
-              <div className="text-[10px] font-extrabold text-slate-500 uppercase">المنتجات</div>
+            <button
+              onClick={() => setActiveProfileTab('items')}
+              className="bg-[#f5eee6] hover:bg-[#ebdccb] transition-all p-3.5 sm:p-4 rounded-2xl border border-[#e6d8c7] space-y-1 min-w-[100px] cursor-pointer"
+            >
+              <div className="text-[10px] font-extrabold text-[#734123] uppercase">المنتجات</div>
               <div className="text-lg sm:text-2xl font-black text-[#8c5332]">
                 {userItems.length}
               </div>
-              <div className="text-[10px] text-slate-500 font-bold">سلعة معروضة</div>
-            </div>
+              <div className="text-[10px] text-[#8c5332] font-bold">عرض المنتجات ←</div>
+            </button>
 
           </div>
 
         </div>
 
-        {/* Edit Profile Form Panel (Only if Own Profile) */}
+        {/* Edit Profile Form Panel */}
         {isOwnProfile && isEditing && (
           <form onSubmit={handleSaveProfile} className="pt-6 border-t border-slate-100 space-y-4 animate-in fade-in">
             <h3 className="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
@@ -258,22 +319,7 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
               </div>
             </div>
 
-            <div>
-              <label className="block text-[11px] font-bold text-slate-700 mb-2">اختر صورة رمادية من المعرض:</label>
-              <div className="flex flex-wrap items-center gap-3">
-                {presetAvatars.map((url, idx) => (
-                  <img
-                    key={idx}
-                    src={url}
-                    alt="avatar option"
-                    onClick={() => setAvatar(url)}
-                    className={`w-12 h-12 rounded-xl object-cover cursor-pointer transition-all border-2 ${
-                      avatar === url ? 'border-[#8c5332] ring-2 ring-[#8c5332]/30 scale-105' : 'border-transparent opacity-70 hover:opacity-100'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
+
 
             <div className="flex justify-end gap-2 pt-2">
               <button
@@ -294,93 +340,6 @@ export const UserProfilePage: React.FC<UserProfilePageProps> = ({
           </form>
         )}
       </div>
-
-      {/* Profile Section Tabs (معروضات السلع / المفاوضات) */}
-      <div className="bg-white p-2 rounded-2xl border border-slate-200/90 shadow-xs flex items-center gap-2">
-        <button
-          onClick={() => setActiveProfileTab('items')}
-          className={`flex-1 py-3 px-4 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-2 ${
-            activeProfileTab === 'items'
-              ? 'bg-[#8c5332] text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-          }`}
-        >
-          <Package className="w-4 h-4" />
-          <span>منتجات السلع المعروضة</span>
-          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-            activeProfileTab === 'items' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
-          }`}>
-            {userItems.length}
-          </span>
-        </button>
-
-        {isOwnProfile && (
-          <button
-            onClick={() => setActiveProfileTab('negotiations')}
-            className={`flex-1 py-3 px-4 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-2 ${
-              activeProfileTab === 'negotiations'
-                ? 'bg-[#8c5332] text-white shadow-sm'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-            }`}
-          >
-            <MessageSquare className="w-4 h-4" />
-            <span>مفاوضات وشات المقايضة</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-              activeProfileTab === 'negotiations' ? 'bg-amber-100 text-[#734123]' : 'bg-amber-100 text-amber-800'
-            }`}>
-              {userNegotiations.length}
-            </span>
-          </button>
-        )}
-      </div>
-
-      {/* USER'S PRODUCTS SECTION (منتجات العضو المعروضة للمقايضة) */}
-      <div className="space-y-4">
-          
-          <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
-            <div className="flex items-center gap-2">
-              <Package className="w-5 h-5 text-[#8c5332]" />
-              <h3 className="text-base font-extrabold text-slate-900">
-                منتجات العضو المعروضة للمقايضة ({userItems.length})
-              </h3>
-            </div>
-
-            {isOwnProfile && (
-              <button
-                onClick={onOpenAddItem}
-                className="px-3.5 py-1.5 rounded-xl bg-[#8c5332] hover:bg-[#734123] text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
-              >
-                <PlusCircle className="w-3.5 h-3.5" />
-                <span>إضافة سلعة جديدة</span>
-              </button>
-            )}
-          </div>
-
-          {userItems.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {userItems.map((item) => (
-                <ItemCard
-                  key={item.id}
-                  item={item}
-                  onSelectItem={onSelectItem}
-                  onOpenTradeModal={onOpenTradeModal}
-                  onViewUserProfile={onViewUserProfile}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-                <Package className="w-6 h-6" />
-              </div>
-              <h4 className="text-sm font-extrabold text-slate-800">لا توجد معروضات حالية</h4>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                لم يقم هذا العضو بإضافة أي منتجات أو سلع جديدة للمقايضة في الوقت الحالي.
-              </p>
-            </div>
-          )}
-
-        </div>
     </div>
   );
 };

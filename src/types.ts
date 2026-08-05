@@ -13,7 +13,7 @@ export type CategoryName =
   | 'ألعاب ورياضة' 
   | 'كتب ومقتنيات نادرة';
 
-export type UserMembershipTier = 'عضو عادي' | 'عضو موثق' | 'عضو مشترك';
+export type UserMembershipTier = 'عضو عادي' | 'عضو موثق' | 'عضو مشترك' | 'تاجر موثوق' | 'عضو مميز';
 
 export interface User {
   id: string;
@@ -21,6 +21,7 @@ export interface User {
   email?: string;
   password?: string;
   isOwner?: boolean;
+  role?: 'user' | 'moderator' | 'admin';
   avatar: string;
   city: string;
   phone: string;
@@ -29,6 +30,20 @@ export interface User {
   completedBartersCount: number;
   isActive?: boolean;
   membershipTier?: UserMembershipTier;
+}
+
+export interface UserReview {
+  id: string;
+  offerId: string;
+  contractId?: string;
+  reviewerId: string;
+  reviewerName: string;
+  reviewerAvatar?: string;
+  targetUserId: string;
+  targetUserName: string;
+  rating: number; // 1 to 5
+  comment: string;
+  createdAt: string;
 }
 
 export interface TradeNegotiationMessage {
@@ -69,6 +84,7 @@ export interface BarterItem {
   // شروط وتطلعات المقايضة
   desiredCategory: string;
   desiredDescription: string;
+  desiredImage?: string;
   allowCashDifference: boolean;
   maxCashDifference?: number; // أقصى فارق سعر مسموح به
   deliveryPreference: 'استلام يدوي' | 'شحن بريدي' | 'كلاهما يفي بالغرض';
@@ -240,6 +256,9 @@ export interface PlatformSettings {
   
   customContractTerms: string[];
   
+  // Registration & User Activation Policy
+  autoActivateNewUsers?: boolean;
+
   // Item Submission Form Field Settings (إعدادات نموذج إضافة السلع)
   addItemShowTitle?: boolean;
   addItemTitleLabel?: string;
